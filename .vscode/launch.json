@@ -1,0 +1,43 @@
+{
+  // https://github.com/vadimcn/vscode-lldb/blob/v1.4.5/MANUAL.md#launching-a-new-process
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'static-from-exif'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=static-from-exif",
+          "--package=static-from-exif"
+        ],
+        "filter": {
+          "name": "static-from-exif",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'static-from-exif'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=static-from-exif",
+          "--package=static-from-exif"
+        ],
+        "filter": {
+          "name": "static-from-exif",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
