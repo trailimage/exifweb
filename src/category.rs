@@ -1,6 +1,7 @@
 mod Post;
 
 /// Post category.
+#[derive(Clone, Debug)]
 struct Category {
    key: str,
    posts: Vec<&Post>,
