@@ -1,0 +1,3 @@
+struct Caption {
+   original: str;
+}
