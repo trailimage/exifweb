@@ -1,0 +1,14 @@
+{
+    "rust-analyzer.featureFlags": {
+        // Show diagnostics produced by rust-analyzer itself.
+        "lsp.diagnostics": false,
+        // Automatically insert `()` and `<>` when completing functions and types.
+        "completion.insertion.add-call-parenthesis": false,
+        // Enable completions like `.if`, `.match`, etc.
+        "completion.enable-postfix": true,
+        // Show notification when workspace is fully loaded
+        "notifications.workspace-loaded": true,
+        // Show error when no Cargo.toml was found
+        "notifications.cargo-toml-not-found": true,
+    }
+}
