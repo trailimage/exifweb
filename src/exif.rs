@@ -1,4 +1,5 @@
 use regex::Regex;
+use hashbrown::HashMap;
 
 struct EXIF {
     artist: str,
@@ -22,7 +23,7 @@ fn lens(text: String) -> String {
     }
     let after = re_35.replace_all(text, "Sony FE 35mm ƒ2.8");
 
-    after
+    return after;
 }
 
 /// Normalize software name.
@@ -37,6 +38,6 @@ mod tests {
 
     #[test]
     fn test_lens() {
-        assert_eq!(lens("FE 35mm whatever"), "Sony FE 35mm ƒ2.8")
+        assert_eq!(lens("FE 35mm whatever"), "bSony FE 35mm ƒ2.8")
     }
 }

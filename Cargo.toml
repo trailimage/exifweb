@@ -5,6 +5,7 @@ authors = ["Your Name <you@example.com>"]
 edition = "2018"
 
 [dependencies]
+hashbrown = "0.7"
 toml = "0.5"
 regex = "1"
 yarte = "0.6"
