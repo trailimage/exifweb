@@ -1,8 +1,11 @@
 use crate::Photo;
+use std::path::Path;
 
-struct Post {
-    title: str,
-    photos: Vec<&Photo>,
-    next: &Post,
-    prev: &Post,
+struct Post<'a> {
+    path: &'a Path,
+    title: String,
+    summary: String,
+    photos: Vec<&'a Photo>,
+    next: &'a Post<'a>,
+    prev: &'a Post<'a>,
 }

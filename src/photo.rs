@@ -1,3 +1,3 @@
 struct Photo {
-    name: str,
+    name: String,
 }
