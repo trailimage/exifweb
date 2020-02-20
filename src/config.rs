@@ -1,18 +1,17 @@
-use serde_derive::Deserialize;
-use toml::from_str;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
-struct ExifConfig {
-    camera: Vec<String>,
+pub type Pairs = Vec<(String, String)>;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ExifConfig {
+    pub camera: Pairs,
+    pub software: Pairs,
+    pub lens: Pairs,
 }
 
-#[derive(Deserialize)]
-struct Config {
-    categories: Vec<String>,
-    what: Vec<String>,
-    exfi: ExifConfig,
-}
-
-fn main() {
-    let config: Config = from_str("");
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Config {
+    pub categories: Vec<String>,
+    pub what: Vec<String>,
+    pub exif: ExifConfig,
 }

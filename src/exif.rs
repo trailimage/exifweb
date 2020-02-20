@@ -1,6 +1,6 @@
-use toml::Value;
-use regex::Regex;
 use hashbrown::HashMap;
+use regex::Regex;
+use toml::Value;
 
 struct EXIF {
     artist: str,
@@ -35,7 +35,7 @@ fn compensation(text: String) -> String {}
 
 #[cfg(test)]
 mod tests {
-    user super::*;
+    use super::*;
 
     #[test]
     fn test_lens() {

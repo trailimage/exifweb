@@ -1,4 +1,4 @@
-use crate::post;
+use crate::Post;
 
 #[derive(Clone, Debug)]
 enum CategoryKind {
