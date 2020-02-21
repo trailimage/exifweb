@@ -1,55 +1,51 @@
 mod blog;
-//mod category;
+mod category;
 mod config;
-//mod exif;
+mod exif;
 mod photo;
 mod post;
 
-use crate::blog::Blog;
-use crate::post::Post;
-use std::fs::{self, DirEntry, ReadDir};
-//use std::io;
-use std::path::{Path, PathBuf};
+use blog::Blog;
+use category::Category;
+use post::Post;
+use std::fs;
+use std::path::Path;
 use toml;
 
 fn main() {
     let root = Path::new("./public/");
     let path = Path::new("./public/config.toml");
-    let mut blog = Blog { posts: Vec::new() };
+    let mut blog = Blog {
+        posts: Vec::new(),
+        categories: Vec::new(),
+    };
     let contents = fs::read_to_string(path).expect("Something went wrong reading the file");
     let c: config::BlogConfig = toml::from_str(&contents).unwrap();
-    // let entries = fs::read_dir(root)?
-    //     .map(|res: ReadDir| res.filter(|e| e.path().is_dir()).map(|e| e.path()))
-    //     .collect::<Result<Vec<PathBuf>, io::Error>>()?;
 
-    //  match fs::read_dir(root) {
-    //     Some<
-    //  }
-
-    match fs::read_dir(root) {
-        Err(e) => println!("Unable to read root folder: {:?}", e),
-        Ok(d) => {
-            for entry in d {
-                match entry {
-                    Err(_) => println!("Unable to read file"),
-                    Ok(f) => {
-                        let path = f.path();
-                        if path.is_dir() {
-                            let p = Post {
-                                title: String::new(),
-                                summary: String::new(),
-                                path: path.as_path(),
-                                photos: Vec::new(),
-                                next: Option::None,
-                                prev: Option::None,
-                            };
-                            blog.posts.push(&p);
-                        }
-                    }
-                }
-            }
-        }
+    for name in c.categories {
+        blog.categories.push(Category {
+            name,
+            posts: Vec::new(),
+        });
     }
 
-    println!("{}", c.what[0]);
+    for entry in fs::read_dir(root).expect("Unable to read root directory") {
+        let entry = entry.expect("Unable to access directory entry");
+        let path = entry.path();
+
+        if !path.is_dir() {
+            continue;
+        }
+
+        blog.posts.push(Post {
+            title: String::new(),
+            summary: String::new(),
+            path,
+            photos: Vec::new(),
+            next: Option::None,
+            prev: Option::None,
+        });
+    }
+
+    println!("{} posts", blog.posts.len());
 }
