@@ -1,5 +1,5 @@
-use crate::Post;
+use crate::post::Post;
 
-struct Blog<'a> {
-    posts: Vec<&'a Post<'a>>,
+pub struct Blog<'a, 'b> {
+    pub posts: Vec<&'a Post<'a, 'b>>,
 }

@@ -1,3 +1,3 @@
-struct Photo {
+pub struct Photo {
     name: String,
 }

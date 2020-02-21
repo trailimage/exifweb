@@ -1,11 +1,11 @@
-use crate::Photo;
+use crate::photo::Photo;
 use std::path::Path;
 
-struct Post<'a> {
-    path: &'a Path,
-    title: String,
-    summary: String,
-    photos: Vec<&'a Photo>,
-    next: &'a Post<'a>,
-    prev: &'a Post<'a>,
+pub struct Post<'a, 'b> {
+    pub path: &'b Path,
+    pub title: String,
+    pub summary: String,
+    pub photos: Vec<&'a Photo>,
+    pub next: Option<&'a Post<'a, 'b>>,
+    pub prev: Option<&'a Post<'a, 'b>>,
 }

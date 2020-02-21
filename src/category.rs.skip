@@ -1,14 +1,14 @@
-use crate::Post;
+use crate::post::Post;
 
 #[derive(Clone, Debug)]
-enum CategoryKind {
-    Who(Vec<&Category>),
-    What(Vec<&Category>),
-    When(Vec<&Category>),
-    Where(Vec<&Category>),
+enum CategoryKind<'a> {
+    Who(Vec<&'a Category<'a>>),
+    What(Vec<&'a Category<'a>>),
+    When(Vec<&'a Category<'a>>),
+    Where(Vec<&'a Category<'a>>),
 }
 
-impl CategoryKind {
+impl CategoryKind<'_> {
     fn add(&self) {
         //self.
     }
@@ -26,7 +26,7 @@ impl CategoryKind {
 }
 
 // https://users.rust-lang.org/t/solved-unified-iteration-over-enum-of-vectors/11830/3
-impl<'a> IntoIterator for &'a CategoryKind {
+impl IntoIterator for &CategoryKind<'_> {
     type Item = &'a Category;
     type IntoIter = Box<Iterator<Item = &'a Category> + 'a>;
 
@@ -42,14 +42,14 @@ impl<'a> IntoIterator for &'a CategoryKind {
 
 /// Post category.
 #[derive(Clone, Debug)]
-struct Category {
+struct Category<'a> {
     key: str,
     title: str,
-    posts: Vec<&Post>,
-    kind: CategoryKind,
+    posts: Vec<&'a Post<'a>>,
+    kind: CategoryKind<'a>,
 }
 
-impl Category {
+impl Category<'_> {
     fn add(&self, c: &Category) {}
 
     // fn remove_post(&self, p: &Post) {

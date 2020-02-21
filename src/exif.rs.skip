@@ -1,16 +1,12 @@
-use hashbrown::HashMap;
-use regex::Regex;
-use toml::Value;
-
 struct EXIF {
-    artist: str,
-    compensation: str,
-    time: str,
+    artist: String,
+    compensation: String,
+    time: String,
     f_number: u8,
     focal_length: u8,
     iso: u8,
-    lens: str,
-    software: str,
+    lens: String,
+    software: String,
     sanitized: bool,
 }
 
@@ -24,11 +20,13 @@ fn lens(text: String) -> String {
     }
     let after = re_35.replace_all(text, "Sony FE 35mm ƒ2.8");
 
-    return after;
+    after;
 }
 
 /// Normalize software name.
-fn software(text: String) -> String {}
+fn software(text: String) -> String {
+    ""
+}
 
 /// Normalize compensation value.
 fn compensation(text: String) -> String {}
