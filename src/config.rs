@@ -1,18 +1,29 @@
 use serde::{Deserialize, Serialize};
 
 pub type Pairs = Vec<(String, String)>;
+
 #[derive(Serialize, Deserialize, Debug)]
-pub struct PostConfig {
-    pub title: String,
-    pub summary: String,
+pub struct PostCategories {
+    pub who: String,
     pub when: String,
-    pub location: Vec<String>,
+    pub r#where: Vec<String>,
     pub what: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct PostConfig {
+    pub title: String,
+    pub summary: String,
+    pub categories: PostCategories,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct PostFound {
+    /// Date of second photo in folder (skip first since it's often a contextual
+    /// shot from another time)
     pub when: String,
+    /// Timestamp when folder was last processed
+    pub processed: i32,
     /// Photo tags
     pub tags: Vec<String>,
 }

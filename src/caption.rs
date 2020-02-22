@@ -1,3 +1,3 @@
-struct Caption {
-    original: &str,
+pub struct Caption {
+    pub original: String,
 }

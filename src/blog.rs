@@ -1,5 +1,5 @@
-use crate::category::Category;
-use crate::post::Post;
+use crate::Category;
+use crate::Post;
 
 pub struct Blog<'a> {
     pub posts: Vec<Post<'a>>,

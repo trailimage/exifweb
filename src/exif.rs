@@ -1,15 +1,16 @@
-use crate::config::Pairs;
+use crate::Pairs;
 
 pub struct EXIF {
-    artist: String,
-    compensation: String,
-    time: String,
-    f_number: u8,
-    focal_length: u8,
-    iso: u8,
-    lens: String,
-    software: String,
-    sanitized: bool,
+    pub artist: String,
+    pub compensation: String,
+    pub time: String,
+    pub f_number: u8,
+    pub focal_length: u8,
+    pub iso: u8,
+    pub lens: String,
+    pub software: String,
+    /// Whether raw values have been formatted.
+    pub sanitized: bool,
 }
 
 fn replace_pairs(text: String, pairs: Pairs) -> String {
@@ -23,12 +24,12 @@ fn replace_pairs(text: String, pairs: Pairs) -> String {
     return clean;
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-    #[test]
-    fn test_lens() {
-        assert_eq!(lens("FE 35mm whatever"), "bSony FE 35mm ƒ2.8")
-    }
-}
+//     #[test]
+//     fn test_lens() {
+//         assert_eq!(lens("FE 35mm whatever"), "bSony FE 35mm ƒ2.8")
+//     }
+// }

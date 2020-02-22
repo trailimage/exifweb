@@ -1,13 +1,19 @@
 mod blog;
+mod caption;
 mod category;
 mod config;
 mod exif;
 mod photo;
 mod post;
 
-use blog::Blog;
-use category::Category;
-use post::Post;
+pub use blog::Blog;
+pub use caption::Caption;
+pub use category::Category;
+pub use config::*;
+pub use exif::EXIF;
+pub use photo::Photo;
+pub use post::Post;
+
 use std::fs;
 use std::path::Path;
 use toml;
@@ -29,8 +35,8 @@ fn main() {
         });
     }
 
-    for entry in fs::read_dir(root).expect("Unable to read root directory") {
-        let entry = entry.expect("Unable to access directory entry");
+    for entry in fs::read_dir(root).unwrap() {
+        let entry = entry.unwrap();
         let path = entry.path();
 
         if !path.is_dir() {
