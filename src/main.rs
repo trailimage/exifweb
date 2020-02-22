@@ -45,11 +45,26 @@ fn main() {
 
         blog.posts.push(Post {
             title: String::new(),
+            sub_title: String::new(),
+            original_title: String::new(),
             summary: String::new(),
+            key: String::new(),
+            series_key: String::new(),
+            part_key: String::new(),
             path,
             photos: Vec::new(),
+            cover_photo: Option::None,
             next: Option::None,
             prev: Option::None,
+            chronological: true,
+            featured: false,
+            part: 0,
+            is_partial: false,
+            next_is_part: false,
+            previous_is_part: false,
+            total_parts: 0,
+            is_series_start: false,
+            has_track: false,
         });
     }
 
