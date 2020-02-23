@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 
 pub type Pairs = Vec<(String, String)>;
 
-#[derive(Serialize, Deserialize, Debug)]
+/// Categories to which the post has been assigned.
+#[derive(Deserialize, Debug)]
 pub struct PostCategories {
     pub who: String,
     pub when: String,
@@ -10,18 +11,20 @@ pub struct PostCategories {
     pub what: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct SeriesConfig {
-    /// Series title
+    /// Series title. This becomes the main post title while the configured
+    /// post title becomes the subtitle.
     pub title: String,
     /// Number of parts in the series
     pub parts: u8,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct PostConfig {
     pub title: String,
     pub summary: String,
+    /// Categories to which the post has been assigned
     pub categories: PostCategories,
 }
 
@@ -36,15 +39,15 @@ pub struct PostPhotos {
     pub tags: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct ExifConfig {
     pub camera: Pairs,
     pub software: Pairs,
     pub lens: Pairs,
 }
 
-/// Photo sizes to create.
-#[derive(Serialize, Deserialize, Debug)]
+/// Photo sizes to generate from original.
+#[derive(Deserialize, Debug)]
 pub struct SizeConfig {
     large: u16,
     regular: u16,
@@ -52,13 +55,22 @@ pub struct SizeConfig {
     thumb: u16,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct PhotoConfig {
+    /// Regex pattern to extract photo index and count from file name
+    ///
+    /// *Exmaple* `(\\d{3})-of-(\\d{3})\\.jpg$` for `neat_place_012-of-015.jpg`
+    index_pattern: String,
     size: SizeConfig,
+    /// EXIF normalization settings
     exif: ExifConfig,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct BlogConfig {
+    /// Regex pattern to extract series part index from folder name
+    ///
+    /// *Example* `^(\\d) - ` for `3 - Cold Ride Home`
+    pub series_index_pattern: String,
     pub photo: PhotoConfig,
 }

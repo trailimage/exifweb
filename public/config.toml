@@ -1,6 +1,10 @@
 # https://github.com/sunng87/handlebars-rust
 
+series_index_pattern = "^(\\d) - "
+
 [photo]
+   index_pattern = "_(\\d{3})-of-(\\d{3})\\.jpg$"
+
    [photo.size]
    large = 4096
    regular = 2048

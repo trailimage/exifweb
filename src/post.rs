@@ -25,7 +25,7 @@ pub struct Post<'a> {
 
     pub title: String,
     pub sub_title: String,
-    pub original_title: String,
+    //pub original_title: String,
     pub summary: String,
     /// Whether post pictures occurred sequentially in a specific time range as
     /// opposed to, for example, a themed set of images from various times.
@@ -69,7 +69,7 @@ impl Default for Post<'_> {
 
             title: String::new(),
             sub_title: String::new(),
-            original_title: String::new(),
+            //original_title: "",
             summary: String::new(),
 
             chronological: true,

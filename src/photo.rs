@@ -1,4 +1,5 @@
 use crate::EXIF;
+use time::Date;
 
 #[derive(Debug)]
 pub struct Location {
@@ -16,17 +17,18 @@ impl Eq for Location {}
 
 #[derive(Debug)]
 pub struct Photo {
+    /// File name of the photo
     pub name: String,
     pub exif: EXIF,
     pub location: Location,
-    /// Position of photo within post.
+    /// One-based position of photo within post
     pub index: u8,
-    /// Tags applied to the photo.
+    /// Tags applied to the photo
     pub tags: Vec<String>,
-    /// Whether this is the post's main photo.
+    /// Whether this is the post's main photo
     pub primary: bool,
-
-    pub date_taken: time::Date,
+    /// When the photograph was taken per camera EXIF
+    pub date_taken: Date,
 
     /// Whether taken date is an outlier compared to other photos in the same
     /// post. Outliers may be removed from mini-maps so the maps aren't overly

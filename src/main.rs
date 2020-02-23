@@ -13,8 +13,8 @@ pub use config::*;
 pub use exif::EXIF;
 pub use photo::Photo;
 pub use post::Post;
+use serde::de::DeserializeOwned;
 
-use serde::Deserialize;
 use std::fs;
 use std::path::{Path, PathBuf};
 use toml;
@@ -74,12 +74,11 @@ fn load_series<'a>(path: &Path) -> Option<Vec<Post<'a>>> {
 fn load_series_post<'a>(path: &Path, series: &SeriesConfig) -> Post<'a> {
     let config: PostConfig = load_config(&path);
     Post {
-        title: series.title,
+        title: series.title.clone(),
         sub_title: config.title,
         summary: config.summary,
         is_partial: true,
         total_parts: series.parts,
-        chronological: true,
         ..Post::default()
     }
 }
@@ -90,15 +89,19 @@ fn load_post<'a>(path: &Path) -> Post<'a> {
     Post {
         title: config.title,
         summary: config.summary,
-        is_partial: false,
-        total_parts: 0,
-        chronological: true,
         ..Post::default()
     }
 }
 
 /// Load configuration from given path.
-fn load_config<'de, T: Deserialize<'de>>(path: &'de Path) -> T {
-    let contents = fs::read_to_string(path.join("config.toml")).unwrap();
-    toml::from_str(&contents).unwrap()
+///
+/// *See* https://gitter.im/rust-lang/rust/archives/2018/09/07
+fn load_config<D: DeserializeOwned>(path: &Path) -> D {
+    static FILE_NAME: &str = "config.toml";
+    let content =
+        fs::read_to_string(path.join(FILE_NAME)).unwrap_or_else(|e| {
+            panic!("{} not found in {:?}", FILE_NAME, path.to_str())
+        });
+
+    toml::from_str(&content).unwrap()
 }
