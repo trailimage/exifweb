@@ -1,2 +1,2 @@
-public/img/*
+public/img/**/*.png
 target/*

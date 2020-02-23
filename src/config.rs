@@ -11,6 +11,14 @@ pub struct PostCategories {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct SeriesConfig {
+    /// Series title
+    pub title: String,
+    /// Number of parts in the series
+    pub parts: u8,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct PostConfig {
     pub title: String,
     pub summary: String,
@@ -18,12 +26,12 @@ pub struct PostConfig {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct PostFound {
+pub struct PostPhotos {
     /// Date of second photo in folder (skip first since it's often a contextual
     /// shot from another time)
-    pub when: String,
-    /// Timestamp when folder was last processed
-    pub processed: i32,
+    pub when: time::Date,
+    /// When folder was last processed
+    pub processed: time::Date,
     /// Photo tags
     pub tags: Vec<String>,
 }
@@ -38,21 +46,19 @@ pub struct ExifConfig {
 /// Photo sizes to create.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SizeConfig {
-    large: i8,
-    regular: i8,
-    small: i8,
-    thumb: i8,
+    large: u16,
+    regular: u16,
+    small: u16,
+    thumb: u16,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PhotoConfig {
     size: SizeConfig,
+    exif: ExifConfig,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlogConfig {
-    pub categories: Vec<String>,
-    pub what: Vec<String>,
-    pub exif: ExifConfig,
     pub photo: PhotoConfig,
 }

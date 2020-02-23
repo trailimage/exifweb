@@ -5,8 +5,8 @@ pub struct EXIF {
     pub compensation: String,
     pub time: String,
     pub f_number: u8,
-    pub focal_length: u8,
-    pub iso: u8,
+    pub focal_length: u16,
+    pub iso: u16,
     pub lens: String,
     pub software: String,
     /// Whether raw values have been formatted.

@@ -34,7 +34,7 @@ pub struct Post<'a> {
     pub prev: Option<&'a Post<'a>>,
 
     /// Position of this post in a series or 0 if it's not in a series.
-    pub part: i8,
+    pub part: u8,
     /// Whether post is part of a series.
     pub is_partial: bool,
     /// Whether next post is part of the same series.
@@ -42,7 +42,7 @@ pub struct Post<'a> {
     /// Whether previous post is part of the same series.
     pub previous_is_part: bool,
     /// Total number of posts in the series.
-    pub total_parts: i8,
+    pub total_parts: u8,
     /// Whether this post is the first in a series.
     pub is_series_start: bool,
     /// Whether GPX track was found for the post.
