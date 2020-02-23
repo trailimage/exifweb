@@ -1,6 +1,7 @@
 use crate::Photo;
 use std::path::PathBuf;
 
+#[derive(Default)]
 pub struct Post<'a> {
     /// Unique identifer used as the URL slug. If post is part of a series then
     /// the key is compound.
@@ -17,7 +18,7 @@ pub struct Post<'a> {
     pub path: PathBuf,
     pub title: String,
     pub sub_title: String,
-    original_title: String,
+    pub original_title: String,
     pub summary: String,
     /// Whether post pictures occurred sequentially in a specific time range as
     /// opposed to, for example, a themed set of images from various times.
