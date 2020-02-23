@@ -35,9 +35,24 @@ pub struct ExifConfig {
     pub lens: Pairs,
 }
 
+/// Photo sizes to create.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SizeConfig {
+    large: i8,
+    regular: i8,
+    small: i8,
+    thumb: i8,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PhotoConfig {
+    size: SizeConfig,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlogConfig {
     pub categories: Vec<String>,
     pub what: Vec<String>,
     pub exif: ExifConfig,
+    pub photo: PhotoConfig,
 }
