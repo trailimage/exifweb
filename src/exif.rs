@@ -1,5 +1,6 @@
 use crate::Pairs;
 
+#[derive(Debug)]
 pub struct EXIF {
     pub artist: String,
     pub compensation: String,

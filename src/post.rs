@@ -1,7 +1,8 @@
 use crate::Photo;
-use std::path::PathBuf;
+use core::cmp::Ordering;
+use time::Date;
 
-#[derive(Default)]
+#[derive(Debug)]
 pub struct Post<'a> {
     /// Unique identifer used as the URL slug. If post is part of a series then
     /// the key is compound.
@@ -15,7 +16,13 @@ pub struct Post<'a> {
     /// `brother-ride/day-10` the `partKey` is `day-10`.
     pub part_key: String,
 
-    pub path: PathBuf,
+    /// When the depicted events happened
+    pub happened_on: Date,
+    /// When the post was created
+    pub created_on: Date,
+    /// When the post was last updated
+    pub updated_on: Date,
+
     pub title: String,
     pub sub_title: String,
     pub original_title: String,
@@ -40,7 +47,7 @@ pub struct Post<'a> {
     /// Whether next post is part of the same series.
     pub next_is_part: bool,
     /// Whether previous post is part of the same series.
-    pub previous_is_part: bool,
+    pub prev_is_part: bool,
     /// Total number of posts in the series.
     pub total_parts: u8,
     /// Whether this post is the first in a series.
@@ -48,3 +55,58 @@ pub struct Post<'a> {
     /// Whether GPX track was found for the post.
     pub has_track: bool,
 }
+
+impl Default for Post<'_> {
+    fn default() -> Self {
+        Post {
+            key: String::new(),
+            series_key: String::new(),
+            part_key: String::new(),
+
+            happened_on: Date::today(),
+            created_on: Date::today(),
+            updated_on: Date::today(),
+
+            title: String::new(),
+            sub_title: String::new(),
+            original_title: String::new(),
+            summary: String::new(),
+
+            chronological: true,
+            featured: false,
+            cover_photo: None,
+            photos: Vec::new(),
+
+            next: None,
+            prev: None,
+
+            part: 0,
+            total_parts: 0,
+            is_partial: false,
+            next_is_part: false,
+            prev_is_part: false,
+            is_series_start: false,
+            has_track: false,
+        }
+    }
+}
+
+impl PartialOrd for Post<'_> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.happened_on.partial_cmp(&other.happened_on)
+    }
+}
+
+impl Ord for Post<'_> {
+    fn cmp(&self, other: &Post) -> Ordering {
+        self.happened_on.cmp(&other.happened_on)
+    }
+}
+
+impl PartialEq for Post<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.key == other.key
+    }
+}
+
+impl Eq for Post<'_> {}

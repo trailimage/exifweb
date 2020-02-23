@@ -22,10 +22,7 @@ use toml;
 fn main() {
     let root = Path::new("./public/");
     let config: BlogConfig = load_config(root);
-    let mut blog = Blog {
-        posts: Vec::new(),
-        categories: Vec::new(),
-    };
+    let mut blog = Blog::default();
 
     for entry in fs::read_dir(root.join("img/")).unwrap() {
         let path: PathBuf = entry.unwrap().path();
@@ -73,6 +70,7 @@ fn load_series<'a>(path: &Path) -> Option<Vec<Post<'a>>> {
     Some(series_posts)
 }
 
+/// Create post that is part of a series.
 fn load_series_post<'a>(path: &Path, series: &SeriesConfig) -> Post<'a> {
     let config: PostConfig = load_config(&path);
     Post {
@@ -86,6 +84,7 @@ fn load_series_post<'a>(path: &Path, series: &SeriesConfig) -> Post<'a> {
     }
 }
 
+/// Create post that is not part of a series.
 fn load_post<'a>(path: &Path) -> Post<'a> {
     let config: PostConfig = load_config(&path);
     Post {
@@ -98,6 +97,7 @@ fn load_post<'a>(path: &Path) -> Post<'a> {
     }
 }
 
+/// Load configuration from given path.
 fn load_config<'de, T: Deserialize<'de>>(path: &'de Path) -> T {
     let contents = fs::read_to_string(path.join("config.toml")).unwrap();
     toml::from_str(&contents).unwrap()

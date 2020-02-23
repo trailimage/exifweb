@@ -1,9 +1,20 @@
 use crate::EXIF;
 
+#[derive(Debug)]
 pub struct Location {
     pub longitude: f32,
     pub latitude: f32,
 }
+
+impl PartialEq for Location {
+    fn eq(&self, other: &Self) -> bool {
+        self.longitude == other.longitude && self.latitude == other.latitude
+    }
+}
+
+impl Eq for Location {}
+
+#[derive(Debug)]
 pub struct Photo {
     pub name: String,
     pub exif: EXIF,
