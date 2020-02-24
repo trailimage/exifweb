@@ -24,6 +24,8 @@ fn main() {
     let root = Path::new("./public/");
     let config: BlogConfig = load_config(root);
     let mut blog = Blog::default();
+    // It is apparently tricky to have Serde automatically deserialize these
+    // to Regex instances so instead to it manually
     let matcher = Match {
         series_index: Regex::new(&config.series_index_pattern).unwrap(),
         photo_index: Regex::new(&config.photo.index_pattern).unwrap(),
@@ -53,6 +55,8 @@ fn main() {
     }
 
     println!("Found {} total posts", blog.posts.len());
+
+    blog.correlate_posts()
 }
 
 fn load_series<'a>(path: &Path, re: &Match) -> Option<Vec<Post<'a>>> {
@@ -82,16 +86,20 @@ fn load_series_post<'a>(
     re: &Match,
 ) -> Post<'a> {
     let post_config: PostConfig = load_config(&path);
+    // name of series sub-folder
     let dir = path.file_name().unwrap().to_str().unwrap();
     let caps = re.series_index.captures(dir).unwrap();
+    let part: u8 = caps[1].parse().unwrap();
 
     Post {
         title: series_config.title.clone(),
         sub_title: post_config.title,
         summary: post_config.summary,
-        part: caps[1].parse().unwrap(),
+        part,
         is_partial: true,
         total_parts: series_config.parts,
+        prev_is_part: part > 1,
+        next_is_part: part < series_config.parts,
         ..Post::default()
     }
 }
