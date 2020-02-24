@@ -1,3 +1,4 @@
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 pub type Pairs = Vec<(String, String)>;
@@ -60,10 +61,10 @@ pub struct PhotoConfig {
     /// Regex pattern to extract photo index and count from file name
     ///
     /// *Exmaple* `(\\d{3})-of-(\\d{3})\\.jpg$` for `neat_place_012-of-015.jpg`
-    index_pattern: String,
-    size: SizeConfig,
+    pub index_pattern: String,
+    pub size: SizeConfig,
     /// EXIF normalization settings
-    exif: ExifConfig,
+    pub exif: ExifConfig,
 }
 
 #[derive(Deserialize, Debug)]

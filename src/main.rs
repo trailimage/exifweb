@@ -13,8 +13,9 @@ pub use config::*;
 pub use exif::EXIF;
 pub use photo::Photo;
 pub use post::Post;
-use serde::de::DeserializeOwned;
 
+use regex::Regex;
+use serde::de::DeserializeOwned;
 use std::fs;
 use std::path::{Path, PathBuf};
 use toml;
@@ -23,6 +24,10 @@ fn main() {
     let root = Path::new("./public/");
     let config: BlogConfig = load_config(root);
     let mut blog = Blog::default();
+    let matcher = Match {
+        series_index: Regex::new(&config.series_index_pattern).unwrap(),
+        photo_index: Regex::new(&config.photo.index_pattern).unwrap(),
+    };
 
     for entry in fs::read_dir(root.join("img/")).unwrap() {
         let path: PathBuf = entry.unwrap().path();
@@ -34,23 +39,23 @@ fn main() {
         for entry in fs::read_dir(path).unwrap() {
             let path: PathBuf = entry.unwrap().path();
 
-            match load_series(&path) {
+            match load_series(&path, &matcher) {
                 Some(posts) => {
-                    println!("{} series posts", posts.len());
+                    println!("Found {} series posts", posts.len());
                     for p in posts {
                         blog.posts.push(p);
                     }
                     continue;
                 }
-                None => blog.posts.push(load_post(path.as_path())),
+                None => blog.posts.push(load_post(path.as_path(), &matcher)),
             }
         }
     }
 
-    println!("{} posts", blog.posts.len());
+    println!("Found {} total posts", blog.posts.len());
 }
 
-fn load_series<'a>(path: &Path) -> Option<Vec<Post<'a>>> {
+fn load_series<'a>(path: &Path, re: &Match) -> Option<Vec<Post<'a>>> {
     let sub_dirs: Vec<PathBuf> = fs::read_dir(&path)
         .unwrap()
         .map(|e| e.unwrap().path())
@@ -61,30 +66,38 @@ fn load_series<'a>(path: &Path) -> Option<Vec<Post<'a>>> {
         return None;
     }
 
-    let config: SeriesConfig = load_config(path);
+    let series_config: SeriesConfig = load_config(path);
     let series_posts: Vec<Post> = sub_dirs
         .iter()
-        .map(|p| load_series_post(p.as_path(), &config))
+        .map(|p| load_series_post(p.as_path(), &series_config, re))
         .collect();
 
     Some(series_posts)
 }
 
 /// Create post that is part of a series.
-fn load_series_post<'a>(path: &Path, series: &SeriesConfig) -> Post<'a> {
-    let config: PostConfig = load_config(&path);
+fn load_series_post<'a>(
+    path: &Path,
+    series_config: &SeriesConfig,
+    re: &Match,
+) -> Post<'a> {
+    let post_config: PostConfig = load_config(&path);
+    let dir = path.file_name().unwrap().to_str().unwrap();
+    let caps = re.series_index.captures(dir).unwrap();
+
     Post {
-        title: series.title.clone(),
-        sub_title: config.title,
-        summary: config.summary,
+        title: series_config.title.clone(),
+        sub_title: post_config.title,
+        summary: post_config.summary,
+        part: caps[1].parse().unwrap(),
         is_partial: true,
-        total_parts: series.parts,
+        total_parts: series_config.parts,
         ..Post::default()
     }
 }
 
 /// Create post that is not part of a series.
-fn load_post<'a>(path: &Path) -> Post<'a> {
+fn load_post<'a>(path: &Path, re: &Match) -> Post<'a> {
     let config: PostConfig = load_config(&path);
     Post {
         title: config.title,
@@ -99,9 +112,14 @@ fn load_post<'a>(path: &Path) -> Post<'a> {
 fn load_config<D: DeserializeOwned>(path: &Path) -> D {
     static FILE_NAME: &str = "config.toml";
     let content =
-        fs::read_to_string(path.join(FILE_NAME)).unwrap_or_else(|e| {
+        fs::read_to_string(path.join(FILE_NAME)).unwrap_or_else(|_e| {
             panic!("{} not found in {:?}", FILE_NAME, path.to_str())
         });
 
     toml::from_str(&content).unwrap()
+}
+
+struct Match {
+    series_index: Regex,
+    photo_index: Regex,
 }
