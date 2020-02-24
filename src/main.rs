@@ -45,11 +45,13 @@ fn main() {
                 Some(posts) => {
                     println!("Found {} series posts", posts.len());
                     for p in posts {
-                        blog.posts.push(p);
+                        blog.posts.push(Box::new(p));
                     }
                     continue;
                 }
-                None => blog.posts.push(load_post(path.as_path(), &matcher)),
+                None => blog
+                    .posts
+                    .push(Box::new(load_post(path.as_path(), &matcher))),
             }
         }
     }
