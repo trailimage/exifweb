@@ -19,11 +19,13 @@ impl Blog<'_> {
         //     }
         // }
 
+        //self.posts[0].prev = Some(&self.posts[1]);
+
         // https://stackoverflow.com/questions/40875152/reference-to-element-in-vector
         for (i, p) in self.posts.iter_mut().enumerate() {
             if i > 0 {
-                //let prev = &self.posts[i - 1];
-                p.prev = Some(&self.posts[i - 1]);
+                let prev = &self.posts[i - 1];
+                p.prev = Some(prev);
             }
         }
     }
