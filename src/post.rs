@@ -1,5 +1,6 @@
 use crate::Photo;
 use core::cmp::Ordering;
+use regex::Regex;
 use time::Date;
 
 #[derive(Debug)]
@@ -36,9 +37,9 @@ pub struct Post<'a> {
     pub photos: Vec<&'a Photo>,
 
     /// Next chronological post (newer).
-    pub next: Option<&'a Post<'a>>,
+    pub next_key: String,
     /// Previous chronological post (older).
-    pub prev: Option<&'a Post<'a>>,
+    pub prev_key: String,
 
     /// Position of this post in a series or 0 if it's not in a series.
     pub part: u8,
@@ -77,8 +78,8 @@ impl Default for Post<'_> {
             cover_photo: None,
             photos: Vec::new(),
 
-            next: None,
-            prev: None,
+            next_key: String::new(),
+            prev_key: String::new(),
 
             part: 0,
             total_parts: 0,
@@ -110,3 +111,46 @@ impl PartialEq for Post<'_> {
 }
 
 impl Eq for Post<'_> {}
+
+pub fn slugify(s: &str) -> String {
+    let re = Regex::new("([a-z])([A-Z])").unwrap();
+    let text = re.replace_all(s, "$1-$2");
+    let text = text.to_lowercase();
+
+    let re = Regex::new("[_\\s/-]+").unwrap();
+    let text = re.replace_all(&text, "-");
+
+    let text = text.replace("-&-", "-and-");
+
+    let re = Regex::new("[^\\-a-z0-9]").unwrap();
+    let text = re.replace_all(&text, "");
+
+    let re = Regex::new("-{2,}").unwrap();
+    re.replace_all(&text, "-").into_owned()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::slugify;
+    use hashbrown::HashMap;
+
+    #[test]
+    fn slugify_test() {
+        let expect: HashMap<&str, &str> = [
+            ("Wiggle and Roll", "wiggle-and-roll"),
+            ("Wiggle and    Sing", "wiggle-and-sing"),
+            ("Too---dashing", "too-dashing"),
+            ("powerful/oz", "powerful-oz"),
+            ("three o' clock", "three-o-clock"),
+            ("one_two_Three-48px", "one-two-three-48px"),
+            ("camelCase", "camel-case"),
+        ]
+        .iter()
+        .cloned()
+        .collect();
+
+        for (k, v) in expect.iter() {
+            assert_eq!(slugify(k), *v);
+        }
+    }
+}

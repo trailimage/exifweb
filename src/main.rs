@@ -12,7 +12,7 @@ pub use category::Category;
 pub use config::*;
 pub use exif::EXIF;
 pub use photo::Photo;
-pub use post::Post;
+pub use post::{slugify, Post};
 
 use regex::Regex;
 use serde::de::DeserializeOwned;
@@ -45,19 +45,18 @@ fn main() {
                 Some(posts) => {
                     println!("Found {} series posts", posts.len());
                     for p in posts {
-                        blog.posts.push(p); //Box::new(p));
+                        blog.add_post(p);
                     }
                     continue;
                 }
-                None => blog.posts.push(load_post(path.as_path(), &matcher)),
-                //.push(Box::new(load_post(path.as_path(), &matcher))),
+                None => blog.add_post(load_post(path.as_path(), &matcher)),
             }
         }
     }
 
     println!("Found {} total posts", blog.posts.len());
 
-    blog.correlate_posts()
+    //blog.correlate_posts()
 }
 
 fn load_series<'a>(path: &Path, re: &Match) -> Option<Vec<Post<'a>>> {
