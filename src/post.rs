@@ -1,7 +1,9 @@
 use crate::Photo;
 use core::cmp::Ordering;
+use lazy_static::*;
 use regex::Regex;
-use time::Date;
+use std::borrow::Cow;
+use std::time::SystemTime;
 
 #[derive(Debug)]
 pub struct Post<'a> {
@@ -18,11 +20,11 @@ pub struct Post<'a> {
     pub part_key: String,
 
     /// When the depicted events happened
-    pub happened_on: Date,
+    pub happened_on: SystemTime,
     /// When the post was created
-    pub created_on: Date,
+    pub created_on: SystemTime,
     /// When the post was last updated
-    pub updated_on: Date,
+    pub updated_on: SystemTime,
 
     pub title: String,
     pub sub_title: String,
@@ -64,9 +66,9 @@ impl Default for Post<'_> {
             series_key: String::new(),
             part_key: String::new(),
 
-            happened_on: Date::today(),
-            created_on: Date::today(),
-            updated_on: Date::today(),
+            happened_on: SystemTime::UNIX_EPOCH,
+            created_on: SystemTime::UNIX_EPOCH,
+            updated_on: SystemTime::UNIX_EPOCH,
 
             title: String::new(),
             sub_title: String::new(),
@@ -113,20 +115,18 @@ impl PartialEq for Post<'_> {
 impl Eq for Post<'_> {}
 
 pub fn slugify(s: &str) -> String {
-    let re = Regex::new("([a-z])([A-Z])").unwrap();
-    let text = re.replace_all(s, "$1-$2");
-    let text = text.to_lowercase();
+    lazy_static! {
+        static ref MIX_CASE: Regex = Regex::new(r"([a-z])([A-Z])").unwrap();
+        static ref UNDERSCORE: Regex = Regex::new(r"[_\s/-]+").unwrap();
+        static ref NON_LETTER: Regex = Regex::new(r"[^\-a-z0-9]").unwrap();
+        static ref DOUBLE_DASH: Regex = Regex::new(r"-{2,}").unwrap();
+    }
 
-    let re = Regex::new("[_\\s/-]+").unwrap();
-    let text = re.replace_all(&text, "-");
+    let mut text: String = MIX_CASE.replace_all(s, "$1-$2").to_lowercase();
+    text = UNDERSCORE.replace_all(&text, "-").replace("-&-", "-and-");
+    text = NON_LETTER.replace_all(&text, "").into_owned();
 
-    let text = text.replace("-&-", "-and-");
-
-    let re = Regex::new("[^\\-a-z0-9]").unwrap();
-    let text = re.replace_all(&text, "");
-
-    let re = Regex::new("-{2,}").unwrap();
-    re.replace_all(&text, "-").into_owned()
+    DOUBLE_DASH.replace_all(&text, "-").into_owned()
 }
 
 #[cfg(test)]

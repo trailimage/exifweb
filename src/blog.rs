@@ -1,10 +1,10 @@
 use crate::{slugify, Category, Post};
 use hashbrown::HashMap;
-use time::Date;
+use std::time::SystemTime;
 
-struct KeyTime<'b> {
-    key: &'b str,
-    time: Date,
+struct KeyTime {
+    key: String,
+    time: SystemTime,
 }
 
 #[derive(Default)]
@@ -16,8 +16,11 @@ pub struct Blog<'a> {
 impl<'a> Blog<'a> {
     pub fn add_post(&mut self, p: Post<'a>) {
         let key = slugify(&p.title);
-        // TODO: error if post is already present
-        self.posts.insert(key, p);
+
+        if let Some(_p) = self.posts.insert(key, p) {
+            // if insert returns Post then same key was already present
+            panic!("Attempt to insert duplicate post")
+        }
     }
 
     pub fn correlate_posts(&mut self) {
@@ -28,7 +31,7 @@ impl<'a> Blog<'a> {
                 .values()
                 .filter(|p| p.chronological)
                 .map(|p| KeyTime {
-                    key: &p.key,
+                    key: p.key.clone(),
                     time: p.happened_on,
                 })
         {
@@ -37,44 +40,17 @@ impl<'a> Blog<'a> {
 
         ordered.sort_by(|a, b| a.time.cmp(&b.time));
 
+        let len = ordered.len();
+
         for (k, p) in self.posts.iter_mut() {
-            let i = ordered.iter().position(|kt| kt.key == k);
-            p.next_key = ordered.get(1).unwrap().key;
+            let i = ordered.iter().position(|kt| kt.key == *k).unwrap();
+
+            if i > 0 {
+                p.prev_key = ordered.get(i - 1).unwrap().key.clone()
+            }
+            if i < len {
+                p.next_key = ordered.get(i + 1).unwrap().key.clone();
+            }
         }
     }
 }
-
-// impl Blog<'_> {
-//     pub fn correlate_posts(mut self) {
-//         self.posts.sort();
-//         let len = self.posts.len();
-//         let mut iter = self.posts.iter_mut();
-
-//         for i in 0..len {
-//             //let mut p = &self.posts[i];
-//             // if i > 0 {
-//             //     p.prev = Some(&self.posts[i - 1]);
-//             // }
-//             let p1: &mut Post = iter.nth(i).unwrap();
-//             let p2 = self.posts.get(i + 1).unwrap();
-
-//             p1.next = Some(p2);
-//         }
-
-//self.posts[0].prev = Some(&self.posts[1]);
-
-// https://stackoverflow.com/questions/40875152/reference-to-element-in-vector
-// for (i, p) in self.posts.iter_mut().enumerate() {
-//     if i > 0 {
-//         let prev = &self.posts[i - 1];
-//         p.prev = Some(prev);
-//     }
-// }
-//     }
-// }
-
-// https://www.reddit.com/r/rust/comments/7dep46/multiple_references_to_a_vectors_elements/
-// fn get_two_mut<T>(slice: &mut Vec<T>, i: usize) -> (&mut T, &mut T) {
-//     let mut iter = slice.iter_mut();
-//     (iter.nth(i).unwrap(), iter.nth(i + 1).unwrap())
-// }

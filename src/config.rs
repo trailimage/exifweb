@@ -1,5 +1,5 @@
-use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::time::SystemTime;
 
 pub type Pairs = Vec<(String, String)>;
 
@@ -33,9 +33,9 @@ pub struct PostConfig {
 pub struct PostPhotos {
     /// Date of second photo in folder (skip first since it's often a contextual
     /// shot from another time)
-    pub when: time::Date,
+    pub when: SystemTime,
     /// When folder was last processed
-    pub processed: time::Date,
+    pub processed: SystemTime,
     /// Photo tags
     pub tags: Vec<String>,
 }

@@ -1,5 +1,5 @@
 use crate::EXIF;
-use time::Date;
+use std::time::SystemTime;
 
 #[derive(Debug)]
 pub struct Location {
@@ -28,7 +28,7 @@ pub struct Photo {
     /// Whether this is the post's main photo
     pub primary: bool,
     /// When the photograph was taken per camera EXIF
-    pub date_taken: Date,
+    pub date_taken: SystemTime,
 
     /// Whether taken date is an outlier compared to other photos in the same
     /// post. Outliers may be removed from mini-maps so the maps aren't overly
