@@ -56,7 +56,7 @@ fn main() {
 
     println!("Found {} total posts", blog.posts.len());
 
-    //blog.correlate_posts()
+    blog.correlate_posts()
 }
 
 fn load_series<'a>(path: &Path, re: &Match) -> Option<Vec<Post<'a>>> {
@@ -92,6 +92,11 @@ fn load_series_post<'a>(
     let part: u8 = caps[1].parse().unwrap();
 
     Post {
+        key: format!(
+            "{}/{}",
+            slugify(&series_config.title),
+            slugify(&post_config.title)
+        ),
         title: series_config.title.clone(),
         sub_title: post_config.title,
         summary: post_config.summary,
@@ -108,6 +113,7 @@ fn load_series_post<'a>(
 fn load_post<'a>(path: &Path, re: &Match) -> Post<'a> {
     let config: PostConfig = load_config(&path);
     Post {
+        key: slugify(&config.title),
         title: config.title,
         summary: config.summary,
         ..Post::default()

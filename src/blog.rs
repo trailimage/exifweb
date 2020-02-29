@@ -1,7 +1,8 @@
-use crate::{slugify, Category, Post};
+use crate::{Category, Post};
 use hashbrown::HashMap;
 use std::time::SystemTime;
 
+/// Ephemeral struct to compute and capture chronological post order.
 struct KeyTime {
     key: String,
     time: SystemTime,
@@ -15,14 +16,13 @@ pub struct Blog<'a> {
 
 impl<'a> Blog<'a> {
     pub fn add_post(&mut self, p: Post<'a>) {
-        let key = slugify(&p.title);
-
-        if let Some(_p) = self.posts.insert(key, p) {
+        if let Some(dup) = self.posts.insert(p.key.clone(), p) {
             // if insert returns Post then same key was already present
-            panic!("Attempt to insert duplicate post")
+            panic!("Attempt to insert duplicate post {}", dup.key)
         }
     }
 
+    /// Update post `prev_key` and `next_key` based on chronological ordering.
     pub fn correlate_posts(&mut self) {
         let mut ordered: Vec<KeyTime> = Vec::new();
 
@@ -38,17 +38,19 @@ impl<'a> Blog<'a> {
             ordered.push(kt);
         }
 
+        // sort post keys oldest to newest
         ordered.sort_by(|a, b| a.time.cmp(&b.time));
 
         let len = ordered.len();
 
         for (k, p) in self.posts.iter_mut() {
+            // sorted position of post
             let i = ordered.iter().position(|kt| kt.key == *k).unwrap();
 
             if i > 0 {
                 p.prev_key = ordered.get(i - 1).unwrap().key.clone()
             }
-            if i < len {
+            if i < len - 1 {
                 p.next_key = ordered.get(i + 1).unwrap().key.clone();
             }
         }
