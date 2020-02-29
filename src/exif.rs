@@ -1,3 +1,4 @@
+use crate::ExifConfig;
 use crate::Pairs;
 
 #[derive(Debug)]
@@ -8,10 +9,24 @@ pub struct EXIF {
     pub f_number: u8,
     pub focal_length: u16,
     pub iso: u16,
+    pub camera: String,
     pub lens: String,
     pub software: String,
     /// Whether raw values have been formatted.
     pub sanitized: bool,
+}
+
+impl EXIF {
+    pub fn sanitize(&mut self, config: ExifConfig) {
+        if self.sanitized {
+            return;
+        }
+        self.software = replace_pairs(self.software.clone(), config.software);
+        self.camera = replace_pairs(self.camera.clone(), config.camera);
+        self.lens = replace_pairs(self.lens.clone(), config.lens);
+
+        self.sanitized = true;
+    }
 }
 
 fn replace_pairs(text: String, pairs: Pairs) -> String {
@@ -21,8 +36,7 @@ fn replace_pairs(text: String, pairs: Pairs) -> String {
             clean = clean.replace(&x, &y);
         }
     }
-
-    return clean;
+    clean
 }
 
 // #[cfg(test)]

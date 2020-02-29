@@ -2,7 +2,6 @@ use crate::Photo;
 use core::cmp::Ordering;
 use lazy_static::*;
 use regex::Regex;
-use std::borrow::Cow;
 use std::time::SystemTime;
 
 #[derive(Debug)]
@@ -119,14 +118,14 @@ pub fn slugify(s: &str) -> String {
         static ref MIX_CASE: Regex = Regex::new(r"([a-z])([A-Z])").unwrap();
         static ref UNDERSCORE: Regex = Regex::new(r"[_\s/-]+").unwrap();
         static ref NON_LETTER: Regex = Regex::new(r"[^\-a-z0-9]").unwrap();
-        static ref DOUBLE_DASH: Regex = Regex::new(r"-{2,}").unwrap();
+        static ref MULTI_DASH: Regex = Regex::new(r"-{2,}").unwrap();
     }
 
     let mut text: String = MIX_CASE.replace_all(s, "$1-$2").to_lowercase();
     text = UNDERSCORE.replace_all(&text, "-").replace("-&-", "-and-");
     text = NON_LETTER.replace_all(&text, "").into_owned();
 
-    DOUBLE_DASH.replace_all(&text, "-").into_owned()
+    MULTI_DASH.replace_all(&text, "-").into_owned()
 }
 
 #[cfg(test)]

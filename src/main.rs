@@ -45,6 +45,7 @@ fn main() {
                 Some(posts) => {
                     println!("Found {} series posts", posts.len());
                     for p in posts {
+                        println!("   {}", &p.key);
                         blog.add_post(p);
                     }
                     continue;
@@ -131,6 +132,10 @@ fn load_config<D: DeserializeOwned>(path: &Path) -> D {
         });
 
     toml::from_str(&content).unwrap()
+}
+
+fn load_photos(path: &Path) {
+    
 }
 
 struct Match {
