@@ -25,14 +25,36 @@ impl PartialEq for Location {
 
 impl Eq for Location {}
 
+#[derive(Debug)]
+#[repr(u8)]
+pub enum ExposureMode {
+    Undefined = 0,
+    Manual = 1,
+    ProgramAE = 2,
+    AperturePriority = 3,
+    ShutterPriority = 4,
+    Creative = 5,
+    Action = 6,
+    Portrait = 7,
+    Landscape = 8,
+    Bulb = 9,
+}
+impl Default for ExposureMode {
+    fn default() -> Self {
+        ExposureMode::Undefined
+    }
+}
+
+// https://exiftool.org/TagNames/EXIF.html
 #[derive(Debug, Default)]
 pub struct EXIF {
     pub artist: String,
     pub camera: String,
     pub compensation: String,
-    pub exposure: String,
-    pub f_number: u32,
-    pub focal_length: u32,
+    pub shutter_speed: String,
+    pub mode: ExposureMode,
+    pub aperture: f64,
+    pub focal_length: f64,
     pub iso: u32,
     pub lens: String,
     pub software: String,
@@ -41,25 +63,23 @@ pub struct EXIF {
 }
 
 impl EXIF {
-    pub fn sanitize(&mut self, config: ExifConfig) {
+    pub fn sanitize(&mut self, config: &ExifConfig) {
         if self.sanitized {
             return;
         }
-        self.software = replace_pairs(self.software.clone(), config.software);
-        self.camera = replace_pairs(self.camera.clone(), config.camera);
-        self.lens = replace_pairs(self.lens.clone(), config.lens);
-
-        // TODO: read time as SystemTime into taken_on
+        self.software = replace_pairs(self.software.clone(), &config.software);
+        self.camera = replace_pairs(self.camera.clone(), &config.camera);
+        self.lens = replace_pairs(self.lens.clone(), &config.lens);
 
         self.sanitized = true;
     }
 }
 
-fn replace_pairs(text: String, pairs: Pairs) -> String {
+fn replace_pairs(text: String, pairs: &Pairs) -> String {
     let mut clean = text;
     for (x, y) in pairs {
-        if clean.starts_with(&x) {
-            clean = clean.replace(&x, &y);
+        if clean.starts_with(x) {
+            clean = clean.replace(x, y);
         }
     }
     clean
@@ -69,6 +89,8 @@ fn replace_pairs(text: String, pairs: Pairs) -> String {
 pub struct Photo {
     /// File name of the photo
     pub name: String,
+    pub title: String,
+    pub caption: String,
     pub exif: EXIF,
     pub location: Location,
     /// One-based position of photo within post
@@ -93,6 +115,8 @@ impl Default for Photo {
     fn default() -> Self {
         Photo {
             name: String::new(),
+            title: String::new(),
+            caption: String::new(),
             exif: EXIF::default(),
             location: Location::default(),
             index: 0,

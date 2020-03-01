@@ -9,6 +9,6 @@ pub enum CategoryKind {
 
 pub struct Category<'a> {
     pub name: String,
-    pub posts: Vec<&'a Post<'a>>,
+    pub posts: Vec<&'a Post>,
     pub kind: CategoryKind,
 }

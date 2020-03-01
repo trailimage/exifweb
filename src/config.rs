@@ -27,6 +27,8 @@ pub struct PostConfig {
     pub summary: String,
     /// Categories to which the post has been assigned
     pub categories: PostCategories,
+    /// One-based index of cover photo
+    pub cover_photo_index: u8,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

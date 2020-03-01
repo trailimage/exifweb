@@ -1,3 +1,4 @@
+use crate::config::ExifConfig;
 use crate::{Category, Post};
 use chrono::{DateTime, Local};
 use hashbrown::HashMap;
@@ -10,12 +11,12 @@ struct KeyTime {
 
 #[derive(Default)]
 pub struct Blog<'a> {
-    pub posts: HashMap<String, Post<'a>>,
+    pub posts: HashMap<String, Post>,
     pub categories: Vec<Category<'a>>,
 }
 
 impl<'a> Blog<'a> {
-    pub fn add_post(&mut self, p: Post<'a>) {
+    pub fn add_post(&mut self, p: Post) {
         if let Some(dup) = self.posts.insert(p.key.clone(), p) {
             // if insert returns Post then same key was already present
             panic!("Attempt to insert duplicate post {}", dup.key)
@@ -52,6 +53,15 @@ impl<'a> Blog<'a> {
             }
             if i < len - 1 {
                 p.next_key = ordered.get(i + 1).unwrap().key.clone();
+            }
+        }
+    }
+
+    // Sanitize EXIF in all post photos.
+    pub fn sanitize_exif(&mut self, config: &ExifConfig) {
+        for (_, p) in self.posts.iter_mut() {
+            for photo in p.photos.iter_mut() {
+                photo.exif.sanitize(config);
             }
         }
     }

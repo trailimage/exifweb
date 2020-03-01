@@ -1,11 +1,17 @@
 use chrono::{DateTime, Local};
 use lazy_static::*;
 use regex::Regex;
+use std::path::PathBuf;
 use std::time::SystemTime;
 
 /// Unix epoch time (January 1, 1970)
 pub fn min_date() -> DateTime<Local> {
     DateTime::from(SystemTime::UNIX_EPOCH)
+}
+
+/// Whether path ends with an extension.
+pub fn has_ext(p: &PathBuf, ext: &str) -> bool {
+    p.file_name().unwrap().to_str().unwrap().ends_with(ext)
 }
 
 pub fn slugify(s: &str) -> String {

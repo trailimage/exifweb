@@ -10,12 +10,13 @@ pub use blog::Blog;
 pub use caption::Caption;
 pub use category::Category;
 pub use config::*;
-pub use photo::{Location, Photo, EXIF};
+pub use photo::{ExposureMode, Location, Photo, EXIF};
 pub use post::Post;
-pub use tools::{min_date, slugify};
+pub use tools::{has_ext, min_date, slugify};
 
 use chrono::{DateTime, Local, TimeZone};
-use exif::{Exif, In, Tag, Value};
+use exif::{Context, Exif, In, Tag, Value};
+use lazy_static::*;
 use regex::Regex;
 use serde::de::DeserializeOwned;
 use std::fs;
@@ -28,7 +29,7 @@ fn main() {
     let config: BlogConfig = load_config(root);
     let mut blog = Blog::default();
     // It is apparently tricky to have Serde automatically deserialize these
-    // to Regex instances so instead to it manually
+    // to Regex instances so instead do it manually
     let matcher = Match {
         series_index: Regex::new(&config.series_index_pattern).unwrap(),
         photo_index: Regex::new(&config.photo.index_pattern).unwrap(),
@@ -48,7 +49,7 @@ fn main() {
                 Some(posts) => {
                     println!("Found {} series posts", posts.len());
                     for p in posts {
-                        println!("   {}", &p.key);
+                        println!("   {} ({} photos)", &p.key, &p.photos.len());
                         blog.add_post(p);
                     }
                     continue;
@@ -60,10 +61,11 @@ fn main() {
 
     println!("Found {} total posts", blog.posts.len());
 
-    blog.correlate_posts()
+    blog.correlate_posts();
+    blog.sanitize_exif(&config.photo.exif);
 }
 
-fn load_series<'a>(path: &Path, re: &Match) -> Option<Vec<Post<'a>>> {
+fn load_series(path: &Path, re: &Match) -> Option<Vec<Post>> {
     let sub_dirs: Vec<PathBuf> = fs::read_dir(&path)
         .unwrap()
         .map(|e| e.unwrap().path())
@@ -84,11 +86,11 @@ fn load_series<'a>(path: &Path, re: &Match) -> Option<Vec<Post<'a>>> {
 }
 
 /// Create post that is part of a series.
-fn load_series_post<'a>(
+fn load_series_post(
     path: &Path,
     series_config: &SeriesConfig,
     re: &Match,
-) -> Post<'a> {
+) -> Post {
     let post_config: PostConfig = load_config(&path);
     // name of series sub-folder
     let dir = path.file_name().unwrap().to_str().unwrap();
@@ -109,19 +111,19 @@ fn load_series_post<'a>(
         total_parts: series_config.parts,
         prev_is_part: part > 1,
         next_is_part: part < series_config.parts,
-        photos: load_photos(path, re),
+        photos: load_photos(path, re, post_config.cover_photo_index),
         ..Post::default()
     }
 }
 
 /// Create post that is not part of a series.
-fn load_post<'a>(path: &Path, re: &Match) -> Post<'a> {
+fn load_post(path: &Path, re: &Match) -> Post {
     let config: PostConfig = load_config(&path);
     Post {
         key: slugify(&config.title),
         title: config.title,
         summary: config.summary,
-        photos: load_photos(path, re),
+        photos: load_photos(path, re, config.cover_photo_index),
         ..Post::default()
     }
 }
@@ -140,16 +142,16 @@ fn load_config<D: DeserializeOwned>(path: &Path) -> D {
 }
 
 /// Load information about each post photo.
-fn load_photos(path: &Path, re: &Match) -> Vec<Photo> {
+fn load_photos(path: &Path, re: &Match, cover_photo_index: u8) -> Vec<Photo> {
     fs::read_dir(&path)
         .unwrap()
         .map(|e| e.unwrap().path())
         .filter(|p| !p.is_dir() && has_ext(p, "jpg"))
-        .map(|p| load_photo(&p, re))
+        .map(|p| load_photo(&p, re, cover_photo_index))
         .collect()
 }
 
-fn load_photo(path: &Path, re: &Match) -> Photo {
+fn load_photo(path: &Path, re: &Match, cover_photo_index: u8) -> Photo {
     let file = fs::File::open(path).unwrap();
     let file_name = path.file_name().unwrap().to_str().unwrap();
     let caps = re.photo_index.captures(file_name).unwrap();
@@ -162,33 +164,64 @@ fn load_photo(path: &Path, re: &Match) -> Photo {
     let tags: Vec<String> = Vec::new();
 
     // https://docs.rs/kamadak-exif/0.5.1/exif/struct.Tag.html
+    // https://exiftool.org/TagNames/EXIF.html
     let exif_data = EXIF {
         artist: exif_text(&exif, Tag::Artist),
         camera: format!(
             "{} {}",
             exif_text(&exif, Tag::Make),
             exif_text(&exif, Tag::Model)
-        ),
-        compensation: exif_text(&exif, Tag::Model),
-        exposure: exif_text(&exif, Tag::ExposureTime),
-        f_number: exif_uint(&exif, Tag::FNumber),
-        focal_length: exif_uint(&exif, Tag::FocalLength),
-        iso: exif_uint(&exif, Tag::ISOSpeed),
+        )
+        .trim()
+        .to_owned(),
+        compensation: exif_text(&exif, Tag::ExposureBiasValue),
+        shutter_speed: exif_text(&exif, Tag::ExposureTime),
+        aperture: exif_f64(&exif, Tag::FNumber),
+        focal_length: exif_f64(&exif, Tag::FocalLength),
+        iso: exif_uint(&exif, Tag::PhotographicSensitivity),
+        mode: match exif_uint(&exif, Tag::ExposureProgram) {
+            1 => ExposureMode::Manual,
+            2 => ExposureMode::ProgramAE,
+            3 => ExposureMode::AperturePriority,
+            4 => ExposureMode::ShutterPriority,
+            5 => ExposureMode::Creative,
+            6 => ExposureMode::Action,
+            7 => ExposureMode::Portrait,
+            8 => ExposureMode::Landscape,
+            9 => ExposureMode::Bulb,
+            _ => ExposureMode::Undefined,
+        },
         lens: format!(
             "{} {}",
             exif_text(&exif, Tag::LensMake),
             exif_text(&exif, Tag::LensModel)
-        ),
+        )
+        .trim()
+        .to_owned(),
         software: exif_text(&exif, Tag::Software),
         sanitized: false,
     };
 
-    //exif_data.sanitize(
+    //println!("{:?}", exif_data);
+    println!("{}", exif_text(&exif, Tag::ImageDescription));
+
+    // for f in exif.fields() {
+    //     println!(
+    //         "  {}/{}: {}",
+    //         f.ifd_num.index(),
+    //         f.tag,
+    //         f.display_value().with_unit(&exif)
+    //     );
+    //     //println!("      {:?}", f.value);
+    // }
 
     Photo {
         name: file_name.to_owned(),
+        title: exif_text(&exif, Tag(Context::Tiff, 0x9c9b)),
+        caption: exif_text(&exif, Tag::ImageDescription),
         exif: exif_data,
         index,
+        primary: index == cover_photo_index,
         location: Location {
             longitude: exif_f64(&exif, Tag::GPSLongitude),
             latitude: exif_f64(&exif, Tag::GPSLatitude),
@@ -199,6 +232,7 @@ fn load_photo(path: &Path, re: &Match) -> Photo {
     }
 }
 
+// https://github.com/kamadak/exif-rs/blob/master/examples/reading.rs#L64
 fn exif_f64(exif: &Exif, tag: Tag) -> f64 {
     if let Some(field) = exif.get_field(tag, In::PRIMARY) {
         return match field.value {
@@ -209,6 +243,7 @@ fn exif_f64(exif: &Exif, tag: Tag) -> f64 {
     0.0
 }
 
+// https://github.com/kamadak/exif-rs/blob/master/examples/reading.rs#L56
 fn exif_uint(exif: &Exif, tag: Tag) -> u32 {
     if let Some(field) = exif.get_field(tag, In::PRIMARY) {
         if let Some(value) = field.value.get_uint(0) {
@@ -218,6 +253,7 @@ fn exif_uint(exif: &Exif, tag: Tag) -> u32 {
     0
 }
 
+// https://github.com/kamadak/exif-rs/blob/master/examples/reading.rs#L73
 fn exif_date(exif: &Exif, tag: Tag) -> DateTime<Local> {
     if let Some(field) = exif.get_field(tag, In::PRIMARY) {
         return match field.value {
@@ -241,15 +277,23 @@ fn exif_date(exif: &Exif, tag: Tag) -> DateTime<Local> {
 }
 
 fn exif_text(exif: &Exif, tag: Tag) -> String {
-    match exif.get_field(tag, In::PRIMARY) {
-        Some(f) => f.display_value().to_string(),
-        None => String::new(),
+    lazy_static! {
+        static ref QUOTES: Regex =
+            Regex::new(r#"(^\s*"\s*|\s*"\s*$)"#).unwrap();
     }
-}
 
-/// Whether path ends with an extension.
-fn has_ext(p: &PathBuf, ext: &str) -> bool {
-    p.file_name().unwrap().to_str().unwrap().ends_with(ext)
+    if let Some(field) = exif.get_field(tag, In::PRIMARY) {
+        return match field.value {
+            Value::Ascii(ref vec) if !vec.is_empty() => QUOTES
+                .replace_all(
+                    &field.display_value().with_unit(exif).to_string(),
+                    "",
+                )
+                .into_owned(),
+            _ => String::new(),
+        };
+    }
+    String::new()
 }
 
 struct Match {

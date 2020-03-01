@@ -3,7 +3,7 @@ use chrono::{DateTime, Local};
 use core::cmp::Ordering;
 
 #[derive(Debug)]
-pub struct Post<'a> {
+pub struct Post {
     /// Unique identifer used as the URL slug. If post is part of a series then
     /// the key is compound.
     ///
@@ -27,12 +27,12 @@ pub struct Post<'a> {
     pub sub_title: String,
     //pub original_title: String,
     pub summary: String,
+
     /// Whether post pictures occurred sequentially in a specific time range as
     /// opposed to, for example, a themed set of images from various times.
     pub chronological: bool,
     /// Whether post is featured in main navigation.
     pub featured: bool,
-    pub cover_photo: Option<&'a Photo>,
     pub photos: Vec<Photo>,
 
     /// Next chronological post (newer).
@@ -56,7 +56,13 @@ pub struct Post<'a> {
     pub has_track: bool,
 }
 
-impl Default for Post<'_> {
+impl Post {
+    pub fn cover_photo(&self) -> Option<&Photo> {
+        self.photos.iter().find(|p| p.primary)
+    }
+}
+
+impl Default for Post {
     fn default() -> Self {
         Post {
             key: String::new(),
@@ -74,7 +80,6 @@ impl Default for Post<'_> {
 
             chronological: true,
             featured: false,
-            cover_photo: None,
             photos: Vec::new(),
 
             next_key: String::new(),
@@ -91,22 +96,22 @@ impl Default for Post<'_> {
     }
 }
 
-impl PartialOrd for Post<'_> {
+impl PartialOrd for Post {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         self.happened_on.partial_cmp(&other.happened_on)
     }
 }
 
-impl Ord for Post<'_> {
+impl Ord for Post {
     fn cmp(&self, other: &Post) -> Ordering {
         self.happened_on.cmp(&other.happened_on)
     }
 }
 
-impl PartialEq for Post<'_> {
+impl PartialEq for Post {
     fn eq(&self, other: &Self) -> bool {
         self.key == other.key
     }
 }
 
-impl Eq for Post<'_> {}
+impl Eq for Post {}
