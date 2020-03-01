@@ -1,0 +1,219 @@
+[{
+  "image": {
+    "name": "out.json",
+    "baseName": "img_006-of-021.jpg",
+    "format": "JPEG",
+    "formatDescription": "JPEG",
+    "mimeType": "image/jpeg",
+    "class": "DirectClass",
+    "geometry": {
+      "width": 100,
+      "height": 67,
+      "x": 0,
+      "y": 0
+    },
+    "resolution": {
+      "x": 300,
+      "y": 300
+    },
+    "printSize": {
+      "x": 0.333333,
+      "y": 0.223333
+    },
+    "units": "PixelsPerInch",
+    "type": "TrueColor",
+    "baseType": "Undefined",
+    "endianess": "Undefined",
+    "colorspace": "sRGB",
+    "depth": 8,
+    "baseDepth": 8,
+    "channelDepth": {
+      "red": 8,
+      "green": 8,
+      "blue": 1
+    },
+    "pixels": 20100,
+    "imageStatistics": {
+      "Overall": {
+        "min": 0,
+        "max": 255,
+        "mean": 108.633,
+        "standardDeviation": 15617.3,
+        "kurtosis": -0.844088,
+        "skewness": 0.456376,
+        "entropy": 0.954374
+      }
+    },
+    "channelStatistics": {
+      "Red": {
+        "min": 0,
+        "max": 255,
+        "mean": 116.665,
+        "standardDeviation": 15138.4,
+        "kurtosis": -0.775094,
+        "skewness": 0.168242,
+        "entropy": 0.964608
+      },
+      "Green": {
+        "min": 1,
+        "max": 252,
+        "mean": 112.786,
+        "standardDeviation": 14963.8,
+        "kurtosis": -0.717821,
+        "skewness": 0.42032,
+        "entropy": 0.959234
+      },
+      "Blue": {
+        "min": 0,
+        "max": 249,
+        "mean": 96.4478,
+        "standardDeviation": 16749.7,
+        "kurtosis": -0.637072,
+        "skewness": 0.835648,
+        "entropy": 0.939282
+      }
+    },
+    "renderingIntent": "Perceptual",
+    "gamma": 0.454545,
+    "chromaticity": {
+      "redPrimary": {
+        "x": 0.64,
+        "y": 0.33
+      },
+      "greenPrimary": {
+        "x": 0.3,
+        "y": 0.6
+      },
+      "bluePrimary": {
+        "x": 0.15,
+        "y": 0.06
+      },
+      "whitePrimary": {
+        "x": 0.3127,
+        "y": 0.329
+      }
+    },
+    "matteColor": "#BDBDBD",
+    "backgroundColor": "#FFFFFF",
+    "borderColor": "#DFDFDF",
+    "transparentColor": "#00000000",
+    "interlace": "None",
+    "intensity": "Undefined",
+    "compose": "Over",
+    "pageGeometry": {
+      "width": 100,
+      "height": 67,
+      "x": 0,
+      "y": 0
+    },
+    "dispose": "Undefined",
+    "iterations": 0,
+    "compression": "JPEG",
+    "quality": 91,
+    "orientation": "Undefined",
+    "properties": {
+      "date:create": "2020-03-01T21:03:56+00:00",
+      "date:modify": "2020-03-01T21:04:09+00:00",
+      "exif:ApertureValue": "6/1",
+      "exif:Artist": "Jason Abbott",
+      "exif:BodySerialNumber": "2024787",
+      "exif:CFAPattern": "2, 0, 2, 0, 0, 1, 1, 2",
+      "exif:ColorSpace": "1",
+      "exif:Contrast": "0",
+      "exif:Copyright": "Â© Copyright 2020 Jason Abbott",
+      "exif:CustomRendered": "0",
+      "exif:DateTime": "2020:03:01 14:01:28",
+      "exif:DateTimeDigitized": "2008:09:20 07:48:42",
+      "exif:DateTimeOriginal": "2008:09:20 07:48:42",
+      "exif:DigitalZoomRatio": "1/1",
+      "exif:ExifOffset": "750",
+      "exif:ExifVersion": "48, 50, 51, 49",
+      "exif:ExposureBiasValue": "0/6",
+      "exif:ExposureMode": "0",
+      "exif:ExposureProgram": "3",
+      "exif:ExposureTime": "1/10",
+      "exif:FileSource": "3",
+      "exif:Flash": "0",
+      "exif:FNumber": "8/1",
+      "exif:FocalLength": "240/10",
+      "exif:FocalLengthIn35mmFilm": "24",
+      "exif:GainControl": "0",
+      "exif:GPSInfo": "1470",
+      "exif:GPSLatitude": "47/1, 18133333/10000000, 0/1",
+      "exif:GPSLatitudeRef": "N",
+      "exif:GPSLongitude": "115/1, 591066667/10000000, 0/1",
+      "exif:GPSLongitudeRef": "W",
+      "exif:GPSVersionID": "2, 2, 0, 0",
+      "exif:ImageDescription": "Joel said heâ..d always wanted to get into the Mallard Larkins areaÂ¹ so even though there didnâ..t appear to be any roads in, weâ..d shoot for a little trail on the Forest Service map. If it didnâ..t pan out, weâ..d only have to backtrack about five miles to a road that should get us to Dworshak..___.Â¹ Summit Post, â.œMallard-Larkins Pioneer Areaâ..: http://www.summitpost.org/area/range/288752/mallard-larkins-pioneer-area.html",
+      "exif:LensModel": "24.0-70.0 mm f/2.8",
+      "exif:LensSpecification": "240/10, 700/10, 28/10, 28/10",
+      "exif:LightSource": "10",
+      "exif:Make": "NIKON CORPORATION",
+      "exif:MaxApertureValue": "30/10",
+      "exif:MeteringMode": "5",
+      "exif:Model": "NIKON D3",
+      "exif:OffsetTime": "-07:00",
+      "exif:OffsetTimeDigitized": "-06:00",
+      "exif:OffsetTimeOriginal": "-06:00",
+      "exif:PhotographicSensitivity": "200",
+      "exif:Saturation": "0",
+      "exif:SceneCaptureType": "0",
+      "exif:SceneType": "1",
+      "exif:SensingMethod": "2",
+      "exif:Sharpness": "0",
+      "exif:ShutterSpeedValue": "3321928/1000000",
+      "exif:Software": "Adobe Photoshop Lightroom Classic 9.2 (Windows)",
+      "exif:SubjectDistance": "335/100",
+      "exif:SubjectDistanceRange": "0",
+      "exif:SubSecTimeDigitized": "08",
+      "exif:SubSecTimeOriginal": "08",
+      "exif:UserComment": "65, 83, 67, 73, 73, 0, 0, 0, 69, 121, 101, 32, 82, 101, 103, 97, 114, 100",
+      "exif:WhiteBalance": "1",
+      "icc:copyright": "Copyright (c) 1998 Hewlett-Packard Company",
+      "icc:description": "sRGB IEC61966-2.1",
+      "icc:manufacturer": "IEC http://www.iec.ch",
+      "icc:model": "IEC 61966-2.1 Default RGB colour space - sRGB",
+      "jpeg:colorspace": "2",
+      "jpeg:sampling-factor": "1x1,1x1,1x1",
+      "signature": "c75330ab922cb698e16dbac3d34929eec2d706240f525d7aff578a944487d939"
+    },
+    "profiles": {
+      "8bim": {
+        "length": 800
+      },
+      "exif": {
+        "length": 1590
+      },
+      "icc": {
+        "length": 3144
+      },
+      "iptc": {
+        "City[1,90]": ["0x00000000: 254700                                        -%G"],
+        "Unknown[2,0]": [null],
+        "Image Name[2,5]": ["Time to move on"],
+        "Keyword[2,25]": ["BMW R1200GS Adventure","Fire","Honda CRF 230L","Motorcycle","Mountain","Tent","Yamaha XT 250"],
+        "Created Date[2,55]": ["20080920"],
+        "Created Time[2,60]": ["074842-0600"],
+        "Unknown[2,62]": ["20080920"],
+        "Unknown[2,63]": ["074842-0600"],
+        "Byline[2,80]": ["Jason Abbott"],
+        "Province State[2,95]": ["Idaho"],
+        "Copyright String[2,116]": ["Â© Copyright 2020 Jason Abbott"],
+        "Caption[2,120]": ["Joel said heâ€™d always wanted to get into the Mallard Larkins areaÂ¹ so even though there didnâ€™t appear to be any roads in, weâ€™d shoot for a little trail on the Forest Service map. If it didnâ€™t pan out, weâ€™d only have to backtrack about five miles to a road that should get us to Dworshak."],
+        "Caption Writer[2,122]": ["Jason Abbott"],
+        "length": 718
+      },
+      "xmp": {
+        "length": 39503
+      }
+    },
+    "tainted": false,
+    "filesize": "0B",
+    "numberPixels": "6700",
+    "pixelsPerSecond": "1.11592MB",
+    "userTime": "0.000u",
+    "elapsedTime": "0:01.006",
+    "version": "C:\\Program Files\\ImageMagick-7.0.9-Q16\\\\index.html"
+  }
+}
+]

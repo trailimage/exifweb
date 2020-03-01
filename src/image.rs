@@ -58,7 +58,7 @@ pub fn exif() -> Vec<ImageInfo> {
     let output = Command::new("magick")
         .current_dir("./src/fixtures")
         .arg("convert")
-        .arg("img_003-of-016.jpg[1x1+0+0]")
+        .arg("img_006-of-021.jpg[1x1+0+0]")
         .arg("json:")
         .output()
         .unwrap();
@@ -77,7 +77,7 @@ pub fn exif() -> Vec<ImageInfo> {
 
 // magick convert br08-party-on-crater-peak_011-of-020.jpg[1x1+0+0] json:
 // magick convert img_003-of-016.jpg[1x1+0+0] json:
-// magick convert img_003-of-016.jpg -format "%[EXIF:*] %[date:*] %[IPTC:*]" info:
+// magick convert img_006-of-021.jpg -format "%[IPTC:*]" info:
 
 #[cfg(test)]
 mod tests {
