@@ -176,7 +176,7 @@ fn load_photo(path: &Path, re: &Match, cover_photo_index: u8) -> Photo {
         .to_owned(),
         compensation: exif_text(&exif, Tag::ExposureBiasValue),
         shutter_speed: exif_text(&exif, Tag::ExposureTime),
-        aperture: exif_f64(&exif, Tag::FNumber),
+        aperture: exif_text(&exif, Tag::FNumber),
         focal_length: exif_f64(&exif, Tag::FocalLength),
         iso: exif_uint(&exif, Tag::PhotographicSensitivity),
         mode: match exif_uint(&exif, Tag::ExposureProgram) {
@@ -202,8 +202,8 @@ fn load_photo(path: &Path, re: &Match, cover_photo_index: u8) -> Photo {
         sanitized: false,
     };
 
-    //println!("{:?}", exif_data);
-    println!("{}", exif_text(&exif, Tag::ImageDescription));
+    println!("{:?}", exif_data);
+    //println!("{}", exif_text(&exif, Tag::ImageDescription));
 
     // for f in exif.fields() {
     //     println!(
@@ -283,15 +283,9 @@ fn exif_text(exif: &Exif, tag: Tag) -> String {
     }
 
     if let Some(field) = exif.get_field(tag, In::PRIMARY) {
-        return match field.value {
-            Value::Ascii(ref vec) if !vec.is_empty() => QUOTES
-                .replace_all(
-                    &field.display_value().with_unit(exif).to_string(),
-                    "",
-                )
-                .into_owned(),
-            _ => String::new(),
-        };
+        return QUOTES
+            .replace_all(&field.display_value().with_unit(exif).to_string(), "")
+            .into_owned();
     }
     String::new()
 }

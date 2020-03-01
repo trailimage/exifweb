@@ -53,7 +53,7 @@ pub struct EXIF {
     pub compensation: String,
     pub shutter_speed: String,
     pub mode: ExposureMode,
-    pub aperture: f64,
+    pub aperture: String,
     pub focal_length: f64,
     pub iso: u32,
     pub lens: String,
