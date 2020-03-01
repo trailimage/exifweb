@@ -5,9 +5,10 @@ authors = ["Jason Abbott <you@example.com>"]
 edition = "2018"
 
 [dependencies]
+kamadak-exif = "0.5"
 hashbrown = "0.7"
 lazy_static = "1"
-#time = { version = "0.2.7", features = ["serde"] }
+chrono = { version = "0.4", features = ["serde"] }
 toml = "0.5"
 regex = "1"
 #photon-rs = "0.1.0"

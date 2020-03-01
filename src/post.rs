@@ -1,8 +1,8 @@
 use crate::Photo;
+use chrono::{DateTime, Utc};
 use core::cmp::Ordering;
 use lazy_static::*;
 use regex::Regex;
-use std::time::SystemTime;
 
 #[derive(Debug)]
 pub struct Post<'a> {
@@ -19,11 +19,11 @@ pub struct Post<'a> {
     pub part_key: String,
 
     /// When the depicted events happened
-    pub happened_on: SystemTime,
+    pub happened_on: DateTime<Utc>,
     /// When the post was created
-    pub created_on: SystemTime,
+    pub created_on: DateTime<Utc>,
     /// When the post was last updated
-    pub updated_on: SystemTime,
+    pub updated_on: DateTime<Utc>,
 
     pub title: String,
     pub sub_title: String,
@@ -35,7 +35,7 @@ pub struct Post<'a> {
     /// Whether post is featured in main navigation.
     pub featured: bool,
     pub cover_photo: Option<&'a Photo>,
-    pub photos: Vec<&'a Photo>,
+    pub photos: Vec<Photo>,
 
     /// Next chronological post (newer).
     pub next_key: String,
@@ -65,7 +65,7 @@ impl Default for Post<'_> {
             series_key: String::new(),
             part_key: String::new(),
 
-            happened_on: SystemTime::UNIX_EPOCH,
+            happened_on: Utc.ymd(1970, 1, 1),
             created_on: SystemTime::UNIX_EPOCH,
             updated_on: SystemTime::UNIX_EPOCH,
 

@@ -2,7 +2,6 @@ mod blog;
 mod caption;
 mod category;
 mod config;
-mod exif;
 mod photo;
 mod post;
 
@@ -10,14 +9,16 @@ pub use blog::Blog;
 pub use caption::Caption;
 pub use category::Category;
 pub use config::*;
-pub use exif::EXIF;
-pub use photo::Photo;
+pub use photo::{Location, Photo, EXIF};
 pub use post::{slugify, Post};
 
+use chrono::{DateTime, Utc};
+use exif::{Exif, In, Tag, Value};
 use regex::Regex;
 use serde::de::DeserializeOwned;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 use toml;
 
 fn main() {
@@ -106,6 +107,7 @@ fn load_series_post<'a>(
         total_parts: series_config.parts,
         prev_is_part: part > 1,
         next_is_part: part < series_config.parts,
+        photos: load_photos(path, re),
         ..Post::default()
     }
 }
@@ -117,6 +119,7 @@ fn load_post<'a>(path: &Path, re: &Match) -> Post<'a> {
         key: slugify(&config.title),
         title: config.title,
         summary: config.summary,
+        photos: load_photos(path, re),
         ..Post::default()
     }
 }
@@ -134,8 +137,109 @@ fn load_config<D: DeserializeOwned>(path: &Path) -> D {
     toml::from_str(&content).unwrap()
 }
 
-fn load_photos(path: &Path) {
-    
+/// Load information about each post photo.
+fn load_photos(path: &Path, re: &Match) -> Vec<Photo> {
+    fs::read_dir(&path)
+        .unwrap()
+        .map(|e| e.unwrap().path())
+        .filter(|p| !p.is_dir() && has_ext(p, "jpg"))
+        .map(|p| load_photo(&p, re))
+        .collect()
+}
+
+fn load_photo(path: &Path, re: &Match) -> Photo {
+    let file = fs::File::open(path).unwrap();
+    let file_name = path.file_name().unwrap().to_str().unwrap();
+    let caps = re.photo_index.captures(file_name).unwrap();
+    let index: u8 = caps[1].parse().unwrap();
+
+    let mut bufreader = std::io::BufReader::new(&file);
+    let exifreader = exif::Reader::new();
+    let exif = exifreader.read_from_container(&mut bufreader).unwrap();
+
+    let tags: Vec<String> = Vec::new();
+
+    // https://docs.rs/kamadak-exif/0.5.1/exif/struct.Tag.html
+    let exif_data = EXIF {
+        artist: exif_text(&exif, Tag::Artist),
+        camera: format!(
+            "{} {}",
+            exif_text(&exif, Tag::Make),
+            exif_text(&exif, Tag::Model)
+        ),
+        compensation: exif_text(&exif, Tag::Model),
+        exposure: exif_text(&exif, Tag::ExposureTime),
+        f_number: exif_uint(&exif, Tag::FNumber),
+        focal_length: exif_uint(&exif, Tag::FocalLength),
+        iso: exif_uint(&exif, Tag::ISOSpeed),
+        lens: format!(
+            "{} {}",
+            exif_text(&exif, Tag::LensMake),
+            exif_text(&exif, Tag::LensModel)
+        ),
+        software: exif_text(&exif, Tag::Software),
+        sanitized: false,
+    };
+
+    //exif_data.sanitize(
+
+    Photo {
+        name: file_name.to_owned(),
+        exif: exif_data,
+        index,
+        location: Location {
+            longitude: exif_f64(&exif, Tag::GPSLongitude),
+            latitude: exif_f64(&exif, Tag::GPSLatitude),
+        },
+        tags,
+        date_taken: exif_date(&exif, Tag::DateTimeOriginal),
+        ..Photo::default()
+    }
+}
+
+fn exif_f64(exif: &Exif, tag: Tag) -> f64 {
+    if let Some(field) = exif.get_field(tag, In::PRIMARY) {
+        return match field.value {
+            Value::Rational(ref vec) if !vec.is_empty() => vec[0].to_f64(),
+            _ => 0.0,
+        };
+    }
+    0.0
+}
+
+fn exif_uint(exif: &Exif, tag: Tag) -> u16 {
+    if let Some(field) = exif.get_field(tag, In::PRIMARY) {
+        if let Some(value) = field.value.get_uint(0) {
+            value;
+        }
+    }
+    0
+}
+
+fn exif_date(exif: &Exif, tag: Tag) -> DateTime<Utc> {
+    if let Some(field) = exif.get_field(tag, In::PRIMARY) {
+        match field.value {
+            Value::Ascii(ref vec) if !vec.is_empty() => {
+                if let Ok(datetime) = DateTime::from_ascii(&vec[0]) {
+                    datetime
+                }
+            }
+            _ => SystemTime::UNIX_EPOCH,
+        }
+    }
+    SystemTime::UNIX_EPOCH
+}
+
+fn exif_text(exif: &Exif, tag: Tag) -> String {
+    match exif.get_field(tag, In::PRIMARY) {
+        Some(f) => f.display_value().to_string(),
+        None => String::new(),
+    }
+}
+
+/// Whether path ends with an extension.
+fn has_ext(p: &PathBuf, ext: &str) -> bool {
+    p.file_name().unwrap().to_str().unwrap().ends_with(ext)
 }
 
 struct Match {
