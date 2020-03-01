@@ -2,6 +2,7 @@ mod blog;
 mod caption;
 mod category;
 mod config;
+mod image;
 mod photo;
 mod post;
 mod tools;
