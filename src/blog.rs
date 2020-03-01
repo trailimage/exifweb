@@ -1,11 +1,11 @@
 use crate::{Category, Post};
+use chrono::{DateTime, Local};
 use hashbrown::HashMap;
-use std::time::SystemTime;
 
 /// Ephemeral struct to compute and capture chronological post order.
 struct KeyTime {
     key: String,
-    time: SystemTime,
+    time: DateTime<Local>,
 }
 
 #[derive(Default)]

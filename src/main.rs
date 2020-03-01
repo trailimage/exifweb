@@ -4,21 +4,23 @@ mod category;
 mod config;
 mod photo;
 mod post;
+mod tools;
 
 pub use blog::Blog;
 pub use caption::Caption;
 pub use category::Category;
 pub use config::*;
 pub use photo::{Location, Photo, EXIF};
-pub use post::{slugify, Post};
+pub use post::Post;
+pub use tools::{min_date, slugify};
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local, TimeZone};
 use exif::{Exif, In, Tag, Value};
 use regex::Regex;
 use serde::de::DeserializeOwned;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::time::SystemTime;
+
 use toml;
 
 fn main() {
@@ -207,27 +209,35 @@ fn exif_f64(exif: &Exif, tag: Tag) -> f64 {
     0.0
 }
 
-fn exif_uint(exif: &Exif, tag: Tag) -> u16 {
+fn exif_uint(exif: &Exif, tag: Tag) -> u32 {
     if let Some(field) = exif.get_field(tag, In::PRIMARY) {
         if let Some(value) = field.value.get_uint(0) {
-            value;
+            return value;
         }
     }
     0
 }
 
-fn exif_date(exif: &Exif, tag: Tag) -> DateTime<Utc> {
+fn exif_date(exif: &Exif, tag: Tag) -> DateTime<Local> {
     if let Some(field) = exif.get_field(tag, In::PRIMARY) {
-        match field.value {
+        return match field.value {
             Value::Ascii(ref vec) if !vec.is_empty() => {
-                if let Ok(datetime) = DateTime::from_ascii(&vec[0]) {
-                    datetime
+                if let Ok(dt) = exif::DateTime::from_ascii(&vec[0]) {
+                    Local
+                        .ymd(dt.year as i32, dt.month as u32, dt.day as u32)
+                        .and_hms(
+                            dt.hour as u32,
+                            dt.minute as u32,
+                            dt.second as u32,
+                        )
+                } else {
+                    min_date()
                 }
             }
-            _ => SystemTime::UNIX_EPOCH,
-        }
+            _ => min_date(),
+        };
     }
-    SystemTime::UNIX_EPOCH
+    min_date()
 }
 
 fn exif_text(exif: &Exif, tag: Tag) -> String {

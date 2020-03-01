@@ -1,6 +1,5 @@
-use crate::ExifConfig;
-use crate::Pairs;
-use std::time::SystemTime;
+use crate::{min_date, ExifConfig, Pairs};
+use chrono::{DateTime, Local};
 
 /// Latitude and longitude in degrees.
 #[derive(Debug, Default)]
@@ -32,9 +31,9 @@ pub struct EXIF {
     pub camera: String,
     pub compensation: String,
     pub exposure: String,
-    pub f_number: u16,
-    pub focal_length: u16,
-    pub iso: u16,
+    pub f_number: u32,
+    pub focal_length: u32,
+    pub iso: u32,
     pub lens: String,
     pub software: String,
     /// Whether raw values have been formatted.
@@ -79,7 +78,7 @@ pub struct Photo {
     /// Whether this is the post's main photo
     pub primary: bool,
     /// When the photograph was taken per camera EXIF
-    pub date_taken: SystemTime,
+    pub date_taken: DateTime<Local>,
 
     /// Whether taken date is an outlier compared to other photos in the same
     /// post. Outliers may be removed from mini-maps so the maps aren't overly
@@ -99,7 +98,7 @@ impl Default for Photo {
             index: 0,
             tags: Vec::new(),
             primary: false,
-            date_taken: SystemTime::UNIX_EPOCH,
+            date_taken: min_date(),
             outlier_date: false,
         }
     }

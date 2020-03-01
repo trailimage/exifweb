@@ -1,8 +1,6 @@
-use crate::Photo;
-use chrono::{DateTime, Utc};
+use crate::{min_date, Photo};
+use chrono::{DateTime, Local};
 use core::cmp::Ordering;
-use lazy_static::*;
-use regex::Regex;
 
 #[derive(Debug)]
 pub struct Post<'a> {
@@ -19,11 +17,11 @@ pub struct Post<'a> {
     pub part_key: String,
 
     /// When the depicted events happened
-    pub happened_on: DateTime<Utc>,
+    pub happened_on: DateTime<Local>,
     /// When the post was created
-    pub created_on: DateTime<Utc>,
+    pub created_on: DateTime<Local>,
     /// When the post was last updated
-    pub updated_on: DateTime<Utc>,
+    pub updated_on: DateTime<Local>,
 
     pub title: String,
     pub sub_title: String,
@@ -65,9 +63,9 @@ impl Default for Post<'_> {
             series_key: String::new(),
             part_key: String::new(),
 
-            happened_on: Utc.ymd(1970, 1, 1),
-            created_on: SystemTime::UNIX_EPOCH,
-            updated_on: SystemTime::UNIX_EPOCH,
+            happened_on: min_date(),
+            created_on: min_date(),
+            updated_on: min_date(),
 
             title: String::new(),
             sub_title: String::new(),
@@ -112,44 +110,3 @@ impl PartialEq for Post<'_> {
 }
 
 impl Eq for Post<'_> {}
-
-pub fn slugify(s: &str) -> String {
-    lazy_static! {
-        static ref MIX_CASE: Regex = Regex::new(r"([a-z])([A-Z])").unwrap();
-        static ref UNDERSCORE: Regex = Regex::new(r"[_\s/-]+").unwrap();
-        static ref NON_LETTER: Regex = Regex::new(r"[^\-a-z0-9]").unwrap();
-        static ref MULTI_DASH: Regex = Regex::new(r"-{2,}").unwrap();
-    }
-
-    let mut text: String = MIX_CASE.replace_all(s, "$1-$2").to_lowercase();
-    text = UNDERSCORE.replace_all(&text, "-").replace("-&-", "-and-");
-    text = NON_LETTER.replace_all(&text, "").into_owned();
-
-    MULTI_DASH.replace_all(&text, "-").into_owned()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::slugify;
-    use hashbrown::HashMap;
-
-    #[test]
-    fn slugify_test() {
-        let expect: HashMap<&str, &str> = [
-            ("Wiggle and Roll", "wiggle-and-roll"),
-            ("Wiggle and    Sing", "wiggle-and-sing"),
-            ("Too---dashing", "too-dashing"),
-            ("powerful/oz", "powerful-oz"),
-            ("three o' clock", "three-o-clock"),
-            ("one_two_Three-48px", "one-two-three-48px"),
-            ("camelCase", "camel-case"),
-        ]
-        .iter()
-        .cloned()
-        .collect();
-
-        for (k, v) in expect.iter() {
-            assert_eq!(slugify(k), *v);
-        }
-    }
-}
