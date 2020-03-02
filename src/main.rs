@@ -6,6 +6,7 @@ mod image;
 mod photo;
 mod post;
 mod tools;
+mod xmp;
 
 pub use blog::Blog;
 pub use caption::Caption;
@@ -203,8 +204,8 @@ fn load_photo(path: &Path, re: &Match, cover_photo_index: u8) -> Photo {
         sanitized: false,
     };
 
-    println!("{:?}", exif_data);
-    //println!("{}", exif_text(&exif, Tag::ImageDescription));
+    //println!("{:?}", exif_data);
+    println!("{}", exif_text(&exif, Tag::ImageDescription));
 
     // for f in exif.fields() {
     //     println!(
