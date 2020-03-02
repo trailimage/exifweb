@@ -7,8 +7,8 @@
     "mimeType": "image/jpeg",
     "class": "DirectClass",
     "geometry": {
-      "width": 100,
-      "height": 67,
+      "width": 1,
+      "height": 1,
       "x": 0,
       "y": 0
     },
@@ -17,11 +17,11 @@
       "y": 300
     },
     "printSize": {
-      "x": 0.333333,
-      "y": 0.223333
+      "x": 0.00333333,
+      "y": 0.00333333
     },
     "units": "PixelsPerInch",
-    "type": "TrueColor",
+    "type": "Grayscale",
     "baseType": "Undefined",
     "endianess": "Undefined",
     "colorspace": "sRGB",
@@ -32,45 +32,45 @@
       "green": 8,
       "blue": 1
     },
-    "pixels": 20100,
+    "pixels": 3,
     "imageStatistics": {
       "Overall": {
-        "min": 0,
-        "max": 255,
-        "mean": 108.633,
-        "standardDeviation": 15617.3,
-        "kurtosis": -0.844088,
-        "skewness": 0.456376,
-        "entropy": 0.954374
+        "min": 230,
+        "max": 230,
+        "mean": 230,
+        "standardDeviation": 0,
+        "kurtosis": -3,
+        "skewness": 0,
+        "entropy": 0
       }
     },
     "channelStatistics": {
       "Red": {
-        "min": 0,
-        "max": 255,
-        "mean": 116.665,
-        "standardDeviation": 15138.4,
-        "kurtosis": -0.775094,
-        "skewness": 0.168242,
-        "entropy": 0.964608
+        "min": 230,
+        "max": 230,
+        "mean": 230,
+        "standardDeviation": 0,
+        "kurtosis": 4.096e+051,
+        "skewness": 0,
+        "entropy": 0
       },
       "Green": {
-        "min": 1,
-        "max": 252,
-        "mean": 112.786,
-        "standardDeviation": 14963.8,
-        "kurtosis": -0.717821,
-        "skewness": 0.42032,
-        "entropy": 0.959234
+        "min": 230,
+        "max": 230,
+        "mean": 230,
+        "standardDeviation": 0,
+        "kurtosis": 4.096e+051,
+        "skewness": 0,
+        "entropy": 0
       },
       "Blue": {
-        "min": 0,
-        "max": 249,
-        "mean": 96.4478,
-        "standardDeviation": 16749.7,
-        "kurtosis": -0.637072,
-        "skewness": 0.835648,
-        "entropy": 0.939282
+        "min": 230,
+        "max": 230,
+        "mean": 230,
+        "standardDeviation": 0,
+        "kurtosis": 4.096e+051,
+        "skewness": 0,
+        "entropy": 0
       }
     },
     "renderingIntent": "Perceptual",
@@ -112,8 +112,8 @@
     "quality": 91,
     "orientation": "Undefined",
     "properties": {
-      "date:create": "2020-03-01T21:03:56+00:00",
-      "date:modify": "2020-03-01T21:04:09+00:00",
+      "date:create": "2020-03-02T01:25:37+00:00",
+      "date:modify": "2020-03-02T01:25:37+00:00",
       "exif:ApertureValue": "6/1",
       "exif:Artist": "Jason Abbott",
       "exif:BodySerialNumber": "2024787",
@@ -175,7 +175,7 @@
       "icc:model": "IEC 61966-2.1 Default RGB colour space - sRGB",
       "jpeg:colorspace": "2",
       "jpeg:sampling-factor": "1x1,1x1,1x1",
-      "signature": "c75330ab922cb698e16dbac3d34929eec2d706240f525d7aff578a944487d939"
+      "signature": "699e2b6c215d9b925e18c0c5bb9ce5c919db73d5663ef8419db8869ece055946"
     },
     "profiles": {
       "8bim": {
@@ -207,12 +207,12 @@
         "length": 39503
       }
     },
-    "tainted": false,
+    "tainted": true,
     "filesize": "0B",
-    "numberPixels": "6700",
-    "pixelsPerSecond": "1.11592MB",
-    "userTime": "0.000u",
-    "elapsedTime": "0:01.006",
+    "numberPixels": "1",
+    "pixelsPerSecond": "472B",
+    "userTime": "0.016u",
+    "elapsedTime": "0:01.002",
     "version": "C:\\Program Files\\ImageMagick-7.0.9-Q16\\\\index.html"
   }
 }

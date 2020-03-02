@@ -76,8 +76,9 @@ pub fn exif() -> Vec<ImageInfo> {
 // https://imagemagick.org/script/convert.php
 
 // magick convert br08-party-on-crater-peak_011-of-020.jpg[1x1+0+0] json:
-// magick convert img_003-of-016.jpg[1x1+0+0] json:
+// magick convert img_006-of-021.jpg[1x1+0+0] json:out.json
 // magick convert img_006-of-021.jpg -format "%[IPTC:*]" info:
+// magick convert -ping img_006-of-021.jpg xmp:
 
 #[cfg(test)]
 mod tests {
