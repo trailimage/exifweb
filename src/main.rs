@@ -15,6 +15,7 @@ pub use config::*;
 pub use photo::{ExposureMode, Location, Photo, EXIF};
 pub use post::Post;
 pub use tools::{has_ext, min_date, slugify};
+pub use xmp::*;
 
 use chrono::{DateTime, Local, TimeZone};
 use exif::{Context, Exif, In, Tag, Value};

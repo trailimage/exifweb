@@ -1,8 +1,10 @@
 use crate::{min_date, Photo};
 use chrono::{DateTime, Local};
 use core::cmp::Ordering;
+use yarte::Template;
 
-#[derive(Debug)]
+#[derive(Debug, Template)]
+#[template(path = "post.html")]
 pub struct Post {
     /// Unique identifer used as the URL slug. If post is part of a series then
     /// the key is compound.

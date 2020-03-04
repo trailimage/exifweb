@@ -11,7 +11,9 @@
         // Show error when no Cargo.toml was found
         "notifications.cargo-toml-not-found": true
     },
-    "rust.clippy_preference": "on",
-    "rust.racer_completion": false,
-   "rust-analyzer.highlightingOn": true
+    "rust-analyzer.highlightingOn": true,
+    "files.associations": {
+        "**/templates/*.html": "handlebars",
+        "**/templates/*": "handlebars",
+    },
 }

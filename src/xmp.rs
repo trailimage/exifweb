@@ -3,13 +3,13 @@ use serde::Deserialize;
 #[derive(Deserialize, Debug, PartialEq)]
 pub struct Item {
     #[serde(rename = "li")]
-    value: String,
+    pub value: String,
 }
 
 #[derive(Deserialize, Debug, PartialEq)]
 pub struct Items {
     #[serde(rename = "li")]
-    value: Vec<String>,
+    pub value: Vec<String>,
 }
 
 /// Alternative container
@@ -17,31 +17,37 @@ pub struct Items {
 #[derive(Deserialize, Debug, PartialEq)]
 pub struct Alt {
     #[serde(rename = "Alt")]
-    item: Item,
+    pub item: Item,
 }
 #[derive(Deserialize, Debug, PartialEq)]
 pub struct List {
     #[serde(rename = "Bag")]
-    items: Items,
+    pub items: Items,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Description {
     #[serde(rename = "UsageTerms")]
-    usage_terms: Alt,
+    pub usage_terms: Alt,
 
-    title: Alt,
-    rights: Alt,
-    description: Alt,
+    pub title: Alt,
+    pub rights: Alt,
+    pub description: Alt,
 
     #[serde(rename = "subject")]
-    tags: List,
+    pub tags: List,
 }
 
 #[derive(Deserialize, Debug)]
-pub struct XMP {
+pub struct XmpRDF {
     #[serde(rename = "Description")]
-    description: Description,
+    pub description: Description,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct XmpMeta {
+    #[serde(rename = "RDF")]
+    pub rdf: XmpRDF,
 }
 
 #[cfg(test)]

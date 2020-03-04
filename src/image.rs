@@ -1,7 +1,9 @@
+use crate::XmpMeta;
 use encoding::all::*;
 use encoding::{DecoderTrap, Encoding};
 use serde::Deserialize;
 use serde_json;
+use serde_xml_rs;
 use std::process::Command;
 
 #[derive(Deserialize, Debug)]
@@ -67,9 +69,25 @@ pub fn exif() -> Vec<ImageInfo> {
         .decode(&output.stdout[..], DecoderTrap::Ignore)
         .unwrap();
 
-    println!("{}", text);
+    //println!("{}", text);
 
     serde_json::from_str(&text).unwrap()
+}
+
+pub fn xmp() -> XmpMeta {
+    let output = Command::new("magick")
+        .current_dir("./src/fixtures")
+        .arg("convert")
+        .arg("img_006-of-021.jpg")
+        .arg("xmp:")
+        .output()
+        .unwrap();
+
+    let text = String::from_utf8(output.stdout).unwrap();
+
+    //println!("{}", text);
+
+    serde_xml_rs::from_str(&text).unwrap()
 }
 
 // convert image.jpg[1x1+0+0] json:
@@ -82,12 +100,19 @@ pub fn exif() -> Vec<ImageInfo> {
 
 #[cfg(test)]
 mod tests {
-    use super::exif;
+    use super::{exif, xmp};
+    use crate::XmpMeta;
 
     #[test]
     fn exif_test() {
         let got = exif();
-        //println!("{:?}", got);
         assert_eq!(got.len(), 1);
+    }
+
+    #[test]
+    fn xmp_test() {
+        let got: XmpMeta = xmp();
+        println!("{}", got.rdf.description.description.item.value);
+        assert_eq!(got.rdf.description.title.item.value, "Time to move on");
     }
 }
