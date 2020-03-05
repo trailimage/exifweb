@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb#">
+    {{> head-meta}} {{> head-files}} {{{block "html-head"}}}
+    {{#unless scrollNav}}
+    <style type="text/css">
+        #bug,
+        #links,
+        #category-menu {
+            position: fixed;
+        }
+    </style>
+    {{/unless}}
+    <script type="text/javascript">
+        { { !features determine which scripts to load } }
+        var pageFeatures = {
+            facebook: {{ #if useFacebook }}true{ {else } } false{
+                {
+                    /if}},
+                    timestamp: { { config.timestamp } }
+                };
+    </script>
+</head>
+
+<body>
+    <header class="page content">
+        <!--googleoff: index-->
+        <nav id="mobile-menu"></nav>
+        <!--googleon: index-->
+        <div id="top-bar">
+            <h1>{{title}}</h1>
+            {{#if subtitle}}
+            <h4>{{subtitle}}</h4>{{/if}}
+            <div id="mobile-menu-button">{{{icon "menu"}}}</div>
+            {{{block "header"}}}
+        </div>
+    </header>
+    {{> side-menu}} {{{body}}} {{> footer}}
+</body>
+
+</html>

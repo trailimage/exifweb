@@ -85,8 +85,6 @@ pub fn xmp() -> XmpMeta {
 
     let text = String::from_utf8(output.stdout).unwrap();
 
-    //println!("{}", text);
-
     serde_xml_rs::from_str(&text).unwrap()
 }
 
