@@ -1,9 +1,16 @@
 # https://github.com/sunng87/handlebars-rust
 
-series_index_pattern = "^(\\d) - "
+series_index_pattern = "^(\\d+)\\."
+# source to target slug
+redirects = [
+   ["brother-rider-2013-a-night-in-pierce", "brother-ride-2013"],
+   ["backroads-to-college", "panhandle-past-and-future"],
+   ["owyhee-snow-and-sands-uplands", "owyhee-snow-and-sand"],
+   ["lunch-at-trinity-lookout", "trinity-lookout-lunch"]
+]
 
 [photo]
-   index_pattern = "_(\\d{3})-of-(\\d{3})\\.jpg$"
+index_pattern = "_(\\d{3})-of-(\\d{3})\\.jpg$"
 
    [photo.size]
    large = 4096
@@ -12,6 +19,7 @@ series_index_pattern = "^(\\d) - "
    thumb = 256
 
    [photo.exif]
+   # source to target text replacements
    camera = [
       ["NIKON", "Nikon"],
       ["ILCE-7R", "Sony α7ʀ"],
@@ -50,3 +58,4 @@ series_index_pattern = "^(\\d) - "
       ['18.0-200.0 mm f/3.5-5.6', 'Nikkor 18–200mm ƒ3.5–5.6G ED VR'],
       ['Voigtlander Heliar 15mm', 'Voigtländer Heliar 15mm ƒ4.5 III']
    ]
+

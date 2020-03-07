@@ -1,9 +1,8 @@
-use serde::{Deserialize, Serialize};
-use std::error;
-use std::fmt;
-use std::time::SystemTime;
+//! TOML configuration models
 
-pub type Pairs = Vec<(String, String)>;
+use crate::Pairs;
+use serde::{Deserialize, Serialize};
+use std::time::SystemTime;
 
 /// Categories to which the post has been assigned.
 #[derive(Deserialize, Debug)]
@@ -31,6 +30,8 @@ pub struct PostConfig {
     pub categories: PostCategories,
     /// One-based index of cover photo
     pub cover_photo_index: u8,
+
+    pub youtube_id: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -75,24 +76,11 @@ pub struct PhotoConfig {
 pub struct BlogConfig {
     /// Regex pattern to extract series part index from folder name
     ///
-    /// *Example* `^(\\d) - ` for `3 - Cold Ride Home`
+    /// *Examples*
+    ///  - `^(\d) - ` for `3 - Cold Ride Home`
+    ///  - `^(\d)\.` for `3.cold-ride-home`
     pub series_index_pattern: String,
+    /// Redirect source slug to target
+    pub redirects: Option<Pairs>,
     pub photo: PhotoConfig,
-}
-
-#[derive(Debug, Clone)]
-pub struct ConfigError;
-
-impl fmt::Display for ConfigError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "invalid first item to double")
-    }
-}
-
-// This is important for other errors to wrap this one.
-impl error::Error for ConfigError {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        // Generic error, underlying cause isn't tracked.
-        None
-    }
 }

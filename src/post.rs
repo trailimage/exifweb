@@ -9,13 +9,14 @@ pub struct Post {
     /// Unique identifer used as the URL slug. If post is part of a series then
     /// the key is compound.
     ///
-    /// *example* `brother-ride/day-10`
+    /// *example* `brother-ride/2.trying-to-survive`
     pub key: String,
     /// Portion of key that is common among series members. For example, with
-    /// `brother-ride/day-10` the `seriesKey` is `brother-ride`.
+    /// `brother-ride/2.trying-to-survive` the `seriesKey` is `brother-ride`.
     pub series_key: String,
     /// Portion of key that is unique among series members. For example, with
-    /// `brother-ride/day-10` the `partKey` is `day-10`.
+    /// `brother-ride/2.trying-to-survive` the `partKey` is
+    /// `2.trying-to-survive`.
     pub part_key: String,
 
     /// When the depicted events happened
@@ -25,7 +26,11 @@ pub struct Post {
     /// When the post was last updated
     pub updated_on: DateTime<Local>,
 
+    /// Title of the post. For series, this will be the series title and the
+    /// configured post title will become the `sub_title`.
     pub title: String,
+    /// Subtitle of the post. For series, this will be the title the post was
+    /// configured with while the post's `title` will be series title.
     pub sub_title: String,
     //pub original_title: String,
     pub summary: String,
@@ -42,7 +47,7 @@ pub struct Post {
     /// Previous chronological post (older).
     pub prev_key: String,
 
-    /// Position of this post in a series or 0 if it's not in a series.
+    /// One-based position of this post in a series or 0 if it's not in a series.
     pub part: u8,
     /// Whether post is part of a series.
     pub is_partial: bool,
