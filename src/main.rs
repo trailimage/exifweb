@@ -14,17 +14,22 @@ pub use category::Category;
 pub use config::*;
 pub use photo::{Camera, ExposureMode, Location, Photo};
 pub use post::Post;
-pub use tools::{has_ext, min_date, os_text, replace_pairs, slugify, Pairs};
+pub use tools::{
+    has_ext, min_date, path_name, pos_from_path, replace_pairs, slugify, tab,
+    LoadError, Pairs,
+};
 pub use xmp::*;
 
 use chrono::{DateTime, Local, TimeZone};
+use colored::*;
 use exif::{Context, Exif, In, Tag, Value};
 use lazy_static::*;
 use regex::Regex;
 use serde::de::DeserializeOwned;
-use std::path::{Path, PathBuf};
-use std::{error, fmt, fs};
-
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 use toml;
 
 static CONFIG_FILE: &str = "config.toml";
@@ -32,48 +37,37 @@ static CONFIG_FILE: &str = "config.toml";
 /// Patterns to extract position information from the names of photos and post
 /// folders in a series
 struct Match {
+    // pattern to extract one-based index from series path name
     series_index: Regex,
+    // pattern to extract one-based index from photo file name
     photo_index: Regex,
-}
-
-// https://doc.rust-lang.org/rust-by-example/error/multiple_error_types/define_error_type.html
-#[derive(Debug, Clone)]
-pub struct LoadError;
-
-impl fmt::Display for LoadError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "invalid first item to double")
-    }
-}
-
-// This is important for other errors to wrap this one.
-impl error::Error for LoadError {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        // Generic error, underlying cause isn't tracked.
-        None
-    }
 }
 
 fn main() {
     // GitHub pages feature requires root at / or /docs
     let root = Path::new("./docs/");
     let config = match load_config::<BlogConfig>(root) {
-        Ok(config) => config,
-        Err(e) => {
-            println!("Missing root configuration file");
+        Some(config) => config,
+        _ => {
+            println!("{}", "Missing root configuration file".red());
             return;
         }
     };
 
     let entries = match fs::read_dir(root) {
         Ok(entries) => entries,
-        Err(e) => {
-            println!("Unable to read root directory {:?}", e);
+        _ => {
+            println!(
+                "{} {}",
+                "Failed to open root directory".red(),
+                path_name(root).red()
+            );
             return;
         }
     };
 
     let mut blog = Blog::default();
+
     // It is apparently tricky to have Serde automatically deserialize these
     // to Regex instances so instead do it manually
     let matcher = Match {
@@ -81,7 +75,7 @@ fn main() {
         photo_index: Regex::new(&config.photo.index_pattern).unwrap(),
     };
 
-    // iterate over every file or subdirectory
+    // iterate over every file or subdirectory within root
     for entry in entries {
         let path: PathBuf = entry.unwrap().path();
 
@@ -90,39 +84,35 @@ fn main() {
             continue;
         }
 
-        let sub_entries = match (fs::read_dir(path)) {
-            Ok(entries) => entries,
-            Err(e) => {
-                // log error and loop to next path entry
-                println!("Unable to read subdirectory {:?}", e);
-                continue;
-            }
-        };
+        println!(
+            "{} {}",
+            "Found root directory".bold(),
+            path_name(&path).bold()
+        );
 
-        for entry in sub_entries {
-            let path: PathBuf = entry.unwrap().path();
-
-            if let Some(posts) = load_series(&path, &matcher) {
+        if let Some(posts) = load_series(&path, &matcher) {
+            println!(
+                "{:tab$}Found {} series posts",
+                "",
+                posts.len(),
+                tab = tab(1)
+            );
+            for p in posts {
                 println!(
-                    "Found {} series posts in {}",
-                    posts.len(),
-                    os_text(path.file_name())
+                    "{:tab$}{} ({} photos)",
+                    "",
+                    &p.key,
+                    &p.photos.len(),
+                    tab = tab(2)
                 );
-                for p in posts {
-                    println!("   {} ({} photos)", &p.key, &p.photos.len());
-                    blog.add_post(p);
-                }
-                continue;
+                blog.add_post(p);
             }
+            // skip to next path entry if series was found
+            continue;
+        }
 
-            match load_post(path.as_path(), &matcher) {
-                Ok(post) => blog.add_post(post),
-                Err(e) => println!("{}", e),
-            }
-
-            // if let Ok(post) = load_post(path.as_path(), &matcher) {
-            //     blog.add_post(post)
-            // }
+        if let Some(post) = load_post(path.as_path(), &matcher) {
+            blog.add_post(post);
         }
     }
 
@@ -132,32 +122,51 @@ fn main() {
     blog.sanitize_exif(&config.photo.exif);
 }
 
-/// Attempt to load path contents as if it contains a post series.
+/// Attempt to load path entries as if they constitute a post series. `None` is
+/// returned if there are no subdirectories or they don't contain valid posts.
 fn load_series(path: &Path, re: &Match) -> Option<Vec<Post>> {
-    let sub_dirs: Vec<PathBuf> = fs::read_dir(&path)
-        .unwrap()
-        .map(|e| e.unwrap().path())
-        .filter(|p| p.is_dir())
-        .collect();
+    let sub_dirs: Vec<PathBuf> = match fs::read_dir(&path) {
+        Ok(entries) => entries
+            .map(|e| e.unwrap().path())
+            .filter(|p| p.is_dir())
+            .collect(),
+        Err(e) => {
+            println!(
+                "{:tab$}{} {}",
+                "",
+                "Failed to open subdirectory".red(),
+                path_name(&path).red().bold(),
+                tab = tab(1)
+            );
+            return None;
+        }
+    };
 
     if sub_dirs.is_empty() {
+        // not a series if there are no subdirectories
         return None;
     }
 
-    if let Ok(config) = load_config::<SeriesConfig>(path) {
-        let series_posts: Vec<Post> = sub_dirs
+    if let Some(config) = load_config::<SeriesConfig>(path) {
+        let mut series_posts: Vec<Post> = Vec::new();
+        let maybe_posts: Vec<Option<Post>> = sub_dirs
             .iter()
             .map(|p| load_series_post(p.as_path(), &config, re))
-            .filter(|p| p.is_ok())
-            // .map(|p| p.unwrap())
             .collect();
+
+        for maybe in maybe_posts {
+            match maybe {
+                Some(p) => series_posts.push(p),
+                _ => println!("{:?}", "No post found"),
+            }
+        }
 
         return Some(series_posts);
     }
 
     match path.to_str() {
         Some(dir) => println!("{} has no {}", dir, CONFIG_FILE),
-        None => println!("Path has no {}", CONFIG_FILE),
+        None => println!("Path has no {}", CONFIG_FILE.red()),
     }
     None
 }
@@ -169,14 +178,15 @@ fn load_series_post(
     path: &Path,
     series_config: &SeriesConfig,
     re: &Match,
-) -> Result<Post, LoadError> {
-    load_config::<PostConfig>(&path).map(|c| {
-        // name of series sub-folder used to infer position of post in series
-        let dir = os_text(path.file_name());
-        let caps = re.series_index.captures(dir).unwrap();
-        let part: u8 = caps[1].parse().unwrap();
+) -> Option<Post> {
+    load_config::<PostConfig>(&path).and_then(|c| {
+        let part = pos_from_path(&re.series_index, &path).unwrap_or(0);
 
-        Post {
+        if part == 0 {
+            return None;
+        }
+
+        Some(Post {
             key: format!(
                 "{}/{}",
                 slugify(&series_config.title),
@@ -190,19 +200,19 @@ fn load_series_post(
             total_parts: series_config.parts,
             prev_is_part: part > 1,
             next_is_part: part < series_config.parts,
-            photos: load_photos(path, re, c.cover_photo_index),
+            //photos: load_photos(path, re, c.cover_photo_index),
             ..Post::default()
-        }
+        })
     })
 }
 
 /// Create post that is not part of a series.
-fn load_post(path: &Path, re: &Match) -> Result<Post, LoadError> {
+fn load_post(path: &Path, re: &Match) -> Option<Post> {
     load_config::<PostConfig>(&path).map(|c| Post {
         key: slugify(&c.title),
         title: c.title,
         summary: c.summary,
-        photos: load_photos(path, re, c.cover_photo_index),
+        //photos: load_photos(path, re, c.cover_photo_index),
         ..Post::default()
     })
 }
@@ -210,10 +220,33 @@ fn load_post(path: &Path, re: &Match) -> Result<Post, LoadError> {
 /// Load configuration from file in given path.
 ///
 /// *See* https://gitter.im/rust-lang/rust/archives/2018/09/07
-fn load_config<D: DeserializeOwned>(path: &Path) -> Result<D, LoadError> {
-    fs::read_to_string(path.join(CONFIG_FILE))
-        .map_err(|_| LoadError)
-        .and_then(|s| toml::from_str::<D>(&s).map_err(|_| LoadError))
+fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
+    let content = match fs::read_to_string(path.join(CONFIG_FILE)) {
+        Ok(txt) => txt,
+        Err(e) => {
+            println!(
+                "{:tab$}{} {}",
+                "",
+                CONFIG_FILE.red(),
+                "not found — skipping".red(),
+                tab = tab(1)
+            );
+            return None;
+        }
+    };
+    match toml::from_str::<D>(&content) {
+        Ok(config) => Some(config),
+        _ => {
+            println!(
+                "{:tab$}{} {}",
+                "",
+                "Failed to parse".red(),
+                CONFIG_FILE.red(),
+                tab = tab(1)
+            );
+            None
+        }
+    }
 }
 
 /// Load information about each post photo.
@@ -228,15 +261,14 @@ fn load_photos(path: &Path, re: &Match, cover_photo_index: u8) -> Vec<Photo> {
 
 fn load_photo(path: &Path, re: &Match, cover_photo_index: u8) -> Photo {
     let file = fs::File::open(path).unwrap();
-    let file_name = path.file_name().unwrap().to_str().unwrap();
-    let caps = re.photo_index.captures(file_name).unwrap();
-    let index: u8 = caps[1].parse().unwrap();
-
+    let index = pos_from_path(&re.photo_index, &path).unwrap_or(0);
     let mut bufreader = std::io::BufReader::new(&file);
     let exifreader = exif::Reader::new();
     let exif = exifreader.read_from_container(&mut bufreader).unwrap();
 
     let tags: Vec<String> = Vec::new();
+
+    // TODO: handle index = 0
 
     // https://docs.rs/kamadak-exif/0.5.1/exif/struct.Tag.html
     // https://exiftool.org/TagNames/EXIF.html
@@ -291,7 +323,7 @@ fn load_photo(path: &Path, re: &Match, cover_photo_index: u8) -> Photo {
     // }
 
     Photo {
-        name: file_name.to_owned(),
+        name: path_name(&path).to_owned(),
         title: exif_text(&exif, Tag(Context::Tiff, 0x9c9b)),
         caption: exif_text(&exif, Tag::ImageDescription),
         camera: exif_data,

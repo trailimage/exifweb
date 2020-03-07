@@ -3,7 +3,7 @@ use crate::{Category, Post};
 use chrono::{DateTime, Local};
 use hashbrown::HashMap;
 
-/// Ephemeral struct to compute and capture chronological post order.
+/// Ephemeral struct to compute and capture chronological post order
 struct KeyTime {
     key: String,
     time: DateTime<Local>,
@@ -23,7 +23,7 @@ impl<'a> Blog<'a> {
         }
     }
 
-    /// Update post `prev_key` and `next_key` based on chronological ordering.
+    /// Update post `prev_key` and `next_key` based on chronological ordering
     pub fn correlate_posts(&mut self) {
         let mut ordered: Vec<KeyTime> = Vec::new();
 
@@ -57,11 +57,11 @@ impl<'a> Blog<'a> {
         }
     }
 
-    // Sanitize EXIF in all post photos.
+    // Sanitize EXIF in all post photos
     pub fn sanitize_exif(&mut self, config: &ExifConfig) {
         for (_, p) in self.posts.iter_mut() {
             for photo in p.photos.iter_mut() {
-                photo.exif.sanitize(config);
+                photo.sanitize(config);
             }
         }
     }
