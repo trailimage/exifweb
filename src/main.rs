@@ -22,14 +22,33 @@ use exif::{Context, Exif, In, Tag, Value};
 use lazy_static::*;
 use regex::Regex;
 use serde::de::DeserializeOwned;
+use std::error;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use toml;
 
+static CONFIG_FILE: &str = "config.toml";
+
 fn main() {
-    let root = Path::new("./public/");
-    let config: BlogConfig = load_config(root);
+    // GitHub pages requires root at /docs
+    let root = Path::new("./docs/");
+    let config = match load_config::<BlogConfig>(root) {
+        Ok(config) => config,
+        Err(e) => {
+            println!("Missing root configuration file");
+            return;
+        }
+    };
+
+    let entries = match fs::read_dir(root) {
+        Ok(entries) => entries,
+        Err(e) => {
+            println!("{:?}", e);
+            return;
+        }
+    };
+
     let mut blog = Blog::default();
     // It is apparently tricky to have Serde automatically deserialize these
     // to Regex instances so instead do it manually
@@ -38,26 +57,35 @@ fn main() {
         photo_index: Regex::new(&config.photo.index_pattern).unwrap(),
     };
 
-    for entry in fs::read_dir(root.join("img/")).unwrap() {
+    for entry in entries {
         let path: PathBuf = entry.unwrap().path();
 
         if !path.is_dir() {
             continue;
         }
 
-        for entry in fs::read_dir(path).unwrap() {
+        let sub_entries = match (fs::read_dir(path)) {
+            Ok(entries) => entries,
+            Err(e) => {
+                println!("{:?}", e);
+                continue;
+            }
+        };
+
+        for entry in sub_entries {
             let path: PathBuf = entry.unwrap().path();
 
-            match load_series(&path, &matcher) {
-                Some(posts) => {
-                    println!("Found {} series posts", posts.len());
-                    for p in posts {
-                        println!("   {} ({} photos)", &p.key, &p.photos.len());
-                        blog.add_post(p);
-                    }
-                    continue;
+            if let Some(posts) = load_series(&path, &matcher) {
+                println!("Found {} series posts", posts.len());
+                for p in posts {
+                    println!("   {} ({} photos)", &p.key, &p.photos.len());
+                    blog.add_post(p);
                 }
-                None => blog.add_post(load_post(path.as_path(), &matcher)),
+                continue;
+            }
+
+            if let Some(post) = load_post(path.as_path(), &matcher) {
+                blog.add_post(post)
             }
         }
     }
@@ -68,6 +96,7 @@ fn main() {
     blog.sanitize_exif(&config.photo.exif);
 }
 
+/// Attempt to load path contents as if it contains a post series.
 fn load_series(path: &Path, re: &Match) -> Option<Vec<Post>> {
     let sub_dirs: Vec<PathBuf> = fs::read_dir(&path)
         .unwrap()
@@ -79,13 +108,21 @@ fn load_series(path: &Path, re: &Match) -> Option<Vec<Post>> {
         return None;
     }
 
-    let series_config: SeriesConfig = load_config(path);
-    let series_posts: Vec<Post> = sub_dirs
-        .iter()
-        .map(|p| load_series_post(p.as_path(), &series_config, re))
-        .collect();
+    if let Ok(config) = load_config::<SeriesConfig>(path) {
+        let series_posts: Vec<Post> = sub_dirs
+            .iter()
+            .map(|p| load_series_post(p.as_path(), &config, re))
+            .map(|p| p.ok_or(ConfigError))
+            .collect();
 
-    Some(series_posts)
+        return Some(series_posts);
+    }
+
+    match path.to_str() {
+        Some(dir) => println!("{} has no {}", dir, CONFIG_FILE),
+        None => println!("Path has no {}", CONFIG_FILE),
+    }
+    None
 }
 
 /// Create post that is part of a series.
@@ -93,14 +130,21 @@ fn load_series_post(
     path: &Path,
     series_config: &SeriesConfig,
     re: &Match,
-) -> Post {
-    let post_config: PostConfig = load_config(&path);
+) -> Option<Post> {
+    let post_config = match load_config::<PostConfig>(&path) {
+        Ok(config) => config,
+        Err(e) => {
+            println!("{:?}", e);
+            return None;
+        }
+    };
+
     // name of series sub-folder
     let dir = path.file_name().unwrap().to_str().unwrap();
     let caps = re.series_index.captures(dir).unwrap();
     let part: u8 = caps[1].parse().unwrap();
 
-    Post {
+    Some(Post {
         key: format!(
             "{}/{}",
             slugify(&series_config.title),
@@ -116,32 +160,35 @@ fn load_series_post(
         next_is_part: part < series_config.parts,
         photos: load_photos(path, re, post_config.cover_photo_index),
         ..Post::default()
-    }
+    })
 }
 
 /// Create post that is not part of a series.
-fn load_post(path: &Path, re: &Match) -> Post {
-    let config: PostConfig = load_config(&path);
-    Post {
-        key: slugify(&config.title),
-        title: config.title,
-        summary: config.summary,
-        photos: load_photos(path, re, config.cover_photo_index),
-        ..Post::default()
+fn load_post(path: &Path, re: &Match) -> Result<Post, ConfigError> {
+    match load_config::<PostConfig>(&path) {
+        Ok(config) => Ok(Post {
+            key: slugify(&config.title),
+            title: config.title,
+            summary: config.summary,
+            photos: load_photos(path, re, config.cover_photo_index),
+            ..Post::default()
+        }),
+        Err(e) => None,
     }
 }
 
 /// Load configuration from given path.
 ///
 /// *See* https://gitter.im/rust-lang/rust/archives/2018/09/07
-fn load_config<D: DeserializeOwned>(path: &Path) -> D {
-    static FILE_NAME: &str = "config.toml";
-    let content =
-        fs::read_to_string(path.join(FILE_NAME)).unwrap_or_else(|_e| {
-            panic!("{} not found in {:?}", FILE_NAME, path.to_str())
-        });
+fn load_config<D: DeserializeOwned>(path: &Path) -> Result<D, ConfigError> {
+    fs::read_to_string(path.join(CONFIG_FILE))
+        .or(ConfigError)
+        .and_then(|s| toml::from_str::<D>(&s).map_err(ConfigError))
 
-    toml::from_str(&content).unwrap()
+    // match fs::read_to_string(path.join(CONFIG_FILE)) {
+    //     Ok(content) => toml::from_str(&content),
+    //     Err(e) => ConfigError(e),
+    // }
 }
 
 /// Load information about each post photo.

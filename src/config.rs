@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use std::error;
+use std::fmt;
 use std::time::SystemTime;
 
 pub type Pairs = Vec<(String, String)>;
@@ -76,4 +78,21 @@ pub struct BlogConfig {
     /// *Example* `^(\\d) - ` for `3 - Cold Ride Home`
     pub series_index_pattern: String,
     pub photo: PhotoConfig,
+}
+
+#[derive(Debug, Clone)]
+pub struct ConfigError;
+
+impl fmt::Display for ConfigError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "invalid first item to double")
+    }
+}
+
+// This is important for other errors to wrap this one.
+impl error::Error for ConfigError {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        // Generic error, underlying cause isn't tracked.
+        None
+    }
 }
