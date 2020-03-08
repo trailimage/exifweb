@@ -85,9 +85,9 @@ fn main() {
         }
 
         println!(
-            "{} {}",
+            "\n{} {}",
             "Found root directory".bold(),
-            path_name(&path).bold()
+            path_name(&path).bold().yellow()
         );
 
         if let Some(posts) = load_series(&path, &matcher) {
@@ -116,7 +116,12 @@ fn main() {
         }
     }
 
-    println!("Found {} total posts", blog.posts.len());
+    println!(
+        "{}",
+        format!("\nFound {} total posts", blog.posts.len())
+            .bold()
+            .green()
+    );
 
     blog.correlate_posts();
     blog.sanitize_exif(&config.photo.exif);
