@@ -8,6 +8,7 @@ use serde_xml_rs;
 use std::path::Path;
 use std::process::Command;
 
+// https://www.awaresystems.be/imaging/tiff/tifftags/private.html
 #[derive(Deserialize, Debug)]
 pub struct ImageProperties {
     #[serde(rename = "tiff:copyright")]
@@ -172,6 +173,7 @@ pub fn xmp() -> XmpMeta {
 // magick convert -quiet *.png json:
 // magick convert -quiet *.tif xmp:
 // magick identify -verbose atlanta-loop_006-of-038.png
+// magick identify -verbose 001.tif
 
 #[cfg(test)]
 mod tests {
