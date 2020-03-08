@@ -10,7 +10,7 @@ redirects = [
 ]
 
 [photo]
-index_pattern = "_(\\d{3})-of-(\\d{3})\\.jpg$"
+index_pattern = "^(\\d{3}).(jpg|png|tif)$"
 
    [photo.size]
    large = 4096

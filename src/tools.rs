@@ -59,8 +59,12 @@ pub fn replace_pairs(text: String, pairs: &[(String, String)]) -> String {
 
 /// Use regex to capture position value from path (ignores errors)
 pub fn pos_from_path(re: &Regex, path: &Path) -> Option<u8> {
-    re.captures(path_name(&path))
-        .and_then(|caps| caps[1].parse().ok())
+    pos_from_name(re, path_name(&path))
+}
+
+/// Use regex to capture position value from file name (ignores errors)
+pub fn pos_from_name(re: &Regex, name: &str) -> Option<u8> {
+    re.captures(name).and_then(|caps| caps[1].parse().ok())
 }
 
 /// Convert text to slug (snake-case) format
