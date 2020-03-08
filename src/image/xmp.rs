@@ -1,3 +1,5 @@
+//! Structs for the fields of interest within XMP data
+
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug, PartialEq)]

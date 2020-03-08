@@ -6,25 +6,20 @@ mod image;
 mod photo;
 mod post;
 mod tools;
-mod xmp;
 
 pub use blog::Blog;
 pub use caption::Caption;
 pub use category::Category;
 pub use config::*;
-use image::read_dir_exif;
 pub use photo::{Camera, ExposureMode, Location, Photo};
 pub use post::Post;
 pub use tools::{
     has_ext, min_date, path_name, pos_from_name, pos_from_path, replace_pairs,
     slugify, tab, LoadError, Pairs,
 };
-pub use xmp::*;
 
-use chrono::{DateTime, Local, TimeZone};
 use colored::*;
-use exif::{Context, Exif, In, Tag, Value};
-use lazy_static::*;
+use image::exif_tool::parse_dir;
 use regex::Regex;
 use serde::de::DeserializeOwned;
 use std::{
@@ -262,207 +257,10 @@ fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
 
 /// Load information about each post photo.
 fn load_photos(path: &Path, re: &Match, cover_photo_index: u8) -> Vec<Photo> {
-    let photos: Vec<Photo> = match read_dir_exif(&path) {
-        Some(info) => info
-            .iter()
-            .map(|i| {
-                let index =
-                    pos_from_name(&re.photo, &i.image.file_name).unwrap_or(0);
-
-                if index == 0 {
-                    println!(
-                        "{:tab$}{} {}",
-                        "",
-                        "failed to infer index of".red(),
-                        i.image.file_name.red(),
-                        tab = tab(1)
-                    );
-                    return None;
-                }
-
-                Some(Photo {
-                    name: i.image.file_name.to_owned(),
-                    //title: exif_text(&exif, Tag(Context::Tiff, 0x9c9b)),
-                    //         caption: exif_text(&exif, Tag::ImageDescription),
-                    //         camera: exif_data,
-                    index,
-                    primary: index == cover_photo_index,
-                    //         location: Location {
-                    //             longitude: exif_f64(&exif, Tag::GPSLongitude),
-                    //             latitude: exif_f64(&exif, Tag::GPSLatitude),
-                    //         },
-                    //         tags,
-                    //         date_taken: exif_date(&exif, Tag::DateTimeOriginal),
-                    ..Photo::default()
-                })
-            })
-            .filter(|p| p.is_some())
-            .map(|p| p.unwrap())
-            .collect(),
-        _ => return Vec::new(),
-    };
+    let photos: Vec<Photo> = parse_dir(&path, cover_photo_index, &re.photo);
 
     if photos.is_empty() {
         println!("{:tab$}{}", "", "found no photos".red(), tab = tab(1));
     }
     photos
 }
-
-// fn load_photo(path: &Path, re: &Match, cover_photo_index: u8) -> Option<Photo> {
-//     let file = match fs::File::open(path) {
-//         Ok(f) => f,
-//         _ => {
-//             println!(
-//                 "{:tab$}{} {}",
-//                 "failed to open".red(),
-//                 path_name(&path).red(),
-//                 tab = tab(2)
-//             );
-//             return None;
-//         }
-//     };
-
-//     let index = pos_from_path(&re.photo, &path).unwrap_or(0);
-
-//     if index == 0 {
-//         println!(
-//             "{:tab$}{} {}",
-//             "failed to infer index of".red(),
-//             path_name(&path).red(),
-//             tab = tab(2)
-//         );
-//         return None;
-//     }
-
-//     let mut bufreader = std::io::BufReader::new(&file);
-//     let exifreader = exif::Reader::new();
-//     let exif = exifreader.read_from_container(&mut bufreader).unwrap();
-
-//     let tags: Vec<String> = Vec::new();
-
-//     // https://docs.rs/kamadak-exif/0.5.1/exif/struct.Tag.html
-//     // https://exiftool.org/TagNames/EXIF.html
-//     let exif_data = Camera {
-//         //artist: exif_text(&exif, Tag::Artist),
-//         name: format!(
-//             "{} {}",
-//             exif_text(&exif, Tag::Make),
-//             exif_text(&exif, Tag::Model)
-//         )
-//         .trim()
-//         .to_owned(),
-//         compensation: exif_text(&exif, Tag::ExposureBiasValue),
-//         shutter_speed: exif_text(&exif, Tag::ExposureTime),
-//         aperture: exif_text(&exif, Tag::FNumber),
-//         focal_length: exif_f64(&exif, Tag::FocalLength),
-//         iso: exif_uint(&exif, Tag::PhotographicSensitivity),
-//         mode: match exif_uint(&exif, Tag::ExposureProgram) {
-//             1 => ExposureMode::Manual,
-//             2 => ExposureMode::ProgramAE,
-//             3 => ExposureMode::AperturePriority,
-//             4 => ExposureMode::ShutterPriority,
-//             5 => ExposureMode::Creative,
-//             6 => ExposureMode::Action,
-//             7 => ExposureMode::Portrait,
-//             8 => ExposureMode::Landscape,
-//             9 => ExposureMode::Bulb,
-//             _ => ExposureMode::Undefined,
-//         },
-//         lens: format!(
-//             "{} {}",
-//             exif_text(&exif, Tag::LensMake),
-//             exif_text(&exif, Tag::LensModel)
-//         )
-//         .trim()
-//         .to_owned(),
-//         //software: exif_text(&exif, Tag::Software),
-//         //sanitized: false,
-//     };
-
-//     //println!("{:?}", exif_data);
-//     println!("{}", exif_text(&exif, Tag::ImageDescription));
-
-//     // for f in exif.fields() {
-//     //     println!(
-//     //         "  {}/{}: {}",
-//     //         f.ifd_num.index(),
-//     //         f.tag,
-//     //         f.display_value().with_unit(&exif)
-//     //     );
-//     //     //println!("      {:?}", f.value);
-//     // }
-
-//     Photo {
-//         name: path_name(&path).to_owned(),
-//         title: exif_text(&exif, Tag(Context::Tiff, 0x9c9b)),
-//         caption: exif_text(&exif, Tag::ImageDescription),
-//         camera: exif_data,
-//         index,
-//         primary: index == cover_photo_index,
-//         location: Location {
-//             longitude: exif_f64(&exif, Tag::GPSLongitude),
-//             latitude: exif_f64(&exif, Tag::GPSLatitude),
-//         },
-//         tags,
-//         date_taken: exif_date(&exif, Tag::DateTimeOriginal),
-//         ..Photo::default()
-//     }
-// }
-
-// // https://github.com/kamadak/exif-rs/blob/master/examples/reading.rs#L64
-// fn exif_f64(exif: &Exif, tag: Tag) -> f64 {
-//     if let Some(field) = exif.get_field(tag, In::PRIMARY) {
-//         return match field.value {
-//             Value::Rational(ref vec) if !vec.is_empty() => vec[0].to_f64(),
-//             _ => 0.0,
-//         };
-//     }
-//     0.0
-// }
-
-// // https://github.com/kamadak/exif-rs/blob/master/examples/reading.rs#L56
-// fn exif_uint(exif: &Exif, tag: Tag) -> u32 {
-//     if let Some(field) = exif.get_field(tag, In::PRIMARY) {
-//         if let Some(value) = field.value.get_uint(0) {
-//             return value;
-//         }
-//     }
-//     0
-// }
-
-// // https://github.com/kamadak/exif-rs/blob/master/examples/reading.rs#L73
-// fn exif_date(exif: &Exif, tag: Tag) -> DateTime<Local> {
-//     if let Some(field) = exif.get_field(tag, In::PRIMARY) {
-//         return match field.value {
-//             Value::Ascii(ref vec) if !vec.is_empty() => {
-//                 if let Ok(dt) = exif::DateTime::from_ascii(&vec[0]) {
-//                     Local
-//                         .ymd(dt.year as i32, dt.month as u32, dt.day as u32)
-//                         .and_hms(
-//                             dt.hour as u32,
-//                             dt.minute as u32,
-//                             dt.second as u32,
-//                         )
-//                 } else {
-//                     min_date()
-//                 }
-//             }
-//             _ => min_date(),
-//         };
-//     }
-//     min_date()
-// }
-
-// fn exif_text(exif: &Exif, tag: Tag) -> String {
-//     lazy_static! {
-//         static ref QUOTES: Regex =
-//             Regex::new(r#"(^\s*"\s*|\s*"\s*$)"#).unwrap();
-//     }
-
-//     if let Some(field) = exif.get_field(tag, In::PRIMARY) {
-//         return QUOTES
-//             .replace_all(&field.display_value().with_unit(exif).to_string(), "")
-//             .into_owned();
-//     }
-//     String::new()
-// }

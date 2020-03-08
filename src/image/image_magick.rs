@@ -1,16 +1,16 @@
-use crate::{path_name, tab, XmpMeta};
+use crate::{path_name, pos_from_name, tab, Photo};
 use colored::*;
 use encoding::all::*;
 use encoding::{DecoderTrap, Encoding};
+use regex::Regex;
 use serde::Deserialize;
 use serde_json;
-use serde_xml_rs;
 use std::path::Path;
 use std::process::Command;
 
 // https://www.awaresystems.be/imaging/tiff/tifftags/private.html
 #[derive(Deserialize, Debug)]
-pub struct ImageProperties {
+struct ImageProperties {
     #[serde(rename = "tiff:copyright")]
     pub copyright: String,
 
@@ -49,19 +49,54 @@ pub struct ImageProperties {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct ImageFields {
+struct ImageFields {
     #[serde(rename = "baseName")]
     pub file_name: String,
     pub format: String,
     pub properties: ImageProperties,
 }
 #[derive(Deserialize, Debug)]
-pub struct ImageInfo {
+struct ImageMagickInfo {
     pub image: ImageFields,
 }
 
-pub fn read_dir_exif(path: &Path) -> Option<Vec<ImageInfo>> {
+pub fn parse_dir(
+    path: &Path,
+    cover_index: u8,
+    infer_pos: &Regex,
+) -> Vec<Photo> {
+    read_dir(&path)
+        .iter()
+        .map(|i| {
+            let index =
+                pos_from_name(&infer_pos, &i.image.file_name).unwrap_or(0);
+
+            if index == 0 {
+                println!(
+                    "{:tab$}{} {}",
+                    "",
+                    "failed to infer index of".red(),
+                    i.image.file_name.red(),
+                    tab = tab(1)
+                );
+                return None;
+            }
+
+            Some(Photo {
+                name: i.image.file_name.to_owned(),
+                index,
+                primary: index == cover_index,
+                ..Photo::default()
+            })
+        })
+        .filter(|p| p.is_some())
+        .map(|p| p.unwrap())
+        .collect()
+}
+
+fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
     // magick convert -quiet *.tif json:
+    // magick convert -quiet *.tif xmp:
     let output = match Command::new("magick")
         .current_dir(path.to_string_lossy().to_string())
         .arg("convert")
@@ -79,7 +114,7 @@ pub fn read_dir_exif(path: &Path) -> Option<Vec<ImageInfo>> {
                 path_name(&path).magenta(),
                 tab = tab(1)
             );
-            return None;
+            return Vec::new();
         }
     };
 
@@ -94,7 +129,7 @@ pub fn read_dir_exif(path: &Path) -> Option<Vec<ImageInfo>> {
                 path_name(&path).magenta(),
                 tab = tab(1)
             );
-            return None;
+            return Vec::new();
         }
     };
 
@@ -104,11 +139,11 @@ pub fn read_dir_exif(path: &Path) -> Option<Vec<ImageInfo>> {
             "EXIF JSON is empty for".red(),
             path_name(&path).magenta()
         );
-        return None;
+        return Vec::new();
     }
 
-    match serde_json::from_str::<Vec<ImageInfo>>(&text) {
-        Ok(info) => Some(info),
+    match serde_json::from_str::<Vec<ImageMagickInfo>>(&text) {
+        Ok(info) => info,
         Err(e) => {
             println!(
                 "{:tab$}{} {}",
@@ -119,77 +154,7 @@ pub fn read_dir_exif(path: &Path) -> Option<Vec<ImageInfo>> {
             );
             println!("{}", text);
             println!("{:?}", e);
-            None
+            Vec::new()
         }
-    }
-}
-
-// we’re cold
-// https://www.imagemagick.org/discourse-server/viewtopic.php?t=30987
-// https://users.rust-lang.org/t/reading-latin1-ascii-chars-from-a-binary-file/25849/2
-// https://www.imagemagick.org/discourse-server/viewtopic.php?t=16586
-pub fn exif() -> Vec<ImageInfo> {
-    let output = Command::new("magick")
-        .current_dir("./src/fixtures")
-        .arg("convert")
-        .arg("img_006-of-021.jpg[1x1+0+0]")
-        .arg("json:")
-        .output()
-        .unwrap();
-
-    let text = ISO_8859_1
-        .decode(&output.stdout[..], DecoderTrap::Ignore)
-        .unwrap();
-
-    //println!("{}", text);
-
-    serde_json::from_str(&text).unwrap()
-}
-
-pub fn xmp() -> XmpMeta {
-    let output = Command::new("magick")
-        .current_dir("./src/fixtures")
-        .arg("convert")
-        .arg("img_006-of-021.jpg")
-        .arg("xmp:")
-        .output()
-        .unwrap();
-
-    let text = String::from_utf8(output.stdout).unwrap();
-
-    serde_xml_rs::from_str(&text).unwrap()
-}
-
-// convert image.jpg[1x1+0+0] json:
-// https://imagemagick.org/script/convert.php
-
-// magick convert br08-party-on-crater-peak_011-of-020.jpg[1x1+0+0] json:
-// magick convert img_006-of-021.jpg[1x1+0+0] json:out.json
-// magick convert img_006-of-021.jpg -format "%[IPTC:*]" info:
-// magick convert -ping img_006-of-021.jpg xmp:
-// magick convert -quiet 001.tif json:
-// magick convert 001.tif xmp:
-// magick convert atlanta-loop_001-of-038.tif info:
-// magick convert -quiet *.png json:
-// magick convert -quiet *.tif xmp:
-// magick identify -verbose atlanta-loop_006-of-038.png
-// magick identify -verbose 001.tif
-
-#[cfg(test)]
-mod tests {
-    use super::{exif, xmp};
-    use crate::XmpMeta;
-
-    #[test]
-    fn exif_test() {
-        let got = exif();
-        assert_eq!(got.len(), 1);
-    }
-
-    #[test]
-    fn xmp_test() {
-        let got: XmpMeta = xmp();
-        println!("{}", got.rdf.description.description.item.value);
-        assert_eq!(got.rdf.description.title.item.value, "Time to move on");
     }
 }
