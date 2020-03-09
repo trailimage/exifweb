@@ -9,7 +9,7 @@ use std::path::Path;
 use std::process::Command;
 
 #[derive(Deserialize, Debug)]
-pub struct ExifToolInfo {
+pub struct ExifToolOutput {
     #[serde(rename = "FileName")]
     file_name: String,
 
@@ -119,7 +119,7 @@ pub fn parse_dir(
         .collect()
 }
 
-pub fn read_dir(path: &Path) -> Vec<ExifToolInfo> {
+pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
     // exiftool *.tif -json -quiet -coordFormat %.6f
     // exiftool 002.tif -json -quiet -coordFormat %.6f
     // exiftool *.tif -json -quiet -Aperture# -ColorTemperature# -DateTimeCreated -FocalLength# -FOV# -Keywords# -ShutterSpeed
@@ -193,7 +193,7 @@ pub fn read_dir(path: &Path) -> Vec<ExifToolInfo> {
         return Vec::new();
     }
 
-    match serde_json::from_str::<Vec<ExifToolInfo>>(&text) {
+    match serde_json::from_str::<Vec<ExifToolOutput>>(&text) {
         Ok(info) => info,
         Err(e) => {
             println!(
