@@ -8,8 +8,7 @@ use colored::*;
 use regex::Regex;
 use serde::Deserialize;
 use serde_json;
-use std::path::Path;
-use std::process::Command;
+use std::{mem, path::Path, process::Command};
 
 #[derive(Deserialize, Debug)]
 pub struct ExifToolOutput {
@@ -134,7 +133,7 @@ pub fn parse_dir(
                 title: i.title.to_owned(),
                 artist: i.artist.to_owned(),
                 caption: i.caption.to_owned(),
-                software: i.software.to_owned(),
+                software: i.software.to_owned(), // mem::replace(i.software, String::new()),
                 tags: i.tags.to_owned(),
                 index,
                 primary: index == cover_index,
