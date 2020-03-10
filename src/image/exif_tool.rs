@@ -138,6 +138,7 @@ pub fn parse_dir(
                 tags: i.tags.to_owned(),
                 index,
                 primary: index == cover_index,
+                // TODO: restore date
                 //date_taken: Some(i.taken_on),
                 ..Photo::default()
             };
