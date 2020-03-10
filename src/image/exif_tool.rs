@@ -1,5 +1,6 @@
 //! Use ExifTool to extract photo metadata
 
+use crate::image::deserialize::{string_number, string_sequence};
 use crate::{path_name, pos_from_name, tab, Photo};
 use colored::*;
 use regex::Regex;
@@ -17,10 +18,14 @@ pub struct ExifToolOutput {
     title: String,
 
     #[serde(rename = "Description")] // or Caption-Abstract or ImageDescription
-    caption: String,
+    caption: Option<String>,
 
-    // https://stackoverflow.com/questions/41151080/deserialize-a-json-string-or-array-of-strings-into-a-vec
-    #[serde(rename = "Keywords")] // or Subject
+    // or Subject
+    #[serde(
+        default,
+        rename = "Keywords",
+        deserialize_with = "string_sequence"
+    )]
     tags: Vec<String>,
 
     #[serde(rename = "City")]
@@ -44,11 +49,16 @@ pub struct ExifToolOutput {
     #[serde(rename = "ISO")]
     iso: u16,
 
-    #[serde(rename = "ShutterSpeed")] // ShutterSpeedValue
+    // or ShutterSpeedValue
+    #[serde(rename = "ShutterSpeed", deserialize_with = "string_number")]
     shuter_speed: String,
 
-    // #[serde(rename = "ExposureCompensation")]
-    // exposure_compensation: String,
+    #[serde(
+        rename = "ExposureCompensation",
+        deserialize_with = "string_number"
+    )]
+    exposure_compensation: String,
+
     #[serde(rename = "FocalLength")]
     focal_length: u16,
 
