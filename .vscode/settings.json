@@ -9,7 +9,10 @@
         // Show notification when workspace is fully loaded
         "notifications.workspace-loaded": true,
         // Show error when no Cargo.toml was found
-        "notifications.cargo-toml-not-found": true
+        "notifications.cargo-toml-not-found": true,
+        // https://rust-analyzer.github.io/thisweek/2020/03/09/changelog-15.html
+        "completion.insertion.add-argument-snippets": true,
+        "call-info.full": false
     },
     "rust-analyzer.highlightingOn": true,
     "files.associations": {
