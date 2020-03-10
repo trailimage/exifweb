@@ -1,8 +1,9 @@
 //! Use ExifTool to extract photo metadata
 
 use crate::image::deserialize::{string_number, string_sequence};
-use crate::photo::{Camera, ExposureMode, Photo};
+use crate::photo::{Camera, ExposureMode, Location, Photo};
 use crate::{path_name, pos_from_name, tab};
+use chrono::{DateTime, Local, NaiveDateTime};
 use colored::*;
 use regex::Regex;
 use serde::Deserialize;
@@ -82,8 +83,8 @@ pub struct ExifToolOutput {
     camera_model: Option<String>,
 
     // TODO: convert to date
-    #[serde(default, rename = "DateTimeCreated")] // or DateTimeOriginal
-    taken_on: String,
+    #[serde(rename = "DateTimeCreated")] // or DateTimeOriginal
+    taken_on: NaiveDateTime,
 
     #[serde(rename = "GPSLatitude")]
     latitude: Option<f32>,
@@ -137,6 +138,7 @@ pub fn parse_dir(
                 tags: i.tags.to_owned(),
                 index,
                 primary: index == cover_index,
+                //date_taken: Some(i.taken_on),
                 ..Photo::default()
             };
 
@@ -151,17 +153,27 @@ pub fn parse_dir(
                     // TODO: allow this to be optional by updating custom deserializer
                     // https://users.rust-lang.org/t/serde-handling-null-in-custom-deserializer/18191/2
                     compensation: Some(i.exposure_compensation.to_owned()),
-                    // also this
+                    // TODO: also this
                     shutter_speed: Some(i.shutter_speed.to_owned()),
                     mode: i.exposure_mode,
                     aperture: i.aperture,
                     focal_length: i.focal_length,
                     iso: i.iso,
                     lens: i.lens.to_owned(),
-                    ..Camera::default()
                 };
 
                 photo.camera = Some(camera);
+            }
+
+            if let Some(lat) = &i.latitude {
+                let loc = Location {
+                    latitude: lat.to_owned(),
+                    longitude: 0.0,
+                };
+
+                if loc.is_valid() {
+                    photo.location = Some(loc);
+                }
             }
 
             Some(photo)
