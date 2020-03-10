@@ -1,39 +1,57 @@
 use serde::{de, Deserialize, Deserializer};
 use std::{fmt, marker::PhantomData};
 
+struct StringOrNumber(PhantomData<String>);
+
+impl<'de> de::Visitor<'de> for StringOrNumber {
+    type Value = String;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("string or number")
+    }
+
+    fn visit_i64<E: de::Error>(self, value: i64) -> Result<Self::Value, E> {
+        Ok(value.to_string())
+    }
+
+    fn visit_u64<E: de::Error>(self, value: u64) -> Result<Self::Value, E> {
+        Ok(value.to_string())
+    }
+
+    fn visit_f64<E: de::Error>(self, value: f64) -> Result<Self::Value, E> {
+        Ok(value.to_string())
+    }
+
+    fn visit_str<E: de::Error>(self, value: &str) -> Result<Self::Value, E> {
+        Ok(value.to_owned())
+    }
+}
+
+struct StringOrVec(PhantomData<Vec<String>>);
+
+impl<'de> de::Visitor<'de> for StringOrVec {
+    type Value = Vec<String>;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("string or list of strings")
+    }
+
+    fn visit_str<E: de::Error>(self, value: &str) -> Result<Self::Value, E> {
+        Ok(vec![value.to_owned()])
+    }
+
+    fn visit_seq<S>(self, visitor: S) -> Result<Self::Value, S::Error>
+    where
+        S: de::SeqAccess<'de>,
+    {
+        Deserialize::deserialize(de::value::SeqAccessDeserializer::new(visitor))
+    }
+}
+
 pub fn string_number<'de, D>(deserializer: D) -> Result<String, D::Error>
 where
     D: Deserializer<'de>,
 {
-    struct StringOrNumber(PhantomData<String>);
-
-    impl<'de> de::Visitor<'de> for StringOrNumber {
-        type Value = String;
-
-        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            formatter.write_str("string or number")
-        }
-
-        fn visit_i64<E: de::Error>(self, value: i64) -> Result<Self::Value, E> {
-            Ok(value.to_string())
-        }
-
-        fn visit_u64<E: de::Error>(self, value: u64) -> Result<Self::Value, E> {
-            Ok(value.to_string())
-        }
-
-        fn visit_f64<E: de::Error>(self, value: f64) -> Result<Self::Value, E> {
-            Ok(value.to_string())
-        }
-
-        fn visit_str<E: de::Error>(
-            self,
-            value: &str,
-        ) -> Result<Self::Value, E> {
-            Ok(value.to_owned())
-        }
-    }
-
     deserializer.deserialize_any(StringOrNumber(PhantomData))
 }
 
@@ -43,32 +61,6 @@ pub fn string_sequence<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
 where
     D: Deserializer<'de>,
 {
-    struct StringOrVec(PhantomData<Vec<String>>);
-
-    impl<'de> de::Visitor<'de> for StringOrVec {
-        type Value = Vec<String>;
-
-        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            formatter.write_str("string or list of strings")
-        }
-
-        fn visit_str<E: de::Error>(
-            self,
-            value: &str,
-        ) -> Result<Self::Value, E> {
-            Ok(vec![value.to_owned()])
-        }
-
-        fn visit_seq<S>(self, visitor: S) -> Result<Self::Value, S::Error>
-        where
-            S: de::SeqAccess<'de>,
-        {
-            Deserialize::deserialize(de::value::SeqAccessDeserializer::new(
-                visitor,
-            ))
-        }
-    }
-
     deserializer.deserialize_any(StringOrVec(PhantomData))
 }
 

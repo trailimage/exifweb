@@ -1,3 +1,7 @@
+#[macro_use]
+extern crate enum_primitive_derive;
+extern crate num_traits;
+
 mod blog;
 mod caption;
 mod category;
@@ -11,7 +15,7 @@ pub use blog::Blog;
 pub use caption::Caption;
 pub use category::Category;
 pub use config::*;
-pub use photo::{Camera, ExposureMode, Location, Photo};
+//pub use photo::{Camera, ExposureMode, Location, Photo};
 pub use post::Post;
 pub use tools::{
     has_ext, min_date, path_name, pos_from_name, pos_from_path, replace_pairs,
@@ -20,6 +24,7 @@ pub use tools::{
 
 use colored::*;
 use image::exif_tool::parse_dir;
+use photo::Photo;
 use regex::Regex;
 use serde::de::DeserializeOwned;
 use std::{

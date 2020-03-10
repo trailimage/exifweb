@@ -1,7 +1,8 @@
 //! Use ExifTool to extract photo metadata
 
 use crate::image::deserialize::{string_number, string_sequence};
-use crate::{path_name, pos_from_name, tab, Photo};
+use crate::photo::{Camera, ExposureMode, Photo};
+use crate::{path_name, pos_from_name, tab};
 use colored::*;
 use regex::Regex;
 use serde::Deserialize;
@@ -14,8 +15,11 @@ pub struct ExifToolOutput {
     #[serde(rename = "FileName")]
     file_name: String,
 
+    #[serde(rename = "Artist")]
+    artist: String,
+
     #[serde(rename = "Title")] // or ObjectName
-    title: String,
+    title: Option<String>,
 
     #[serde(rename = "Description")] // or Caption-Abstract or ImageDescription
     caption: Option<String>,
@@ -32,7 +36,7 @@ pub struct ExifToolOutput {
     city: Option<String>,
 
     #[serde(rename = "State")] // or Province-State
-    state: String,
+    state: Option<String>,
 
     #[serde(rename = "Copyright")] // or Rights or CopyrightNotice
     copyright: String,
@@ -44,14 +48,14 @@ pub struct ExifToolOutput {
     software: String,
 
     #[serde(rename = "Aperture")] // or FNumber
-    aperture: f32,
+    aperture: Option<f32>,
 
     #[serde(rename = "ISO")]
-    iso: u16,
+    iso: Option<u16>,
 
     // or ShutterSpeedValue
     #[serde(rename = "ShutterSpeed", deserialize_with = "string_number")]
-    shuter_speed: String,
+    shutter_speed: String,
 
     #[serde(
         rename = "ExposureCompensation",
@@ -59,19 +63,26 @@ pub struct ExifToolOutput {
     )]
     exposure_compensation: String,
 
+    #[serde(default, rename = "ExposureProgram")]
+    exposure_mode: ExposureMode,
+
     #[serde(rename = "FocalLength")]
-    focal_length: u16,
+    focal_length: Option<u16>,
 
     #[serde(rename = "MaxApertureValue")]
-    max_aperture: f32,
+    max_aperture: Option<f32>,
+
+    #[serde(rename = "Lens")]
+    lens: Option<String>,
 
     #[serde(rename = "Make")]
-    camera_make: String,
+    camera_make: Option<String>,
 
-    #[serde(rename = "Model")]
-    camera_model: String,
+    #[serde(default, rename = "Model")]
+    camera_model: Option<String>,
 
-    #[serde(rename = "DateTimeCreated")] // or DateTimeOriginal
+    // TODO: convert to date
+    #[serde(default, rename = "DateTimeCreated")] // or DateTimeOriginal
     taken_on: String,
 
     #[serde(rename = "GPSLatitude")]
@@ -80,11 +91,11 @@ pub struct ExifToolOutput {
     #[serde(rename = "GPSLongitude")]
     longitude: Option<f32>,
 
-    #[serde(rename = "ProfileDescription")]
-    color_profile: String,
+    #[serde(default, rename = "ProfileDescription")]
+    color_profile: Option<String>,
 
     #[serde(rename = "ColorTemperature")]
-    color_temperature: u16,
+    color_temperature: Option<u16>,
 
     #[serde(rename = "FOV")]
     field_of_view: Option<f32>,
@@ -117,12 +128,43 @@ pub fn parse_dir(
                 return None;
             }
 
-            Some(Photo {
+            let mut photo = Photo {
                 name: i.file_name.to_owned(),
+                title: i.title.to_owned(),
+                artist: i.artist.to_owned(),
+                caption: i.caption.to_owned(),
+                software: i.software.to_owned(),
+                tags: i.tags.to_owned(),
                 index,
                 primary: index == cover_index,
                 ..Photo::default()
-            })
+            };
+
+            if let Some(make) = &i.camera_make {
+                let name = match &i.camera_model {
+                    Some(model) => format!("{} {}", make, model),
+                    _ => make.clone(),
+                };
+
+                let camera = Camera {
+                    name,
+                    // TODO: allow this to be optional by updating custom deserializer
+                    // https://users.rust-lang.org/t/serde-handling-null-in-custom-deserializer/18191/2
+                    compensation: Some(i.exposure_compensation.to_owned()),
+                    // also this
+                    shutter_speed: Some(i.shutter_speed.to_owned()),
+                    mode: i.exposure_mode,
+                    aperture: i.aperture,
+                    focal_length: i.focal_length,
+                    iso: i.iso,
+                    lens: i.lens.to_owned(),
+                    ..Camera::default()
+                };
+
+                photo.camera = Some(camera);
+            }
+
+            Some(photo)
         })
         .filter(|p| p.is_some())
         .map(|p| p.unwrap())
@@ -131,7 +173,7 @@ pub fn parse_dir(
 
 pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
     // exiftool *.tif -json -quiet -coordFormat %.6f
-    // exiftool 002.tif -json -quiet -coordFormat %.6f
+    // exiftool 002.tif -json -quiet -coordFormat %.6f -ExposureProgram#
     // exiftool *.tif -json -quiet -Aperture# -ColorTemperature# -DateTimeCreated -FocalLength# -FOV# -Keywords# -ShutterSpeed
 
     // suffix field name with # to disable ExifTool formatting
@@ -141,12 +183,14 @@ pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
         .arg("-json")
         .arg("-quiet")
         .arg("-Aperture#")
+        .arg("-Artist")
         .arg("-City")
         .arg("-ColorTemperature#")
         .arg("-Copyright")
         .arg("-DateTimeCreated")
         .arg("-Description")
         .arg("-ExposureCompensation")
+        .arg("-ExposureProgram#")
         .arg("-FileName")
         .arg("-FocalLength#")
         .arg("-FOV#")
@@ -156,6 +200,7 @@ pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
         .arg("-ImageWidth")
         .arg("-ISO")
         .arg("-Keywords")
+        .arg("-Lens")
         .arg("-Make")
         .arg("-MaxApertureValue")
         .arg("-Model")

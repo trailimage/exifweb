@@ -1,5 +1,9 @@
+use crate::num_traits::FromPrimitive;
 use crate::{min_date, replace_pairs, ExifConfig};
 use chrono::{DateTime, Local};
+use serde::{de, Deserialize, Deserializer};
+use std::fmt;
+use std::marker::Copy;
 
 /// Latitude and longitude in degrees
 #[derive(Debug, Default)]
@@ -26,7 +30,7 @@ impl PartialEq for Location {
 
 impl Eq for Location {}
 
-#[derive(Debug)]
+#[derive(Debug, Primitive, Copy)]
 #[repr(u8)]
 pub enum ExposureMode {
     Undefined = 0,
@@ -40,9 +44,42 @@ pub enum ExposureMode {
     Landscape = 8,
     Bulb = 9,
 }
+
+impl Clone for ExposureMode {
+    fn clone(&self) -> ExposureMode {
+        *self
+    }
+}
+
 impl Default for ExposureMode {
     fn default() -> Self {
         ExposureMode::Undefined
+    }
+}
+
+impl<'de> Deserialize<'de> for ExposureMode {
+    fn deserialize<D>(deserializer: D) -> Result<ExposureMode, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_u64(ExposureModeVisitor)
+    }
+}
+
+struct ExposureModeVisitor;
+
+impl<'de> de::Visitor<'de> for ExposureModeVisitor {
+    type Value = ExposureMode;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("an integer between 0 and 9")
+    }
+
+    fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(ExposureMode::from_u64(value).unwrap())
     }
 }
 
@@ -53,13 +90,13 @@ pub struct Camera {
     /// Make and model of the camera
     pub name: String,
     /// Exposure compensation
-    pub compensation: String,
-    pub shutter_speed: String,
+    pub compensation: Option<String>,
+    pub shutter_speed: Option<String>,
     pub mode: ExposureMode,
-    pub aperture: String,
-    pub focal_length: f64,
-    pub iso: u32,
-    pub lens: String,
+    pub aperture: Option<f32>,
+    pub focal_length: Option<u16>,
+    pub iso: Option<u16>,
+    pub lens: Option<String>,
 }
 
 #[derive(Debug)]
@@ -70,10 +107,10 @@ pub struct Photo {
     pub artist: String,
     /// Name of software used to process the photo
     pub software: String,
-    pub title: String,
-    pub caption: String,
-    pub camera: Camera,
-    pub location: Location,
+    pub title: Option<String>,
+    pub caption: Option<String>,
+    pub camera: Option<Camera>,
+    pub location: Option<Location>,
     /// One-based position of photo within post
     pub index: u8,
     /// Tags applied to the photo
@@ -101,10 +138,14 @@ impl Photo {
             return;
         }
         self.software = replace_pairs(self.software.clone(), &config.software);
-        self.camera.name =
-            replace_pairs(self.camera.name.clone(), &config.camera);
-        self.camera.lens =
-            replace_pairs(self.camera.lens.clone(), &config.lens);
+
+        if let Some(camera) = &mut self.camera {
+            camera.name = replace_pairs(camera.name.clone(), &config.camera);
+
+            if let Some(lens) = &camera.lens {
+                camera.lens = Some(replace_pairs(lens.clone(), &config.lens));
+            }
+        }
 
         self.sanitized = true;
     }
@@ -116,10 +157,10 @@ impl Default for Photo {
             name: String::new(),
             artist: String::new(),
             software: String::new(),
-            title: String::new(),
-            caption: String::new(),
-            camera: Camera::default(),
-            location: Location::default(),
+            title: None,
+            caption: None,
+            camera: None,
+            location: None,
             index: 0,
             tags: Vec::new(),
             primary: false,
