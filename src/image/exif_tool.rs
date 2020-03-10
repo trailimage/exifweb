@@ -113,8 +113,8 @@ pub fn parse_dir(
     infer_pos: &Regex,
 ) -> Vec<Photo> {
     read_dir(&path)
-        .iter()
-        .map(|i| {
+        .iter_mut()
+        .map(|i: &mut ExifToolOutput| {
             let index = pos_from_name(&infer_pos, &i.file_name).unwrap_or(0);
 
             if index == 0 {
@@ -129,12 +129,12 @@ pub fn parse_dir(
             }
 
             let mut photo = Photo {
-                name: i.file_name.to_owned(),
-                title: i.title.to_owned(),
-                artist: i.artist.to_owned(),
-                caption: i.caption.to_owned(),
-                software: i.software.to_owned(), // mem::replace(i.software, String::new()),
-                tags: i.tags.to_owned(),
+                name: mem::replace(&mut i.file_name, String::new()),
+                title: mem::replace(&mut i.title, None),
+                artist: mem::replace(&mut i.artist, String::new()),
+                caption: mem::replace(&mut i.caption, None),
+                software: mem::replace(&mut i.software, String::new()),
+                tags: mem::replace(&mut i.tags, Vec::new()),
                 index,
                 primary: index == cover_index,
                 // TODO: restore date
@@ -152,14 +152,20 @@ pub fn parse_dir(
                     name,
                     // TODO: allow this to be optional by updating custom deserializer
                     // https://users.rust-lang.org/t/serde-handling-null-in-custom-deserializer/18191/2
-                    compensation: Some(i.exposure_compensation.to_owned()),
+                    compensation: Some(mem::replace(
+                        &mut i.exposure_compensation,
+                        String::new(),
+                    )),
                     // TODO: also this
-                    shutter_speed: Some(i.shutter_speed.to_owned()),
+                    shutter_speed: Some(mem::replace(
+                        &mut i.shutter_speed,
+                        String::new(),
+                    )),
                     mode: i.exposure_mode,
                     aperture: i.aperture,
                     focal_length: i.focal_length,
                     iso: i.iso,
-                    lens: i.lens.to_owned(),
+                    lens: mem::replace(&mut i.lens, None),
                 };
 
                 photo.camera = Some(camera);

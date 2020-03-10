@@ -6,7 +6,7 @@ mod blog;
 mod caption;
 mod category;
 mod config;
-mod image;
+mod image; 
 mod photo;
 mod post;
 mod tools;
@@ -228,7 +228,7 @@ fn load_post(path: &Path, re: &Match) -> Option<Post> {
     })
 }
 
-/// Load configuration from file in given path.
+/// Load configuration from file in given path
 ///
 /// *See* https://gitter.im/rust-lang/rust/archives/2018/09/07
 fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
@@ -260,7 +260,7 @@ fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
     }
 }
 
-/// Load information about each post photo.
+/// Load information about each post photo
 fn load_photos(path: &Path, re: &Match, cover_photo_index: u8) -> Vec<Photo> {
     let photos: Vec<Photo> = parse_dir(&path, cover_photo_index, &re.photo);
 
