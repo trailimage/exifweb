@@ -126,6 +126,7 @@ fn main() {
     );
 
     blog.correlate_posts();
+    blog.collate_tags();
     blog.sanitize_exif(&config.photo.exif);
 }
 

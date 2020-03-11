@@ -9,10 +9,23 @@ struct KeyTime {
     time: DateTime<Local>,
 }
 
+pub struct PhotoTag {
+    /// Original tag name (not slugified)
+    pub name: String,
+    /// List of photos that have the tag applied. The contents should be the
+    /// post slug plus the photo name as a URL hash that together can be used
+    /// as a direct link that scrolls to the photo in a post.
+    ///
+    /// *example* `brother-ride-2018/place-we-went#004`
+    pub link: Vec<String>,
+}
+
 #[derive(Default)]
 pub struct Blog<'a> {
     pub posts: HashMap<String, Post>,
     pub categories: Vec<Category<'a>>,
+    /// Tag slugs mapped to the original tag names and photos with the tag
+    pub tags: HashMap<String, PhotoTag>,
 }
 
 impl<'a> Blog<'a> {
@@ -57,12 +70,19 @@ impl<'a> Blog<'a> {
         }
     }
 
-    // Sanitize EXIF in all post photos
+    /// Sanitize EXIF in all post photos
     pub fn sanitize_exif(&mut self, config: &ExifConfig) {
         for (_, p) in self.posts.iter_mut() {
             for photo in p.photos.iter_mut() {
                 photo.sanitize(config);
             }
         }
+    }
+
+    ///
+    pub fn collate_tags(&mut self) {
+        let tags: HashMap<String, PhotoTag> = HashMap::new();
+
+        self.tags = tags;
     }
 }
