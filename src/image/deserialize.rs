@@ -1,6 +1,8 @@
 use serde::{de, Deserialize, Deserializer};
 use std::{fmt, marker::PhantomData};
 
+/// Source value may be quoted or a bare number. Output should always be a
+/// string.
 struct StringOrNumber(PhantomData<String>);
 
 impl<'de> de::Visitor<'de> for StringOrNumber {
@@ -27,6 +29,8 @@ impl<'de> de::Visitor<'de> for StringOrNumber {
     }
 }
 
+/// Source value may be a string or list of strings. Output value should always
+/// be a list of strings.
 struct StringOrVec(PhantomData<Vec<String>>);
 
 impl<'de> de::Visitor<'de> for StringOrVec {

@@ -8,9 +8,6 @@ const nl = "\r\n";
 const ds = nl + nl;
 const empty = "";
 
-it("formats fractions", () => {
-  expect(html.fraction("1/2")).toBe("<sup>1</sup>&frasl;<sub>2</sub>");
-});
 
 it("creates HTML for a photo tag list", () => {
   expect(html.photoTagList(["Second", "First", "Third and Last"])).toBe(

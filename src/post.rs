@@ -64,6 +64,7 @@ pub struct Post {
 }
 
 impl Post {
+    /// First photo flagged as `primary`
     pub fn cover_photo(&self) -> Option<&Photo> {
         self.photos.iter().find(|p| p.primary)
     }

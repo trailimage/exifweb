@@ -117,12 +117,6 @@ export const shortenLinkText = (text: string) =>
   });
 
 /**
- * Format fractions within text.
- */
-export const fraction = (text: string) =>
-  text.replace(/(\d+)\/(\d+)/, "<sup>$1</sup>&frasl;<sub>$2</sub>");
-
-/**
  * Stylize punctuation.
  */
 export const typography = (text: string) =>
@@ -159,14 +153,6 @@ export function photoTagList(list: string[] | Set<string>): string {
   }
   return links;
 }
-
-/**
- * Material icon tag.
- *
- * @see https://material.io/icons/
- */
-const iconTag = (name: string) =>
-  `<i class="material-icons ${name}">${name}</i>`;
 
 /**
  * HTML tag for post category icon.

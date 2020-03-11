@@ -1,6 +1,7 @@
 use crate::num_traits::FromPrimitive;
 use crate::{min_date, replace_pairs, ExifConfig};
 use chrono::{DateTime, Local};
+use core::cmp::Ordering;
 use serde::{de, Deserialize, Deserializer};
 use std::fmt;
 use std::marker::Copy;
@@ -155,6 +156,26 @@ impl Photo {
     }
 }
 
+impl PartialOrd for Photo {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.name.partial_cmp(&other.name)
+    }
+}
+
+impl Ord for Photo {
+    fn cmp(&self, other: &Photo) -> Ordering {
+        self.name.cmp(&other.name)
+    }
+}
+
+impl PartialEq for Photo {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.date_taken == other.date_taken
+    }
+}
+
+impl Eq for Photo {}
+
 impl Default for Photo {
     fn default() -> Self {
         Photo {
@@ -174,3 +195,10 @@ impl Default for Photo {
         }
     }
 }
+
+/// Simplistic outlier calculation identifies photos that are likely not part of
+/// the main sequence.
+///
+/// - https://en.wikipedia.org/wiki/Outlier
+/// - http://www.wikihow.com/Calculate-Outliers
+fn identify_outliers(photos: Vec<Photo>) {}

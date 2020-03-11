@@ -87,9 +87,67 @@ pub fn slugify(s: &str) -> String {
     MULTI_DASH.replace_all(&text, "-").into_owned()
 }
 
+/// Middle value or average of the two middle values among a list of numbers
+pub fn median(numbers: &mut [i32]) -> f32 {
+    if numbers.len() == 1 {
+        return numbers[0] as f32;
+    }
+    numbers.sort();
+    let mid = (numbers.len() as f64 / 2.0).floor() as usize;
+
+    if numbers.len() % 2 != 0 {
+        numbers[mid] as f32
+    } else {
+        ((numbers[mid - 1] + numbers[mid]) as f32) / 2.0
+    }
+}
+
+#[derive(Debug)]
+pub struct Limits {
+    min: f32,
+    max: f32,
+}
+
+impl PartialEq for Limits {
+    fn eq(&self, other: &Self) -> bool {
+        self.min == other.min && self.max == other.max
+    }
+}
+
+impl Eq for Limits {}
+
+/// Calculate Tukey fence values for a range of numbers. Values outside the
+/// range are considered outliers.
+///
+/// *Parameters*
+///
+/// `distance`: Constant used to calculate fence. Tukey proposed `1.5` for an
+/// "outlier" and `3` for "far out". This method defaults to `3` if no value is
+/// given.
+pub fn boundary(numbers: &mut [i32], distance: i32) -> Option<Limits> {
+    if numbers.is_empty() {
+        return None;
+    }
+
+    numbers.sort();
+    let len = numbers.len();
+    let mid = len / 2;
+    // first quartile
+    let q1 = median(&mut numbers[0..mid]);
+    // third quartile
+    let q3 = median(&mut numbers[mid..len - 1]);
+    // interquartile range: range of the middle 50% of the data
+    let range = q3 - q1;
+
+    Some(Limits {
+        min: q1 - range * (distance as f32),
+        max: q3 + range * (distance as f32),
+    })
+}
+
 #[cfg(test)]
 mod tests {
-    use super::slugify;
+    use super::{boundary, median, slugify, Limits};
     use hashbrown::HashMap;
 
     #[test]
@@ -111,4 +169,32 @@ mod tests {
             assert_eq!(slugify(k), *v);
         }
     }
+
+    #[test]
+    fn median_test() {
+        assert_eq!(median(&mut [1, 2, 3]), 2.0);
+        assert_eq!(median(&mut [3]), 3.0);
+        assert_eq!(median(&mut [4, 5, 6, 7]), 5.5);
+    }
+
+    #[test]
+    fn boundary_test() {
+        assert_eq!(
+            boundary(&mut [1, 2, 3, 9, 27, 36, 22], 3),
+            Some(Limits {
+                min: -65.5,
+                max: 92.0
+            })
+        );
+    }
+
+    // test('calculates median', () => {
+    //     expect(median(1, 2, 3)).toBe(2)
+    //     expect(median(3)).toBe(3)
+    //     expect(median(4, 5, 6, 7)).toBe(5.5)
+    //  })
+
+    //  test('calculates Tukey fence boundaries', () => {
+    //     expect(boundary([1, 2, 3, 9, 27, 36, 22])).toEqual({ min: -65.5, max: 92 })
+    // })
 }
