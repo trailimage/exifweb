@@ -75,7 +75,7 @@ impl<'a> Blog<'a> {
         }
     }
 
-    /// Sanitize EXIF in all post photos
+    /// Sanitize camera informaton in all post photos
     pub fn sanitize_exif(&mut self, config: &ExifConfig) {
         for (_, p) in self.posts.iter_mut() {
             for photo in p.photos.iter_mut() {
@@ -85,8 +85,8 @@ impl<'a> Blog<'a> {
     }
 
     /// Collect unique photo tags as keys to the list of photos that applied
-    /// them
-    pub fn collate_tags(&'a mut self) -> Self {
+    /// those tags
+    pub fn collate_tags<'b>(&'b mut self) {
         let mut tags: HashMap<String, TagPhotos> = HashMap::new();
 
         for (_, p) in self.posts.iter() {
@@ -116,7 +116,5 @@ impl<'a> Blog<'a> {
         }
 
         self.tags = tags;
-
-        self
     }
 }

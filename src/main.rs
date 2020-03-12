@@ -126,7 +126,7 @@ fn main() {
     );
 
     blog.correlate_posts();
-    let blog = blog.collate_tags();
+    blog.collate_tags();
     blog.sanitize_exif(&config.photo.exif);
 }
 
