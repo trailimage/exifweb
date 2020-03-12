@@ -1,4 +1,5 @@
 use crate::config::ExifConfig;
+use crate::tools::slugify;
 use crate::{Category, Post};
 use chrono::{DateTime, Local};
 use hashbrown::HashMap;
@@ -9,23 +10,27 @@ struct KeyTime {
     time: DateTime<Local>,
 }
 
-pub struct PhotoTag {
+/// Unique path to any blog photo
+pub struct PhotoPath<'a> {
+    pub post_key: &'a str,
+    /// Photo file name without extension
+    pub photo_name: &'a str,
+}
+
+pub struct TagPhotos<'a> {
     /// Original tag name (not slugified)
-    pub name: String,
-    /// List of photos that have the tag applied. The contents should be the
-    /// post slug plus the photo name as a URL hash that together can be used
-    /// as a direct link that scrolls to the photo in a post.
-    ///
-    /// *example* `brother-ride-2018/place-we-went#004`
-    pub link: Vec<String>,
+    pub name: &'a str,
+    /// Photos that have the tag applied
+    pub photos: Vec<PhotoPath<'a>>,
 }
 
 #[derive(Default)]
 pub struct Blog<'a> {
+    /// Posts keyed to their slug
     pub posts: HashMap<String, Post>,
     pub categories: Vec<Category<'a>>,
     /// Tag slugs mapped to the original tag names and photos with the tag
-    pub tags: HashMap<String, PhotoTag>,
+    pub tags: HashMap<String, TagPhotos<'a>>,
 }
 
 impl<'a> Blog<'a> {
@@ -79,10 +84,39 @@ impl<'a> Blog<'a> {
         }
     }
 
-    ///
-    pub fn collate_tags(&mut self) {
-        let tags: HashMap<String, PhotoTag> = HashMap::new();
+    /// Collect unique photo tags as keys to the list of photos that applied
+    /// them
+    pub fn collate_tags(&'a mut self) -> Self {
+        let mut tags: HashMap<String, TagPhotos> = HashMap::new();
+
+        for (_, p) in self.posts.iter() {
+            for photo in p.photos.iter() {
+                for tag in photo.tags.iter() {
+                    let tag_slug = slugify(tag);
+                    let photo_path = PhotoPath {
+                        post_key: &p.key,
+                        photo_name: &photo.name,
+                    };
+                    match tags.get_mut(&tag_slug) {
+                        Some(tag_photos) => {
+                            tag_photos.photos.push(photo_path);
+                        }
+                        _ => {
+                            tags.insert(
+                                tag_slug,
+                                TagPhotos {
+                                    name: tag,
+                                    photos: vec![photo_path],
+                                },
+                            );
+                        }
+                    }
+                }
+            }
+        }
 
         self.tags = tags;
+
+        self
     }
 }

@@ -104,7 +104,7 @@ pub struct Camera {
 
 #[derive(Debug)]
 pub struct Photo {
-    /// File name of the photo
+    /// File name of the photo without extension
     pub name: String,
     /// Name of photographer recorded in EXIF
     pub artist: String,
