@@ -241,7 +241,7 @@ fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
                 "{:tab$}{} {}",
                 "",
                 CONFIG_FILE.red(),
-                "not found — skipping".red(),
+                "not found â€” skipping".red(),
                 tab = tab(1)
             );
             return None;
