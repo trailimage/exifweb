@@ -88,7 +88,8 @@ impl<'a> Blog<'a> {
     /// those tags
     pub fn collate_tags<'b>(&'b mut self) {
         let mut tags: HashMap<String, TagPhotos> = HashMap::new();
-
+        // https://stackoverflow.com/questions/30868665/cannot-infer-appropriate-lifetime-for-autoref-when-calling-a-method-from-an-iter
+        // https://stackoverflow.com/questions/27809095/need-help-understanding-iterator-lifetimes
         for (_, p) in self.posts.iter() {
             for photo in p.photos.iter() {
                 for tag in photo.tags.iter() {
