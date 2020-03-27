@@ -86,7 +86,7 @@ impl<'a> Blog<'a> {
 
     /// Collect unique photo tags as keys to the list of photos that applied
     /// those tags
-    pub fn collate_tags(&'a mut self) {
+    pub fn collate_tags(&mut self) {
         let mut tags: HashMap<String, TagPhotos> = HashMap::new();
         // https://stackoverflow.com/questions/30868665/cannot-infer-appropriate-lifetime-for-autoref-when-calling-a-method-from-an-iter
         // https://stackoverflow.com/questions/27809095/need-help-understanding-iterator-lifetimes
