@@ -21,5 +21,6 @@
   "files.associations": {
     "**/templates/*.html": "handlebars",
     "**/templates/*": "handlebars"
-  }
+},
+"rust-analyzer.inlayHints.chainingHints": false
 }

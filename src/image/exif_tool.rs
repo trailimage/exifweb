@@ -3,7 +3,7 @@
 use crate::image::deserialize::{string_number, string_sequence};
 use crate::photo::{Camera, ExposureMode, Location, Photo};
 use crate::{path_name, pos_from_name, tab};
-use chrono::{DateTime, Local, NaiveDateTime};
+use chrono::NaiveDateTime;
 use colored::*;
 use regex::Regex;
 use serde::Deserialize;
@@ -83,7 +83,7 @@ pub struct ExifToolOutput {
 
     // TODO: convert to date
     #[serde(rename = "DateTimeCreated")] // or DateTimeOriginal
-    taken_on: NaiveDateTime,
+    taken_on: Option<String>,
 
     #[serde(rename = "GPSLatitude")]
     latitude: Option<f32>,

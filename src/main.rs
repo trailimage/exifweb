@@ -125,9 +125,11 @@ fn main() {
             .green()
     );
 
-    blog.correlate_posts();
-    blog.collate_tags();
-    blog.sanitize_exif(&config.photo.exif);
+    if !blog.posts.is_empty() {
+        blog.correlate_posts();
+        blog.collate_tags();
+        blog.sanitize_exif(&config.photo.exif);
+    }
 }
 
 /// Attempt to load path entries as if they constitute a post series. `None` is
@@ -241,7 +243,7 @@ fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
                 "{:tab$}{} {}",
                 "",
                 CONFIG_FILE.red(),
-                "not found â€” skipping".red(),
+                "not found: skipping".red(),
                 tab = tab(1)
             );
             return None;

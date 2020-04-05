@@ -11,17 +11,17 @@ struct KeyTime {
 }
 
 /// Unique path to any blog photo
-pub struct PhotoPath<'a> {
-    pub post_key: &'a str,
+pub struct PhotoPath {
+    pub post_key: String,
     /// Photo file name without extension
-    pub photo_name: &'a str,
+    pub photo_name: String,
 }
 
-pub struct TagPhotos<'a> {
+pub struct TagPhotos {
     /// Original tag name (not slugified)
-    pub name: &'a str,
+    pub name: String,
     /// Photos that have the tag applied
-    pub photos: Vec<PhotoPath<'a>>,
+    pub photos: Vec<PhotoPath>,
 }
 
 #[derive(Default)]
@@ -30,7 +30,7 @@ pub struct Blog<'a> {
     pub posts: HashMap<String, Post>,
     pub categories: Vec<Category<'a>>,
     /// Tag slugs mapped to the original tag names and photos with the tag
-    pub tags: HashMap<String, TagPhotos<'a>>,
+    pub tags: HashMap<String, TagPhotos>,
 }
 
 impl<'a> Blog<'a> {
@@ -88,26 +88,26 @@ impl<'a> Blog<'a> {
     /// those tags
     pub fn collate_tags(&mut self) {
         let mut tags: HashMap<String, TagPhotos> = HashMap::new();
-        // https://stackoverflow.com/questions/30868665/cannot-infer-appropriate-lifetime-for-autoref-when-calling-a-method-from-an-iter
-        // https://stackoverflow.com/questions/27809095/need-help-understanding-iterator-lifetimes
-        // https://doc.rust-lang.org/rust-by-example/scope/lifetime.html
+
         for (_, p) in self.posts.iter() {
             for photo in p.photos.iter() {
                 for tag in photo.tags.iter() {
                     let tag_slug = slugify(tag);
                     let photo_path = PhotoPath {
-                        post_key: &p.key,
-                        photo_name: &photo.name,
+                        post_key: p.key.clone(),
+                        photo_name: photo.name.clone(),
                     };
                     match tags.get_mut(&tag_slug) {
                         Some(tag_photos) => {
+                            // add new photo path to existing tag
                             tag_photos.photos.push(photo_path);
                         }
                         _ => {
+                            // create new tag with photo path
                             tags.insert(
                                 tag_slug,
                                 TagPhotos {
-                                    name: tag,
+                                    name: tag.clone(),
                                     photos: vec![photo_path],
                                 },
                             );
