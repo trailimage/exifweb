@@ -1,3 +1,4 @@
+use crate::regex as re;
 use lazy_static::*;
 use regex::{NoExpand, Regex};
 
@@ -23,7 +24,6 @@ pub fn footnotes(notes: &str) -> String {
         static ref ASTERISK: Regex = Regex::new(r"^\s*\*").unwrap();
         static ref SUPERSCRIPT: Regex =
             Regex::new(r"[⁰¹²³⁴⁵⁶⁷⁸⁹]+\s*").unwrap();
-        static ref LINE_FEED: Regex = Regex::new(r"[\r\n]+").unwrap();
         // trailing empty item
         static ref EMPTY_ITEM: Regex =
             Regex::new(r"</span></li><li><span>\s*$").unwrap();
@@ -36,7 +36,7 @@ pub fn footnotes(notes: &str) -> String {
     let li_start = if has_asterisk { " start=\"0\"" } else { "" };
 
     let html = SUPERSCRIPT.replace_all(notes, "");
-    let html = LINE_FEED.replace_all(&*html, "</span></li><li><span>");
+    let html = re::LINE_BREAK.replace_all(&*html, "</span></li><li><span>");
     let html = EMPTY_ITEM.replace_all(&*html, "");
     let html = format!(
         "<ol class=\"footnotes\"{}><li><span>{}</span></li></ol>",
@@ -57,15 +57,12 @@ pub fn footnotes(notes: &str) -> String {
 
 /// Linked list of photo tags
 pub fn photo_tag_list(list: &mut Vec<&str>) -> String {
-    lazy_static! {
-        static ref NON_WORD: Regex = Regex::new(r"\W").unwrap();
-    }
     let mut tag_list: String = String::new();
 
     list.sort();
 
     for t in list.iter() {
-        let slug = NON_WORD.replace_all(&t.to_lowercase(), "").into_owned();
+        let slug = re::NON_WORD.replace_all(&t.to_lowercase(), "").into_owned();
         let tag =
             format!("<a href=\"/photo-tag/{}\" rel=\"tag\">{}</a> ", slug, t);
 
@@ -73,6 +70,49 @@ pub fn photo_tag_list(list: &mut Vec<&str>) -> String {
     }
 
     tag_list
+}
+
+/// If link text is a web address, replace with just domain and page
+// pub fn shorten_link_text(text: &str) -> String {
+
+// }
+
+/// Format poetry text within a blockquote
+pub fn poem(text: &str) -> String {
+    lazy_static! {
+        static ref OPEN_QUOTE: Regex = Regex::new(r"^\s*“").unwrap();
+        static ref CLOSE_QUOTE: Regex =
+            Regex::new(r"”\s*[⁰¹²³⁴⁵⁶⁷⁸⁹]?").unwrap();
+        static ref POEM_START: Regex = Regex::new(r"(^|[\r\n]) *“").unwrap();
+        static ref POEM_END: Regex =
+            Regex::new(r"”([⁰¹²³⁴⁵⁶⁷⁸⁹])? *([\r\n]|$)").unwrap();
+        // TODO: this was needed because Flickr collapsed spaces -- validate
+        static ref INDENT: Regex = Regex::new(r"· · ").unwrap();
+
+        static ref MULTI_BREAK: Regex = Regex::new(r"(<br/>){2,}").unwrap();
+    }
+
+    let mut poem: String = String::from(text);
+
+    if OPEN_QUOTE.is_match(&poem) && CLOSE_QUOTE.is_match(&poem) {
+        // Assume poem is block quoted. A false positive is possible if the poem
+        // just happens to begin and end with internal quotes (note the
+        // dependence on curly quotes).
+        poem = POEM_START.replace_all(&poem, "$1").into_owned();
+        poem = POEM_END.replace_all(&poem, "$1").into_owned();
+    }
+
+    poem = re::TRAILING_SPACE.replace(&poem, "").into_owned();
+    poem = re::LINE_BREAK.replace(&poem, "<br/>").into_owned();
+    poem = MULTI_BREAK.replace(&poem, "</p><p>").into_owned();
+    poem = INDENT
+        .replace(&poem, "<span class=\"tab\"></span>")
+        .into_owned();
+    poem = re::FOOTNOTE_NUMBER
+        .replace(&poem, "$1<sup>$2</sup>")
+        .into_owned();
+
+    format!("<blockquote class=\"poem\"><p>{}</p></blockquote>", poem)
 }
 
 #[cfg(test)]

@@ -10,6 +10,7 @@ mod html;
 mod image;
 mod photo;
 mod post;
+mod regex;
 mod tools;
 
 pub use blog::Blog;
@@ -23,10 +24,10 @@ pub use tools::{
     slugify, tab, LoadError, Pairs,
 };
 
+use ::regex::Regex;
 use colored::*;
 use image::exif_tool::parse_dir;
 use photo::Photo;
-use regex::Regex;
 use serde::de::DeserializeOwned;
 use std::{
     fs,
