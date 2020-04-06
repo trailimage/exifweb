@@ -128,6 +128,14 @@ fn main() {
     if !blog.posts.is_empty() {
         blog.correlate_posts();
         blog.collate_tags();
+
+        println!(
+            "{}",
+            format!("\nFound {} unique photo tags", blog.tags.len())
+                .bold()
+                .green()
+        );
+
         blog.sanitize_exif(&config.photo.exif);
     }
 }

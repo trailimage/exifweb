@@ -9,12 +9,6 @@ const ds = nl + nl;
 const empty = "";
 
 
-it("creates HTML for a photo tag list", () => {
-  expect(html.photoTagList(["Second", "First", "Third and Last"])).toBe(
-    '<a href="/photo-tag/first" rel="tag">First</a> <a href="/photo-tag/second" rel="tag">Second</a> <a href="/photo-tag/thirdandlast" rel="tag">Third and Last</a> '
-  );
-});
-
 it("substitutes nicer typography", () => {
   expect(html.typography(empty)).toBe(empty);
   expect(html.typography('"He said," she said')).toBe(
