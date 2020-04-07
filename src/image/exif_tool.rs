@@ -2,7 +2,7 @@
 
 use crate::image::deserialize::{string_number, string_sequence};
 use crate::photo::{Camera, ExposureMode, Location, Photo};
-use crate::{path_name, pos_from_name, tab};
+use crate::tools::{path_name, pos_from_name, tab};
 use chrono::NaiveDateTime;
 use colored::*;
 use regex::Regex;

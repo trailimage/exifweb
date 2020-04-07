@@ -1,5 +1,6 @@
+use crate::config::ExifConfig;
 use crate::num_traits::FromPrimitive;
-use crate::{min_date, replace_pairs, ExifConfig};
+use crate::tools::{min_date, replace_pairs};
 use chrono::{DateTime, Local};
 use core::cmp::Ordering;
 use serde::{de, Deserialize, Deserializer};

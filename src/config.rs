@@ -1,6 +1,6 @@
 //! TOML configuration models
 
-use crate::Pairs;
+use crate::tools::Pairs;
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
@@ -66,10 +66,27 @@ pub struct PhotoConfig {
     /// Regex pattern to extract photo index and count from file name
     ///
     /// *Exmaple* `(\\d{3})-of-(\\d{3})\\.jpg$` for `neat_place_012-of-015.jpg`
-    pub index_pattern: String,
+    pub index_regex: String,
     pub size: SizeConfig,
     /// EXIF normalization settings
     pub exif: ExifConfig,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct CategoryConfig {
+    pub icon: CategoryIcon,
+    pub what_regex: Option<Pairs>,
+}
+
+/// Match category kind to material icon
+/// https://material.io/icons/
+#[derive(Deserialize, Debug)]
+pub struct CategoryIcon {
+    pub who: String,
+    pub what: String,
+    pub when: String,
+    pub r#where: String,
+    pub default: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -79,8 +96,9 @@ pub struct BlogConfig {
     /// *Examples*
     ///  - `^(\d) - ` for `3 - Cold Ride Home`
     ///  - `^(\d)\.` for `3.cold-ride-home`
-    pub series_index_pattern: String,
+    pub series_index_regex: String,
     /// Redirect source slug to target
     pub redirects: Option<Pairs>,
+    pub category: CategoryConfig,
     pub photo: PhotoConfig,
 }

@@ -1,3 +1,4 @@
+//! Common regular expressions
 use ::regex::Regex;
 use lazy_static::*;
 

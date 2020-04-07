@@ -1,6 +1,6 @@
 # https://github.com/sunng87/handlebars-rust
 
-series_index_pattern = "^(\\d+)\\."
+series_index_regex = "^(\\d+)\\."
 # source to target slug
 redirects = [
    ["brother-rider-2013-a-night-in-pierce", "brother-ride-2013"],
@@ -9,8 +9,29 @@ redirects = [
    ["lunch-at-trinity-lookout", "trinity-lookout-lunch"]
 ]
 
+[category]
+
+    # Match name of "what" category to transportation mode that may in turn
+    # match an icon
+    what_regex = [
+        ["motorcycle", "(KTM|BMW|Honda)"],
+        ["bicycle", "bicycle"],
+        ["hike", "hike"],
+        ["jeep", "jeep"]
+    ]
+
+    [icon]
+    # Map category kind to material icon
+    # https://material.io/icons/
+    who = "person"
+    what = "directions"
+    when = "date_range"
+    where = "map"
+    default = "local_offer"
+
+
 [photo]
-index_pattern = "^(\\d{3}).(jpg|png|tif)$"
+index_regex = "^(\\d{3}).(jpg|png|tif)$"
 
    [photo.size]
    large = 4096

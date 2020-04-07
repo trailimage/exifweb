@@ -39,7 +39,6 @@ export function story(text: string): string {
   return text;
 }
 
-
 /**
  * If link text is a web address, replace with just domain and page.
  */
@@ -79,26 +78,6 @@ export const shortenLinkText = (text: string) =>
     );
   });
 
-
-/**
- * HTML tag for post category icon.
- */
-function categoryIcon(title: string): string {
-  const map = config.style.icon.category;
-
-  if (is.value<{ [key: string]: string }>(map)) {
-    for (const name in map) {
-      if (name == title) {
-        return iconTag(map[name]);
-      }
-    }
-    if (map.default) {
-      return iconTag(map.default);
-    }
-  }
-  return "";
-}
-
 /**
  * HTML tag for mode of travel category icon.
  */
@@ -110,9 +89,9 @@ function travelModeIcon(
   const categoryNames = Array.from(categories.keys());
 
   if (is.value<{ [key: string]: RegExp }>(map)) {
-    const iconName = Object.keys(map).find(iconName => {
+    const iconName = Object.keys(map).find((iconName) => {
       const re = map[iconName];
-      return categoryNames.find(c => re.test(c)) !== undefined;
+      return categoryNames.find((c) => re.test(c)) !== undefined;
     });
 
     if (is.value<string>(iconName)) {
@@ -127,8 +106,6 @@ function travelModeIcon(
 export function linkPattern(url: string): string {
   return `<a href="${url}$1" target="_blank">$1</a>`;
 }
-
-
 
 /**
  * Format Haiku text into three lines.
@@ -150,33 +127,6 @@ export function formatHaiku(text: string, regex: RegExp): string {
     iconTag("spa") +
     "</p>" +
     caption(text.replace(match[0], ""))
-  );
-}
-
-/**
- * Format poetry text within a blockquote.
- */
-function formatPoem(text: string): string {
-  let poem = text;
-
-  if (/^\s*“/.test(poem) && /”\s*[⁰¹²³⁴⁵⁶⁷⁸⁹]?/.test(poem)) {
-    // Assume poem is block quoted. A false positive is possible if the poem
-    // just happens to begin and end with internal quotes (note the dependence
-    // on curly quotes).
-    poem = poem
-      .replace(/(^|[\r\n]) *“/g, "$1")
-      .replace(/”([⁰¹²³⁴⁵⁶⁷⁸⁹])? *([\r\n]|$)/, "$1");
-  }
-
-  return (
-    '<blockquote class="poem"><p>' +
-    poem
-      .replace(re.trailingWhiteSpace, "")
-      .replace(re.lineBreak, "<br/>")
-      .replace(/(<br\/>){2,}/gi, "</p><p>")
-      .replace(re.poetry.indent, '<span class="tab"></span>')
-      .replace(re.footnote.number, "$1<sup>$2</sup>") +
-    "</p></blockquote>"
   );
 }
 
@@ -251,7 +201,5 @@ function caption(text: string): string {
 export const characterEntities = (text: string) =>
   text.replace(
     /[\u00A0-\u2666<>\&]/g,
-    c => "&" + (htmlEntity[c.charCodeAt(0)] || "#" + c.charCodeAt(0)) + ";"
+    (c) => "&" + (htmlEntity[c.charCodeAt(0)] || "#" + c.charCodeAt(0)) + ";"
   );
-
-

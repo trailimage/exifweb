@@ -13,27 +13,22 @@ mod post;
 mod regex;
 mod tools;
 
-pub use blog::Blog;
-pub use caption::Caption;
-pub use category::Category;
-pub use config::*;
+use blog::Blog;
+use category::Category;
+use config::*;
 //pub use photo::{Camera, ExposureMode, Location, Photo};
-pub use post::Post;
-pub use tools::{
-    has_ext, min_date, path_name, pos_from_name, pos_from_path, replace_pairs,
-    slugify, tab, LoadError, Pairs,
-};
-
 use ::regex::Regex;
 use colored::*;
 use image::exif_tool::parse_dir;
 use photo::Photo;
+use post::Post;
 use serde::de::DeserializeOwned;
 use std::{
     fs,
     path::{Path, PathBuf},
 };
 use toml;
+use tools::{path_name, pos_from_path, slugify, tab};
 
 static CONFIG_FILE: &str = "config.toml";
 
@@ -74,8 +69,8 @@ fn main() {
     // It is apparently tricky to have Serde automatically deserialize these
     // to Regex instances so instead do it manually
     let infer_position = Match {
-        series_post: Regex::new(&config.series_index_pattern).unwrap(),
-        photo: Regex::new(&config.photo.index_pattern).unwrap(),
+        series_post: Regex::new(&config.series_index_regex).unwrap(),
+        photo: Regex::new(&config.photo.index_regex).unwrap(),
     };
 
     // iterate over every file or subdirectory within root
