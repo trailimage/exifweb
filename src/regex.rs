@@ -3,6 +3,7 @@ use ::regex::Regex;
 use lazy_static::*;
 
 lazy_static! {
+    pub static ref CURLY_QUOTE: Regex = Regex::new("[“”]").unwrap();
     pub static ref OPEN_QUOTE: Regex = Regex::new(r"^\s*“").unwrap();
     pub static ref NON_WORD: Regex = Regex::new(r"\W").unwrap();
 
@@ -26,7 +27,35 @@ lazy_static! {
 
     pub static ref TRAILING_SPACE: Regex = Regex::new(r"[\r\n\s]*$").unwrap();
 
+    pub static ref EMPTY_P_TAG: Regex = Regex::new(r"<p[^>]*></p>").unwrap();
 
+    /// Capture URL and link text
+    pub static ref ANCHOR_TAG: Regex = Regex::new(r#"<a href=["']([^"']+)['"][^>]*>([^<]+)</a>"#).unwrap();
+
+    /// Whether text contains a poem. Exclude dialog by negating comma or
+    /// question mark before closing quote unless it's footnoted. Capture
+    /// leading space and poem body.
+    ///
+    /// Match any character but new lines:
+    /// ```
+    /// [^\r\n]
+    /// ```
+    ///
+    /// Do not match punctuation followed by closing quote (negative look-
+    /// ahead) unless the quote mark is followed by a superscript number:
+    /// ```
+    /// (?![\.,!?]”[^⁰¹²³⁴⁵⁶⁷⁸⁹])
+    /// ```
+    ///
+    /// Match stops at end of text (`$`) or when there are one or more
+    /// new-lines (`\r\n`):
+    /// ```
+    /// ([\r\n]+|$)
+    /// ```
+    pub static ref POETRY: Regex = Regex::new(r"(^|[\r\n]+)((([^\r\n](?![\.,!?]”[^⁰¹²³⁴⁵⁶⁷⁸⁹])){4,80}([\r\n]+|$)){3,})").unwrap();
+
+    /// Match the first HTML paragraph if it's short and contains a quote
+    pub static ref QUIP: Regex = Regex::new(r"(<p>)(“(?=[^<]*”)[^<]{4,80}</p>)").unwrap();
 }
 
 #[cfg(test)]

@@ -2,10 +2,7 @@ use crate::config::CategoryConfig;
 use crate::regex as re;
 use hashbrown::HashMap;
 use lazy_static::*;
-use regex::{NoExpand, Regex};
-
-static mut mode_icons: HashMap<String, Regex> = HashMap::new();
-static mut loaded: bool = false;
+use regex::{Captures, NoExpand, Regex};
 
 /// Material icon tag
 ///
@@ -29,21 +26,8 @@ pub fn category_icon(kind: &str, config: &CategoryConfig) -> String {
 /// HTML tag for mode of travel category icon
 pub fn travel_mode_icon(
     what_name: &str,
-    config: &CategoryConfig,
+    mode_icons: HashMap<String, Regex>,
 ) -> Option<String> {
-    let modes = config.what_regex?;
-
-    if !loaded {
-        for pair in modes {
-            mode_icons.insert(pair.0, Regex::new(&pair.1).unwrap());
-        }
-        loaded = true;
-    }
-
-    if mode_icons.is_empty() {
-        return None;
-    }
-
     for (k, v) in mode_icons.iter() {
         if v.is_match(&what_name) {
             return Some(k.to_owned());
@@ -63,7 +47,7 @@ pub fn fraction(f: &str) -> String {
 }
 
 /// Replace UTF superscript with HTML superscript
-pub fn footnotes(notes: &str) -> String {
+pub fn format_notes(notes: &str) -> String {
     lazy_static! {
         static ref ASTERISK: Regex = Regex::new(r"^\s*\*").unwrap();
         static ref SUPERSCRIPT: Regex =
@@ -116,13 +100,86 @@ pub fn photo_tag_list(list: &mut Vec<&str>) -> String {
     tag_list
 }
 
-/// If link text is a web address, replace with just domain and page
-// pub fn shorten_link_text(text: &str) -> String {
+/// Convert new lines to HTML paragraphs and normalize links
+pub fn caption(text: &str) -> String {
+    if text.is_empty() {
+        return String::new();
+    }
 
-// }
+    lazy_static! {
+        static ref AFTER_BLOCK_QUOTE: Regex =
+            Regex::new(r"\[/Q][\r\n\s]*([^<]+)").unwrap();
+        static ref START_BLOCK_QUOTE: Regex =
+            Regex::new(r"(<p>)?\[Q]").unwrap();
+        static ref END_BLOCK_QUOTE: Regex =
+            Regex::new(r"\[/Q](</p>)?").unwrap();
+    }
+
+    const POEM: &'static str = "[POEM]";
+    let mut footnotes: String = String::new();
+    let mut poem: String = String::new();
+    let mut html: String = text.to_string();
+
+    // format footnotes separately
+    html = re::FOOTNOTE_TEXT
+        .replace_all(&html, |c: &Captures| {
+            footnotes = format_notes(&c[2]);
+            ""
+        })
+        .into_owned();
+
+    // set poetry aside and replace with placeholder
+    html = re::POETRY
+        .replace_all(&html, |c: &Captures| {
+            poem = format_poem(&c[2]);
+            POEM
+        })
+        .into_owned();
+
+    // remove block quotes and wrap in fake tags that won't match
+    // subsequent operations
+    html = re::BLOCK_QUOTE
+        .replace_all(&html, |c: &Captures| {
+            let quote = re::CURLY_QUOTE.replace_all(&c[2], "").into_owned();
+            format!("[Q]{}[/Q]", quote)
+        })
+        .into_owned();
+
+    html = format!("<p>{}</p>", html);
+
+    html = re::NEW_LINE.replace_all(&html, "</p><p>").into_owned();
+    html = re::EMPTY_P_TAG.replace_all(&html, "").into_owned();
+    html = re::QUIP
+        .replace_all(&html, |c: &Captures| {
+            format!("<p class=\"quip\">{}", &c[2])
+        })
+        .into_owned();
+
+    html = re::FOOTNOTE_NUMBER
+        .replace_all(&html, "$1<sup>$2</sup>")
+        .into_owned();
+
+    // restore block quotes
+    html = AFTER_BLOCK_QUOTE
+        .replace_all(&html, "[/Q]<p class=\"first\">$1")
+        .into_owned();
+    html = START_BLOCK_QUOTE
+        .replace_all(&html, "<blockquote><p>")
+        .into_owned();
+    html = END_BLOCK_QUOTE
+        .replace_all(&html, "</p></blockquote>")
+        .into_owned();
+
+    if !poem.is_empty() {
+        html = html.replace(POEM, &format!("</p>{}<p class=\"first\">", poem));
+        html = re::EMPTY_P_TAG.replace_all(&html, "").into_owned();
+    }
+
+    format!("{}{}", html, footnotes)
+}
 
 /// Format poetry text within a blockquote
-pub fn poem(text: &str) -> String {
+pub fn format_poem(text: &str) -> String {
     lazy_static! {
         static ref OPEN_QUOTE: Regex = Regex::new(r"^\s*“").unwrap();
         static ref CLOSE_QUOTE: Regex =
@@ -162,10 +219,11 @@ pub fn poem(text: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        category_icon, footnotes, fraction, icon_tag, photo_tag_list,
+        category_icon, format_notes, fraction, icon_tag, photo_tag_list,
         travel_mode_icon,
     };
     use crate::config::{CategoryConfig, CategoryIcon};
+    use crate::tools::config_regex;
 
     const NL: &str = "\r\n";
     //const LIPSUM: &str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
@@ -191,7 +249,7 @@ mod tests {
         );
         let target = "<ol class=\"footnotes\" start=\"0\"><li class=\"credit\"><i class=\"material-icons star\">star</i><span>Note about photo credit</span></li><li><span>Some other note</span></li><li><span>Last note</span></li></ol>";
 
-        assert_eq!(footnotes(&source), target);
+        assert_eq!(format_notes(&source), target);
     }
 
     #[test]
@@ -237,7 +295,7 @@ mod tests {
         };
 
         assert_eq!(
-            travel_mode_icon(&"KTM", &config),
+            travel_mode_icon(&"KTM", config_regex(config.what_regex)),
             Some("motorcycle".to_owned())
         );
     }

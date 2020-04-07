@@ -1,4 +1,5 @@
 use chrono::{DateTime, Local};
+use hashbrown::HashMap;
 use lazy_static::*;
 use regex::Regex;
 use std::path::{Path, PathBuf};
@@ -21,6 +22,19 @@ impl fmt::Display for LoadError {
 
 pub fn tab(n: usize) -> usize {
     n * 3
+}
+
+/// Convert vector of tuples, used in configuration, to hashmap of strings and
+/// regular expressions
+pub fn config_regex(pairs: Option<Pairs>) -> HashMap<String, Regex> {
+    let mut h: HashMap<String, Regex> = HashMap::new();
+
+    if let Some(pair) = pairs {
+        for p in pair {
+            h.insert(p.0, Regex::new(&p.1).unwrap());
+        }
+    }
+    h
 }
 
 // This is important for other errors to wrap this one.

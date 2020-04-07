@@ -78,31 +78,6 @@ export const shortenLinkText = (text: string) =>
     );
   });
 
-/**
- * HTML tag for mode of travel category icon.
- */
-function travelModeIcon(
-  categories: Map<string, string> | Map<string, Category>
-): string {
-  const icons = config.style.icon;
-  const map = icons.mode;
-  const categoryNames = Array.from(categories.keys());
-
-  if (is.value<{ [key: string]: RegExp }>(map)) {
-    const iconName = Object.keys(map).find((iconName) => {
-      const re = map[iconName];
-      return categoryNames.find((c) => re.test(c)) !== undefined;
-    });
-
-    if (is.value<string>(iconName)) {
-      return iconName;
-    } else if (icons.defaultMode) {
-      return icons.defaultMode;
-    }
-  }
-  return "";
-}
-
 export function linkPattern(url: string): string {
   return `<a href="${url}$1" target="_blank">$1</a>`;
 }
@@ -194,12 +169,3 @@ function caption(text: string): string {
   }
   return "";
 }
-
-/**
- * Obfuscate text as HTML character entities.
- */
-export const characterEntities = (text: string) =>
-  text.replace(
-    /[\u00A0-\u2666<>\&]/g,
-    (c) => "&" + (htmlEntity[c.charCodeAt(0)] || "#" + c.charCodeAt(0)) + ";"
-  );
