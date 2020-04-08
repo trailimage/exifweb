@@ -7,7 +7,6 @@ lazy_static! {
     static ref TRAILING_SPACE: Regex = Regex::new(r"[\r\n\s]*$").unwrap();
     static ref LINE_BREAK: Regex = Regex::new(r"\r*\n").unwrap();
     static ref NEW_LINE: Regex = Regex::new(r"(\r\n|\n|\r)").unwrap();
-    //static ref ANCHOR_TAG: Regex = Regex::new(r#"<a href=["'](?P<url>[^"']+)['"][^>]*>(?P<label>[^<]+)</a>"#).unwrap();
 }
 
 /// Material icon tag
@@ -63,6 +62,27 @@ fn format_superscript(text: &str) -> String {
         .into_owned()
 }
 
+/// Convert bare URLs into HTML links
+fn link_urls(text: &str) -> String {
+    lazy_static! {
+        static ref URL: Regex =
+            Regex::new(r"\b(?P<url>https?://[^\s]+)\b").unwrap();
+        static ref DOMAIN: Regex = Regex::new(r"https?://[^/]+/").unwrap();
+        static ref LAST_PATH: Regex =
+            Regex::new(r"/([^/?#]+)(\?|\#|$)").unwrap();
+    }
+
+    URL.replace_all(&text, |c: &Captures| {
+        let url: &str = &c["url"];
+        let domain: &str = &DOMAIN.captures(url).unwrap()[0];
+        let path = url.replace(domain, "");
+        let page: &str = &LAST_PATH.captures(&path).unwrap()[1];
+
+        format!("<a href=\"{}\">{}&hellip;/{}</a>", url, domain, page)
+    })
+    .into_owned()
+}
+
 /// Replace UTF superscript with HTML superscript
 fn format_footnotes(notes: &str) -> String {
     lazy_static! {
@@ -79,11 +99,14 @@ fn format_footnotes(notes: &str) -> String {
     let has_asterisk: bool = ASTERISK.is_match(notes);
     // photo credit asterisk becomes note 0
     let li_start = if has_asterisk { " start=\"0\"" } else { "" };
+    let mut html: String = link_urls(&notes);
 
-    let html = SUPERSCRIPT.replace_all(notes, "");
-    let html = LINE_BREAK.replace_all(&*html, "</span></li><li><span>");
-    let html = EMPTY_ITEM.replace_all(&*html, "");
-    let html = format!(
+    html = SUPERSCRIPT.replace_all(&html, "").into_owned();
+    html = LINE_BREAK
+        .replace_all(&html, "</span></li><li><span>")
+        .into_owned();
+    html = EMPTY_ITEM.replace_all(&html, "").into_owned();
+    html = format!(
         "<ol class=\"footnotes\"{}><li><span>{}</span></li></ol>",
         li_start, html
     );
@@ -174,7 +197,7 @@ pub fn caption(text: &str) -> String {
     lazy_static! {
         static ref EMPTY_P_TAG: Regex = Regex::new(r"<p[^>]*></p>").unwrap();
         // match the first HTML paragraph if it's short and contains a quote
-        static ref QUIP: Regex = Regex::new(r"(<p>)(“[^<]{4,80}</p>)").unwrap();
+        static ref QUIP: Regex = Regex::new(r"^\s*<p>(?P<quote>“[^”]{4,80}”[^<]{0,50})</p>").unwrap();
         // poems are preceded and followed by lone tilde (~)
         static ref POEM: Regex = Regex::new(r"(^|\s+)~(\r\n|\r|\n)(?P<poem>([^\r\n]{3,100}([\r\n]+)){3,})~(\s+|$)").unwrap();
         // notes are preceded by three underscores (___) and followed by EOF
@@ -210,7 +233,7 @@ pub fn caption(text: &str) -> String {
     html = EMPTY_P_TAG.replace_all(&html, "").into_owned();
     html = QUIP
         .replace_all(&html, |c: &Captures| {
-            format!("<p class=\"quip\">{}", &c[2])
+            format!("<p class=\"quip\">{}</p>", &c["quote"])
         })
         .into_owned();
 
@@ -270,8 +293,8 @@ fn format_poem(text: &str) -> String {
 mod tests {
     use super::{
         caption, category_icon, format_block_quote, format_footnotes,
-        format_line_breaks, format_poem, fraction, icon_tag, photo_tag_list,
-        travel_mode_icon, unformat_block_quote,
+        format_line_breaks, format_poem, fraction, icon_tag, link_urls,
+        photo_tag_list, travel_mode_icon, unformat_block_quote,
     };
     use crate::config::{CategoryConfig, CategoryIcon};
     use crate::tools::config_regex;
@@ -373,6 +396,25 @@ mod tests {
             <p>three</p>\
             <p>four</p>";
         assert_eq!(format_line_breaks(&source), target);
+    }
+
+    #[test]
+    fn url_formatting() {
+        const URL1: &str = "http://en.wikipedia.org/wiki/Sweet_Pickles";
+        const URL2:&str = "http://www.amazon.com/Cheryl-Dudley/e/B001JP7LNO/ref=ntt_athr_dp_pel_1";
+
+        let source = format!(
+            "¹ Wikipedia: {} ² Cheryl Reed, January 17, 2003: {}",
+            URL1, URL2,
+        );
+
+        let target = format!(
+            "¹ Wikipedia: <a href=\"{}\">http://en.wikipedia.org/&hellip;/Sweet_Pickles</a> \
+            ² Cheryl Reed, January 17, 2003: <a href=\"{}\">http://www.amazon.com/&hellip;/ref=ntt_athr_dp_pel_1</a>",
+            URL1, URL2,
+        );
+
+        assert_eq!(link_urls(&source), target);
     }
 
     #[test]
@@ -684,6 +726,29 @@ mod tests {
     }
 
     #[test]
+    fn does_not_make_conversation_into_poem() {
+        let source = format!(
+            "“What’s wrong Brenna?” I ask.{cr}\
+            {cr}\
+            “I can’t sleep.”{cr}\
+            {cr}\
+            “Just lay down.”{cr}\
+            {cr}\
+            “I can’t.”{cr}\
+            {cr}\
+            “Brenna,” I insist, “lay down.”",
+            cr = NEW_LINE
+        );
+        let target = "<p class=\"quip\">“What’s wrong Brenna?” I ask.</p>\
+            <p>“I can’t sleep.”</p>\
+            <p>“Just lay down.”</p>\
+            <p>“I can’t.”</p>\
+            <p>“Brenna,” I insist, “lay down.”</p>";
+
+        assert_eq!(caption(&source), target);
+    }
+
+    #[test]
     fn footnoted_poem() {
         const P1: &str = "Now many years have passed since we lived there \
             and little connects us to that place—now in other hands—other than \
@@ -694,7 +759,11 @@ mod tests {
             Kaden’s seventh birthday party. I don’t see my nephews often so I \
             was glad for the coincidence of events.";
 
-        let source = format!("{p1}{cr}\
+        const URL1: &str = "http://en.wikipedia.org/wiki/Sweet_Pickles";
+        const URL2: &str = "http://www.amazon.com/Cheryl-Dudley/e/B001JP7LNO/ref=ntt_athr_dp_pel_1";
+
+        let source = format!(
+            "{p1}{cr}\
             ~{cr}\
             When I drive by I always think I see myself{cr}\
             standing in the large picture window waving,{cr}\
@@ -737,10 +806,14 @@ mod tests {
             {cr}\
             {p3}{cr}\
             ___{cr}\
-            ¹ Wikipedia: http://en.wikipedia.org/wiki/Sweet_Pickles{cr}\
-            ² Cheryl Reed, January 17, 2003: \
-            http://www.amazon.com/Cheryl-Dudley/e/B001JP7LNO/ref=ntt_athr_dp_pel_1",
-            cr=NEW_LINE, p1 = P1, p3=P3);
+            ¹ Wikipedia: {url1}{cr}\
+            ² Cheryl Reed, January 17, 2003: {url2}",
+            cr = NEW_LINE,
+            p1 = P1,
+            p3 = P3,
+            url1 = URL1,
+            url2 = URL2
+        );
 
         let target = format!("<p>{p1}</p>\
             <blockquote class=\"poem\"><p>\
@@ -785,9 +858,14 @@ mod tests {
             our eyes all reflecting the same eternal glow.</p>\
             <p>{p3}</p>\
             <ol class=\"footnotes\">\
-                <li><span>Wikipedia: http://en.wikipedia.org/wiki/Sweet_Pickles</span></li>\
-                <li><span>Cheryl Reed, January 17, 2003: http://www.amazon.com/Cheryl-Dudley/e/B001JP7LNO/ref=ntt_athr_dp_pel_1</span></li>\
-            </ol>", p1 = P1, p3=P3);
+                <li><span>Wikipedia: {link1}</span></li>\
+                <li><span>Cheryl Reed, January 17, 2003: {link2}</span></li>\
+            </ol>",
+            p1 = P1,
+            p3 = P3,
+            link1 = link_urls(URL1),
+            link2 = link_urls(URL2)
+        );
 
         assert_eq!(caption(&source), target);
     }
