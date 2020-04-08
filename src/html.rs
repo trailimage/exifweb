@@ -682,4 +682,113 @@ mod tests {
 
         assert_eq!(caption(&source), target);
     }
+
+    #[test]
+    fn footnoted_poem() {
+        const P1: &str = "Now many years have passed since we lived there \
+            and little connects us to that place—now in other hands—other than \
+            our shared memories. My mom has written of Our Old House:";
+
+        const P3: &str =
+            "This particular weekend had an additional attraction, my nephew \
+            Kaden’s seventh birthday party. I don’t see my nephews often so I \
+            was glad for the coincidence of events.";
+
+        let source = format!("{p1}{cr}\
+            ~{cr}\
+            When I drive by I always think I see myself{cr}\
+            standing in the large picture window waving,{cr}\
+            wishing I’d stop by and have a spot of tea.{cr}\
+            {cr}\
+            But I know its only what I want{cr}\
+            because I didn’t want to leave, you see,{cr}\
+            and when I drive by, smell the row{cr}\
+            of lilacs I planted along the road,{cr}\
+            see the gray smoke curling from the chimney,{cr}\
+            {cr}\
+            I want to pull in and stop,{cr}\
+            pretend I never left, unload the groceries,{cr}\
+            stoke the fire, straighten the photos on the wall{cr}\
+            and wash the dishes that have stacked{cr}\
+            by the sink for the last ten years.{cr}\
+            {cr}\
+            You’d be there, too, in your blue pajamas{cr}\
+            asking for a story. We’d climb the narrow{cr}\
+            staircase to your room and turn on the lamp,{cr}\
+            listening for a moment to the frogs outside,{cr}\
+            that bellowed thousands strong.{cr}\
+            {cr}\
+            I’d read your Sweet Pickles books¹{cr}\
+            and sing that Bumble Bee song you loved.{cr}\
+            Then we’d lay quietly and never grow old,{cr}\
+            while time went on without us, down{cr}\
+            the dusty country road, slipping over the horizon,{cr}\
+            leaving a soft orange glow for us to read by.²{cr}\
+            ~{cr}\
+            In recent years I’ve tried to make the annual, three-hundred mile \
+            pilgrimage to “Troy Days.”³ Starchy pancake-feed food, a couple \
+            fire trucks and horses paraded down main street, and an evening of \
+            under-age inebriation make a good time, of course, but my trip is \
+            not for those things. Troy Days is when and where my dad’s \
+            brothers reunite annually from their homes across the western U.S. \
+            In their company, my mind can visit our old house, find a place \
+            alongside my dad, my grandma and the rest seated around a fire, \
+            our eyes all reflecting the same eternal glow.{cr}\
+            {cr}\
+            {p3}{cr}\
+            ___{cr}\
+            ¹ Wikipedia: http://en.wikipedia.org/wiki/Sweet_Pickles{cr}\
+            ² Cheryl Reed, January 17, 2003: \
+            http://www.amazon.com/Cheryl-Dudley/e/B001JP7LNO/ref=ntt_athr_dp_pel_1",
+            cr=NEW_LINE, p1 = P1, p3=P3);
+
+        let target = format!("<p>{p1}</p>\
+            <blockquote class=\"poem\"><p>\
+            When I drive by I always think I see myself<br/>\
+            standing in the large picture window waving,<br/>\
+            wishing I’d stop by and have a spot of tea.\
+            </p><p>\
+            But I know its only what I want<br/>\
+            because I didn’t want to leave, you see,<br/>\
+            and when I drive by, smell the row<br/>\
+            of lilacs I planted along the road,<br/>\
+            see the gray smoke curling from the chimney,\
+            </p><p>\
+            I want to pull in and stop,<br/>\
+            pretend I never left, unload the groceries,<br/>\
+            stoke the fire, straighten the photos on the wall<br/>\
+            and wash the dishes that have stacked<br/>\
+            by the sink for the last ten years.\
+            </p><p>\
+            You’d be there, too, in your blue pajamas<br/>\
+            asking for a story. We’d climb the narrow<br/>\
+            staircase to your room and turn on the lamp,<br/>\
+            listening for a moment to the frogs outside,<br/>\
+            that bellowed thousands strong.\
+            </p><p>\
+            I’d read your Sweet Pickles books<sup>¹</sup><br/>\
+            and sing that Bumble Bee song you loved.<br/>\
+            Then we’d lay quietly and never grow old,<br/>\
+            while time went on without us, down<br/>\
+            the dusty country road, slipping over the horizon,<br/>\
+            leaving a soft orange glow for us to read by.<sup>²</sup>\
+            </p></blockquote>\
+            <p class=\"first\">\
+            In recent years I’ve tried to make the annual, three-hundred mile \
+            pilgrimage to “Troy Days.”<sup>³</sup> Starchy pancake-feed food, a couple \
+            fire trucks and horses paraded down main street, and an evening of \
+            under-age inebriation make a good time, of course, but my trip is \
+            not for those things. Troy Days is when and where my dad’s \
+            brothers reunite annually from their homes across the western U.S. \
+            In their company, my mind can visit our old house, find a place \
+            alongside my dad, my grandma and the rest seated around a fire, \
+            our eyes all reflecting the same eternal glow.</p>\
+            <p>{p3}</p>\
+            <ol class=\"footnotes\">\
+                <li><span>Wikipedia: http://en.wikipedia.org/wiki/Sweet_Pickles</span></li>\
+                <li><span>Cheryl Reed, January 17, 2003: http://www.amazon.com/Cheryl-Dudley/e/B001JP7LNO/ref=ntt_athr_dp_pel_1</span></li>\
+            </ol>", p1 = P1, p3=P3);
+
+        assert_eq!(caption(&source), target);
+    }
 }

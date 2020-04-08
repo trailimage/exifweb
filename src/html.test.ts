@@ -1,38 +1,5 @@
 it("formats inline poems", () => {
-  const poemText = `Have you ever stood on the top of a mountain
-And gazed down on the grandeur below
-And thought of the vast army of people
-· · Who never get out as we go?
 
-Have you ever trailed into the desert
-Where the hills fade from gold into blue,
-And then thought of some poor other fellow
-Who would like to stand alongside of you?`;
-
-  const poemHTML =
-    '<blockquote class="poem"><p>' +
-    "Have you ever stood on the top of a mountain<br/>" +
-    "And gazed down on the grandeur below<br/>" +
-    "And thought of the vast army of people<br/>" +
-    '<span class="tab"></span>Who never get out as we go?</p><p>' +
-    "Have you ever trailed into the desert<br/>" +
-    "Where the hills fade from gold into blue,<br/>" +
-    "And then thought of some poor other fellow<br/>" +
-    "Who would like to stand alongside of you?</p></blockquote>";
-
-  // no text after
-  let source = lipsum + ds + poemText;
-  let target = "<p>" + lipsum + "</p>" + poemHTML;
-
-  expect(html.caption(source)).toBe(target);
-
-  // text after poem
-  source = lipsum + ds + poemText + ds + lipsum;
-  target =
-    "<p>" + lipsum + "</p>" + poemHTML + '<p class="first">' + lipsum + "</p>";
-
-  expect(html.caption(source)).toBe(target);
-});
 
 it("formats footnoted poems", () => {
   const source = `Now many years have passed since we lived there and little connects us to that place—now in other hands—other than our shared memories. My mom has written of Our Old House:
