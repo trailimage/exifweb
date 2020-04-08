@@ -1,8 +1,14 @@
 use crate::config::CategoryConfig;
-use crate::regex as re;
 use hashbrown::HashMap;
 use lazy_static::*;
 use regex::{Captures, NoExpand, Regex};
+
+lazy_static! {
+    static ref TRAILING_SPACE: Regex = Regex::new(r"[\r\n\s]*$").unwrap();
+    static ref LINE_BREAK: Regex = Regex::new(r"\r*\n").unwrap();
+    static ref NEW_LINE: Regex = Regex::new(r"(\r\n|\n|\r)").unwrap();
+    //static ref ANCHOR_TAG: Regex = Regex::new(r#"<a href=["'](?P<url>[^"']+)['"][^>]*>(?P<label>[^<]+)</a>"#).unwrap();
+}
 
 /// Material icon tag
 ///
@@ -33,12 +39,12 @@ pub fn travel_mode_icon(
             return Some(k.to_owned());
         }
     }
-
     None
 }
 
 pub fn fraction(f: &str) -> String {
     lazy_static! {
+        // two numbers separated by a forward slash
         static ref SLASH_NUMBERS: Regex = Regex::new(r"(\d+)/(\d+)").unwrap();
     }
     SLASH_NUMBERS
@@ -46,8 +52,19 @@ pub fn fraction(f: &str) -> String {
         .into_owned()
 }
 
+fn format_superscript(text: &str) -> String {
+    lazy_static! {
+        // match superscripts but don't match atomic numbers
+        static ref FOOTNOTE_NUMBER: Regex =
+            Regex::new(r"([^/\s])([⁰¹²³⁴⁵⁶⁷⁸⁹]+)\B").unwrap();
+    }
+    FOOTNOTE_NUMBER
+        .replace_all(text, "$1<sup>$2</sup>")
+        .into_owned()
+}
+
 /// Replace UTF superscript with HTML superscript
-fn format_notes(notes: &str) -> String {
+fn format_footnotes(notes: &str) -> String {
     lazy_static! {
         static ref ASTERISK: Regex = Regex::new(r"^\s*\*").unwrap();
         static ref SUPERSCRIPT: Regex =
@@ -64,7 +81,7 @@ fn format_notes(notes: &str) -> String {
     let li_start = if has_asterisk { " start=\"0\"" } else { "" };
 
     let html = SUPERSCRIPT.replace_all(notes, "");
-    let html = re::LINE_BREAK.replace_all(&*html, "</span></li><li><span>");
+    let html = LINE_BREAK.replace_all(&*html, "</span></li><li><span>");
     let html = EMPTY_ITEM.replace_all(&*html, "");
     let html = format!(
         "<ol class=\"footnotes\"{}><li><span>{}</span></li></ol>",
@@ -83,20 +100,17 @@ fn format_notes(notes: &str) -> String {
     html
 }
 
-fn symbols(text: &str) -> String {
-    text.replace("“", "&ldquo;")
-        .replace("”", "&rdquo;")
-        .replace("’", "&rsquo;")
-}
-
 /// Linked list of photo tags
 pub fn photo_tag_list(list: &mut Vec<&str>) -> String {
+    lazy_static! {
+        static ref NON_WORD: Regex = Regex::new(r"\W").unwrap();
+    }
     let mut tag_list: String = String::new();
 
     list.sort();
 
     for t in list.iter() {
-        let slug = re::NON_WORD.replace_all(&t.to_lowercase(), "").into_owned();
+        let slug = NON_WORD.replace_all(&t.to_lowercase(), "").into_owned();
         let tag =
             format!("<a href=\"/photo-tag/{}\" rel=\"tag\">{}</a> ", slug, t);
 
@@ -108,17 +122,23 @@ pub fn photo_tag_list(list: &mut Vec<&str>) -> String {
 
 /// Remove block quotes and wrap in fake tags that won't match subsequent
 /// operations
-fn unformat_quote(html: &str) -> String {
-    re::BLOCK_QUOTE
+fn unformat_block_quote(html: &str) -> String {
+    lazy_static! {
+        // long quote followed by line break or end of text
+        static ref BLOCK_QUOTE: Regex =
+            Regex::new(r"(\r\n|\r|\n|^)\s*(?P<quote>“[^”]{200,}”[⁰¹²³⁴⁵⁶⁷⁸⁹]*)\s*(\r\n|\r|\n|$)").unwrap();
+        static ref CURLY_QUOTE: Regex = Regex::new("[“”]").unwrap();
+    }
+    BLOCK_QUOTE
         .replace_all(&html, |c: &Captures| {
-            let quote =
-                re::CURLY_QUOTE.replace_all(&c["quote"], "").into_owned();
+            let quote = CURLY_QUOTE.replace_all(&c["quote"], "").into_owned();
             format!("[Q]{}[/Q]", quote)
         })
         .into_owned()
 }
 
-fn format_quote(text: &str) -> String {
+/// Restore HTML blockquote tags
+fn format_block_quote(text: &str) -> String {
     lazy_static! {
         static ref AFTER_BLOCK_QUOTE: Regex =
             Regex::new(r"\[/Q\][\r\n\s]*([^<]+)").unwrap();
@@ -151,141 +171,109 @@ pub fn caption(text: &str) -> String {
         return String::new();
     }
 
-    const POEM: &'static str = "[POEM]";
-    let mut footnotes: String = String::new();
-    let mut poem: String = String::new();
-    let mut html: String = text.to_string(); //symbols(text);
+    lazy_static! {
+        static ref EMPTY_P_TAG: Regex = Regex::new(r"<p[^>]*></p>").unwrap();
+        // match the first HTML paragraph if it's short and contains a quote
+        static ref QUIP: Regex = Regex::new(r"(<p>)(“[^<]{4,80}</p>)").unwrap();
+        // poems are preceded and followed by lone tilde (~)
+        static ref POEM: Regex = Regex::new(r"(^|\s+)~(\r\n|\r|\n)(?P<poem>([^\r\n]{3,100}([\r\n]+)){3,})~(\s+|$)").unwrap();
+        // notes are preceded by three underscores (___) and followed by EOF
+        static ref FOOTNOTES: Regex =
+            Regex::new(r"(^|[\r\n]+)_{3}[\r\n]*(?P<notes>[\s\S]+)$").unwrap();
+    }
 
-    // format footnotes separately
-    html = re::FOOTNOTE_TEXT
+    // unique placeholder key for each poem
+    let poem_key = |i: usize| format!("[P_{}]", i);
+    let mut footnotes: String = String::new();
+    let mut poems: Vec<String> = Vec::new();
+    let mut html: String = text.to_string();
+
+    // set aside footnotes (no placeholder needed because always last)
+    html = FOOTNOTES
         .replace_all(&html, |c: &Captures| {
-            footnotes = format_notes(&c["notes"]);
+            footnotes = format_footnotes(&c["notes"]);
             ""
         })
         .into_owned();
 
-    // set poetry aside and replace with placeholder
-    html = re::POETRY
+    // set aside poems and substitute with placeholder
+    html = POEM
         .replace_all(&html, |c: &Captures| {
-            poem = format_poem(&c[2]);
-            POEM
+            poems.push(format_poem(&c["poem"]));
+            poem_key(poems.len() - 1)
         })
         .into_owned();
 
-    html = unformat_quote(&html);
+    html = unformat_block_quote(&html);
     html = format!("<p>{}</p>", html);
-    html = re::NEW_LINE.replace_all(&html, "</p><p>").into_owned();
-    html = re::EMPTY_P_TAG.replace_all(&html, "").into_owned();
-    html = re::QUIP
+    html = NEW_LINE.replace_all(&html, "</p><p>").into_owned();
+    html = EMPTY_P_TAG.replace_all(&html, "").into_owned();
+    html = QUIP
         .replace_all(&html, |c: &Captures| {
             format!("<p class=\"quip\">{}", &c[2])
         })
         .into_owned();
 
-    html = re::FOOTNOTE_NUMBER
-        .replace_all(&html, "$1<sup>$2</sup>")
-        .into_owned();
+    html = format_superscript(&html);
+    html = format_block_quote(&html);
 
-    html = format_quote(&html);
-
-    if !poem.is_empty() {
-        html = html.replace(POEM, &format!("</p>{}<p class=\"first\">", poem));
-        html = re::EMPTY_P_TAG.replace_all(&html, "").into_owned();
+    for (i, p) in poems.iter().enumerate() {
+        // re-insert poems
+        let key = poem_key(i);
+        html = html.replace(&key, &format!("</p>{}<p class=\"first\">", p));
+        html = EMPTY_P_TAG.replace_all(&html, "").into_owned();
     }
 
     format!("{}{}", html, footnotes)
 }
 
-/// Format paragraphs and prose
-pub fn story(text: &str) -> String {
-    if text.is_empty() {
-        return text.to_owned();
-    }
-    let mut html: String = text.to_owned();
-
-    if re::ALL_POEM.is_match(&html) {
-        // text is entirely a poem or haiku
-        html = re::POEM_DELIMITER.replace_all(&html, "").into_owned();
-
-        if re::HAIKU.is_match(&html) {
-            html = format_haiku(&html, &re::HAIKU);
-        } else {
-            // not haiku
-            html = re::LINE_BREAK.replace_all(&html, "<br/>").into_owned();
-            html = re::POEM_INDENT
-                .replace_all(&html, "<span class=\"tab\"></span>")
-                .into_owned();
-            html = format!("<p class=\"poem\">{}</p>", html);
-        }
-    } else if re::BEGINS_WITH_HAIKU.is_match(&html) {
-        html = format_haiku(&html, &re::BEGINS_WITH_HAIKU);
-    } else {
-        html = caption(&html);
-    }
-
-    html
-}
-
-/// Format poetry text within a blockquote
-fn format_poem(text: &str) -> String {
+fn format_line_breaks(text: &str) -> String {
     lazy_static! {
-        static ref OPEN_QUOTE: Regex = Regex::new(r"^\s*“").unwrap();
-        static ref CLOSE_QUOTE: Regex =
-            Regex::new(r"”\s*[⁰¹²³⁴⁵⁶⁷⁸⁹]?").unwrap();
-        static ref POEM_START: Regex = Regex::new(r"(^|[\r\n]) *“").unwrap();
-        static ref POEM_END: Regex =
-            Regex::new(r"”([⁰¹²³⁴⁵⁶⁷⁸⁹])? *([\r\n]|$)").unwrap();
         static ref MULTI_BREAK: Regex = Regex::new(r"(<br/>){2,}").unwrap();
     }
+    let text = LINE_BREAK.replace_all(&text, "<br/>").into_owned();
+    let text = MULTI_BREAK.replace_all(&text, "</p><p>").into_owned();
 
-    let mut poem: String = String::from(text);
-
-    if OPEN_QUOTE.is_match(&poem) && CLOSE_QUOTE.is_match(&poem) {
-        // Assume poem is block quoted. A false positive is possible if the poem
-        // just happens to begin and end with internal quotes (note the
-        // dependence on curly quotes).
-        poem = POEM_START.replace_all(&poem, "$1").into_owned();
-        poem = POEM_END.replace_all(&poem, "$1").into_owned();
-    }
-
-    poem = re::TRAILING_SPACE.replace_all(&poem, "").into_owned();
-    poem = re::LINE_BREAK.replace_all(&poem, "<br/>").into_owned();
-    poem = MULTI_BREAK.replace_all(&poem, "</p><p>").into_owned();
-    poem = re::POEM_INDENT
-        .replace_all(&poem, "<span class=\"tab\"></span>")
-        .into_owned();
-    poem = re::FOOTNOTE_NUMBER
-        .replace_all(&poem, "$1<sup>$2</sup>")
-        .into_owned();
-
-    format!("<blockquote class=\"poem\"><p>{}</p></blockquote>", poem)
+    format!("<p>{}</p>", text)
 }
 
-/// Format haiku into three lines
-fn format_haiku(text: &str, reg: &Regex) -> String {
-    match reg.captures(text) {
-        None => text.to_owned(),
-        Some(caps) => format!(
-            "<p class=\"haiku\">{}<br/>{}<br/>{}{}</p>{}",
-            &caps[1],
-            &caps[2],
-            &caps[3],
-            icon_tag("spa"),
-            // any subsequent non-haiku text
-            caption(&text.replace(&caps[0], ""))
-        ),
+fn format_poem(text: &str) -> String {
+    lazy_static! {
+        // exactly three lines
+        static ref HAIKU: Regex =
+            Regex::new(r"^([^\r\n]{3,100}([\r\n]+|$)){3}$").unwrap();
+        // indentations in poems are three spaces
+        static ref POEM_INDENT: Regex = Regex::new(" {3}").unwrap();
     }
+
+    let (css, icon) = if HAIKU.is_match(&text) {
+        ("haiku", icon_tag("spa"))
+    } else {
+        ("poem", String::new())
+    };
+    let mut poem: String = text.to_owned();
+
+    poem = TRAILING_SPACE.replace_all(&poem, "").into_owned();
+    poem = format_line_breaks(&poem);
+    poem = POEM_INDENT
+        .replace_all(&poem, "<span class=\"tab\"></span>")
+        .into_owned();
+    poem = format_superscript(&poem);
+
+    format!(
+        "<blockquote class=\"{}\">{}{}</blockquote>",
+        css, poem, icon
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
-        caption, category_icon, format_haiku, format_notes, format_quote,
-        fraction, icon_tag, photo_tag_list, story, travel_mode_icon,
-        unformat_quote,
+        caption, category_icon, format_block_quote, format_footnotes,
+        format_line_breaks, format_poem, fraction, icon_tag, photo_tag_list,
+        travel_mode_icon, unformat_block_quote,
     };
     use crate::config::{CategoryConfig, CategoryIcon};
-    use crate::regex as re;
     use crate::tools::config_regex;
 
     const NEW_LINE: &str = "\r\n";
@@ -293,7 +281,7 @@ mod tests {
     const QUOTE:&str = "Firefighters are working to get a handle on several wildfires that sparked during a lightning storm on Thursday night. Strong winds and poor visibility created challenges for firefighters working the blazes on Saturday ...";
 
     #[test]
-    fn icon_tag_test() {
+    fn creates_icon_tag() {
         assert_eq!(
             icon_tag("star"),
             "<i class=\"material-icons star\">star</i>"
@@ -301,12 +289,12 @@ mod tests {
     }
 
     #[test]
-    fn fraction_test() {
+    fn fraction_html() {
         assert_eq!(fraction("1/2"), "<sup>1</sup>&frasl;<sub>2</sub>");
     }
 
     #[test]
-    fn footnotes_test() {
+    fn footnotes_as_ordered_list() {
         let source = format!(
             "* Note about photo credit{cr}\
             ¹ Some other note{cr}\
@@ -319,11 +307,11 @@ mod tests {
             <li><span>Last note</span></li>\
             </ol>";
 
-        assert_eq!(format_notes(&source), target);
+        assert_eq!(format_footnotes(&source), target);
     }
 
     #[test]
-    fn photo_tag_list_test() {
+    fn photo_tag_lists() {
         let mut tags = vec!["Second", "First", "Third and Last"];
         let target = "<a href=\"/photo-tag/first\" rel=\"tag\">First</a> <a href=\"/photo-tag/second\" rel=\"tag\">Second</a> <a href=\"/photo-tag/thirdandlast\" rel=\"tag\">Third and Last</a> ";
 
@@ -331,7 +319,7 @@ mod tests {
     }
 
     #[test]
-    fn category_icon_test() {
+    fn category_icon_tag() {
         let config = CategoryConfig {
             icon: CategoryIcon {
                 who: "person".to_owned(),
@@ -349,7 +337,7 @@ mod tests {
     }
 
     #[test]
-    fn travel_mode_test() {
+    fn travel_mode_icon_tag() {
         let config = CategoryConfig {
             icon: CategoryIcon {
                 who: "person".to_owned(),
@@ -371,14 +359,60 @@ mod tests {
     }
 
     #[test]
-    fn caption_superscript_test() {
+    fn superscripts() {
         let source = format!("{}²", LIPSUM);
         let target = format!("<p>{}<sup>²</sup></p>", LIPSUM);
         assert_eq!(caption(&source), target);
     }
 
     #[test]
-    fn caption_footnote_test() {
+    fn line_breaks() {
+        let source =
+            format!("one{cr}two{cr}{cr}three{cr}{cr}{cr}four", cr = NEW_LINE);
+        let target = "<p>one<br/>two</p>\
+            <p>three</p>\
+            <p>four</p>";
+        assert_eq!(format_line_breaks(&source), target);
+    }
+
+    #[test]
+    fn poem_formatting() {
+        let source = format!(
+            "Begotten Not Born{cr}\
+            Indwelling Transcendence{cr}      Infinite Regress{cr}\
+            Uncertain Progress",
+            cr = NEW_LINE
+        );
+        let target = "<blockquote class=\"poem\"><p>\
+            Begotten Not Born<br/>\
+            Indwelling Transcendence<br/>\
+            <span class=\"tab\"></span><span class=\"tab\"></span>\
+            Infinite Regress<br/>\
+            Uncertain Progress</p></blockquote>";
+
+        assert_eq!(format_poem(&source), target);
+    }
+
+    #[test]
+    fn haiku_formatting() {
+        let source = format!(
+            "cow stands chewing{cr}\
+            wet meadow grass{cr}\
+            while mud swallows wheels{cr}",
+            cr = NEW_LINE
+        );
+        let target = "<blockquote class=\"haiku\"><p>\
+            cow stands chewing<br/>\
+            wet meadow grass<br/>\
+            while mud swallows wheels</p>\
+            <i class=\"material-icons spa\">spa</i>\
+            </blockquote>";
+
+        assert_eq!(format_poem(&source), target);
+    }
+
+    #[test]
+    fn caption_with_footnotes() {
         let source = format!(
             "{txt}{cr}\
             ___{cr}\
@@ -419,7 +453,7 @@ mod tests {
     }
 
     #[test]
-    fn caption_ending_with_quote_test() {
+    fn caption_ending_with_block_quote() {
         let source =
             format!("{txt}{cr}{cr}“{txt}”", txt = LIPSUM, cr = NEW_LINE);
         let target = format!(
@@ -431,7 +465,7 @@ mod tests {
     }
 
     #[test]
-    fn caption_quoted_paragraph_test() {
+    fn block_quoted_paragraphs() {
         let source = format!(
             "{txt}{cr}{cr}\
             “{txt}{cr}{cr}\
@@ -453,7 +487,7 @@ mod tests {
     }
 
     #[test]
-    fn caption_quote_within_text_test() {
+    fn block_quote_within_other_text() {
         let source = format!(
             "{txt}{cr}{cr}\
             “{txt}”{cr}{cr}\
@@ -471,7 +505,7 @@ mod tests {
     }
 
     #[test]
-    fn unformat_quote_test() {
+    fn intermediate_block_quote_format() {
         let source = format!(
             "{txt}{cr}{cr}“{q}”¹{cr}{cr}{txt}”",
             txt = LIPSUM,
@@ -479,11 +513,11 @@ mod tests {
             cr = NEW_LINE
         );
         let target = format!("{txt}[Q]{p}¹[/Q]{txt}”", txt = LIPSUM, p = QUOTE);
-        assert_eq!(unformat_quote(&source), target);
+        assert_eq!(unformat_block_quote(&source), target);
     }
 
     #[test]
-    fn format_quote_test() {
+    fn footnoted_block_quote() {
         let source = format!(
             "{txt}[Q]{q}<sup>¹</sup>[/Q]{txt}”",
             txt = LIPSUM,
@@ -496,11 +530,11 @@ mod tests {
             txt = LIPSUM,
             q = QUOTE
         );
-        assert_eq!(format_quote(&source), target);
+        assert_eq!(format_block_quote(&source), target);
     }
 
     #[test]
-    fn caption_block_quote_ellipsis_test() {
+    fn block_quote_with_ellipsis() {
         let source = format!(
             "{txt}{cr}{cr}“{q}”¹{cr}{cr}{txt}",
             txt = LIPSUM,
@@ -519,7 +553,7 @@ mod tests {
     }
 
     #[test]
-    fn caption_entirely_block_quote_test() {
+    fn caption_that_is_entirely_quote() {
         let source = format!("“{}”¹", LIPSUM);
         let target =
             format!("<blockquote><p>{}<sup>¹</sup></p></blockquote>", LIPSUM);
@@ -532,7 +566,7 @@ mod tests {
     // “It appears to have been reserved for Idaho’s constitution to put in the first religious test in regard to the right of suffrage and holding office … Political and religious persecution are supposed to have died at the termination of the revolution but it appears that Idaho is again an exception.”¹
     // Pefley’s arguments were unheeded and the section was approved.
     #[test]
-    fn caption_ignore_interrupted_quotes_test() {
+    fn interrupted_quotes() {
         let source = format!(
             "“{txt},” he said, “{txt}{cr}{cr}“{txt}”{cr}{cr}",
             txt = LIPSUM,
@@ -548,61 +582,104 @@ mod tests {
     }
 
     #[test]
-    fn caption_entirely_poem_test() {
+    fn caption_that_is_entirely_poem() {
         let source = format!(
-            "-{cr}\
+            "~{cr}\
             Begotten Not Born{cr}\
-            Indwelling Transcendence{cr}\
-            · · · · Infinite Regress{cr}\
+            Indwelling Transcendence{cr}      Infinite Regress{cr}\
             Uncertain Progress{cr}\
-            -",
+            ~",
             cr = NEW_LINE
         );
-        let target = "<p class=\"poem\">\
+        let target = "<blockquote class=\"poem\"><p>\
             Begotten Not Born<br/>\
             Indwelling Transcendence<br/>\
             <span class=\"tab\"></span><span class=\"tab\"></span>\
             Infinite Regress<br/>\
-            Uncertain Progress</p>";
+            Uncertain Progress</p></blockquote>";
 
-        assert_eq!(story(&source), target);
+        assert_eq!(caption(&source), target);
     }
 
     #[test]
-    fn caption_begins_haiku_test() {
+    fn caption_beginning_with_haiku() {
         let source = format!(
-            "cow stands chewing{cr}\
+            "~{cr}\
+            cow stands chewing{cr}\
             wet meadow grass{cr}\
-            while mud swallows wheels{cr}{cr}\
+            while mud swallows wheels{cr}\
+            ~{cr}\
             Here we have Joel “Runs with Cows” Abbott. \
             He did a little loop out among them—kind of became one of them.",
             cr = NEW_LINE
         );
-        let target = "<p class=\"haiku\">\
+        let target = "<blockquote class=\"haiku\"><p>\
             cow stands chewing<br/>\
             wet meadow grass<br/>\
             while mud swallows wheels\
-            <i class=\"material-icons spa\">spa</i></p>\
-            <p>Here we have Joel “Runs with Cows” Abbott. \
+            </p><i class=\"material-icons spa\">spa</i>\
+            </blockquote>\
+            <p class=\"first\">Here we have Joel “Runs with Cows” Abbott. \
             He did a little loop out among them—kind of became one of them.</p>";
 
-        assert_eq!(story(&source), target);
+        assert_eq!(caption(&source), target);
     }
 
     #[test]
-    fn format_haiku_test() {
-        let source = format!(
-            "neck bent{cr}\
-            apply the brakes{cr}\
-            for the reign of fire",
+    fn long_inline_poem() {
+        let poem_text = format!(
+            "~{cr}\
+            Have you ever stood on the top of a mountain{cr}\
+            And gazed down on the grandeur below{cr}\
+            And thought of the vast army of people{cr}   \
+               Who never get out as we go?{cr}\
+            {cr}\
+            Have you ever trailed into the desert{cr}\
+            Where the hills fade from gold into blue,{cr}\
+            And then thought of some poor other fellow{cr}\
+            Who would like to stand alongside of you?{cr}\
+            ~",
             cr = NEW_LINE
         );
-        let target = "<p class=\"haiku\">\
-            neck bent<br/>\
-            apply the brakes<br/>\
-            for the reign of fire\
-            <i class=\"material-icons spa\">spa</i></p>";
 
-        assert_eq!(format_haiku(&source, &re::HAIKU), target);
+        const POEM_HTML: &str = "<blockquote class=\"poem\">\
+            <p>\
+            Have you ever stood on the top of a mountain<br/>\
+            And gazed down on the grandeur below<br/>\
+            And thought of the vast army of people<br/>\
+            <span class=\"tab\"></span>Who never get out as we go?</p>\
+            <p>\
+            Have you ever trailed into the desert<br/>\
+            Where the hills fade from gold into blue,<br/>\
+            And then thought of some poor other fellow<br/>\
+            Who would like to stand alongside of you?</p>\
+            </blockquote>";
+
+        // no text after poem
+        let source = format!(
+            "{txt}{cr}{cr}{poem}",
+            txt = LIPSUM,
+            cr = NEW_LINE,
+            poem = poem_text
+        );
+        let target =
+            format!("<p>{txt}</p>{poem}", txt = LIPSUM, poem = POEM_HTML);
+
+        assert_eq!(caption(&source), target);
+
+        // text after poem
+        let source = format!(
+            "{txt}{cr}{cr}{poem}{cr}{cr}{txt}",
+            txt = LIPSUM,
+            poem = poem_text,
+            cr = NEW_LINE
+        );
+        let target = format!(
+            "<p>{txt}</p>{poem}<p class=\"first\">{txt}</p>",
+            txt = LIPSUM,
+            poem = POEM_HTML
+        );
+
+        assert_eq!(caption(&source), target);
     }
 }

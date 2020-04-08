@@ -7,5 +7,5 @@ mod post;
 pub use blog::Blog;
 pub use caption::Caption;
 pub use category::Category;
-pub use photo::{Location, Photo};
+pub use photo::{Camera, ExposureMode, Location, Photo};
 pub use post::Post;

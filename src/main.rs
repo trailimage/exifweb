@@ -6,7 +6,6 @@ mod config;
 mod html;
 mod image;
 mod models;
-mod regex;
 mod tools;
 
 use config::*;

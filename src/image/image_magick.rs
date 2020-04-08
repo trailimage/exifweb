@@ -1,4 +1,4 @@
-use crate::photo::Photo;
+use crate::models::Photo;
 use crate::tools::{path_name, pos_from_name, tab};
 use colored::*;
 use encoding::all::*;
