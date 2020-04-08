@@ -1,6 +1,6 @@
 //! Common regular expressions
-use ::regex::Regex;
 use lazy_static::*;
+use regex::Regex;
 
 lazy_static! {
     pub static ref CURLY_QUOTE: Regex = Regex::new("[“”]").unwrap();
@@ -14,15 +14,15 @@ lazy_static! {
     /// Capture footnoted word and superscript. Match superscripts but don't
     /// match atomic numbers.
     pub static ref FOOTNOTE_NUMBER: Regex =
-        Regex::new(r"([^/\s])([⁰¹²³⁴⁵⁶⁷⁸⁹]+)(?!\w)").unwrap();
+        Regex::new(r"([^/\s])([⁰¹²³⁴⁵⁶⁷⁸⁹]+)\B").unwrap();
 
     /// Footnote text preceded by three underscores
     pub static ref FOOTNOTE_TEXT: Regex =
-        Regex::new(r"(^|[\r\n]+)_{3}[\r\n]*([\s\S]+)$").unwrap();
+        Regex::new(r"(^|[\r\n]+)_{3}[\r\n]*(?P<notes>[\s\S]+)$").unwrap();
 
     /// Long quote followed by line break or end of text
     pub static ref BLOCK_QUOTE: Regex =
-        Regex::new(r"(\r\n|\r|\n|^)(“[^”]{200,}”[⁰¹²³⁴⁵⁶⁷⁸⁹]*)\s*(\r\n|\r|\n|$)")
+        Regex::new(r"(\r\n|\r|\n|^)\s*(?P<quote>“[^”]{200,}”[⁰¹²³⁴⁵⁶⁷⁸⁹]*)\s*(\r\n|\r|\n|$)")
             .unwrap();
 
     pub static ref TRAILING_SPACE: Regex = Regex::new(r"[\r\n\s]*$").unwrap();
@@ -52,26 +52,35 @@ lazy_static! {
     /// ```
     /// ([\r\n]+|$)
     /// ```
-    pub static ref POETRY: Regex = Regex::new(r"(^|[\r\n]+)((([^\r\n](?![\.,!?]”[^⁰¹²³⁴⁵⁶⁷⁸⁹])){4,80}([\r\n]+|$)){3,})").unwrap();
+    //pub static ref POETRY: Regex = Regex::new(r"(^|[\r\n]+)((([^\r\n](?![\.,!?]”[^⁰¹²³⁴⁵⁶⁷⁸⁹])){4,80}([\r\n]+|$)){3,})").unwrap();
+    pub static ref POETRY: Regex = Regex::new(r"(^|[\r\n]+)(([^\r\n]{4,80}([\r\n]+|$)){3,})").unwrap();
+
+    /// Whether text is entirely a poem. Uses dashes above and below to set off
+    /// full poem — hacky but haven't figured out better way.
+    pub static ref ALL_POEM: Regex = Regex::new(r"^\-[\r\n]*(([^\r\n]){3,100}([\r\n])+){3,}\-[\r\n]*$").unwrap();
+
+    /// Full poems have single dash above and below
+    pub static ref POEM_DELIMITER: Regex = Regex::new(r"(^|[\r\n]+)-([\r\n]+|$)").unwrap();
 
     /// Match the first HTML paragraph if it's short and contains a quote
-    pub static ref QUIP: Regex = Regex::new(r"(<p>)(“(?=[^<]*”)[^<]{4,80}</p>)").unwrap();
+    pub static ref QUIP: Regex = Regex::new(r"(<p>)(“[^<]{4,80}</p>)").unwrap();
 }
 
 #[cfg(test)]
 mod tests {
     use super::BLOCK_QUOTE;
 
-    const NL: &str = "\r\n";
+    const NEW_LINE: &str = "\r\n";
     const LIPSUM: &str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
     #[test]
     fn block_quote_test() {
-        let quote = format!("“{l}{n}“{l}{n}”{n}", l = LIPSUM, n = NL);
+        let quote = format!("“{l}{r}“{l}{r}”{r}", l = LIPSUM, r = NEW_LINE);
         assert!(BLOCK_QUOTE.is_match(&quote));
 
         // interrupted block quote should not match
-        let quote = format!("“{l},” he said, “{l}{n}", l = LIPSUM, n = NL);
+        let quote =
+            format!("“{l},” he said, “{l}{r}", l = LIPSUM, r = NEW_LINE);
         assert!(!BLOCK_QUOTE.is_match(&quote));
     }
 }

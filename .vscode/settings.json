@@ -22,5 +22,6 @@
     "**/templates/*.html": "handlebars",
     "**/templates/*": "handlebars"
 },
-"rust-analyzer.inlayHints.chainingHints": false
+"rust-analyzer.inlayHints.chainingHints": false,
+"rust-analyzer.highlighting.semanticTokens": true
 }

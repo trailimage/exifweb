@@ -47,7 +47,7 @@ pub fn fraction(f: &str) -> String {
 }
 
 /// Replace UTF superscript with HTML superscript
-pub fn format_notes(notes: &str) -> String {
+fn format_notes(notes: &str) -> String {
     lazy_static! {
         static ref ASTERISK: Regex = Regex::new(r"^\s*\*").unwrap();
         static ref SUPERSCRIPT: Regex =
@@ -100,19 +100,45 @@ pub fn photo_tag_list(list: &mut Vec<&str>) -> String {
     tag_list
 }
 
+/// Remove block quotes and wrap in fake tags that won't match subsequent
+/// operations
+fn unformat_quote(html: &str) -> String {
+    re::BLOCK_QUOTE
+        .replace_all(&html, |c: &Captures| {
+            let quote =
+                re::CURLY_QUOTE.replace_all(&c["quote"], "").into_owned();
+            format!("[Q]{}[/Q]", quote)
+        })
+        .into_owned()
+}
+
+fn format_quote(text: &str) -> String {
+    lazy_static! {
+        static ref AFTER_BLOCK_QUOTE: Regex =
+            Regex::new(r"\[/Q\][\r\n\s]*([^<]+)").unwrap();
+        static ref START_BLOCK_QUOTE: Regex =
+            Regex::new(r"(<p>)?\[Q]").unwrap();
+        static ref END_BLOCK_QUOTE: Regex =
+            Regex::new(r"\[/Q\](</p>)?").unwrap();
+    }
+    let mut html: String = text.to_string();
+
+    // restore block quotes
+    html = AFTER_BLOCK_QUOTE
+        .replace_all(&html, "[/Q]<p class=\"first\">$1")
+        .into_owned();
+    html = START_BLOCK_QUOTE
+        .replace_all(&html, "<blockquote><p>")
+        .into_owned();
+    END_BLOCK_QUOTE
+        .replace_all(&html, "</p></blockquote>")
+        .into_owned()
+}
+
 /// Convert new lines to HTML paragraphs and normalize links
 pub fn caption(text: &str) -> String {
     if text.is_empty() {
         return String::new();
-    }
-
-    lazy_static! {
-        static ref AFTER_BLOCK_QUOTE: Regex =
-            Regex::new(r"\[/Q][\r\n\s]*([^<]+)").unwrap();
-        static ref START_BLOCK_QUOTE: Regex =
-            Regex::new(r"(<p>)?\[Q]").unwrap();
-        static ref END_BLOCK_QUOTE: Regex =
-            Regex::new(r"\[/Q](</p>)?").unwrap();
     }
 
     const POEM: &'static str = "[POEM]";
@@ -123,7 +149,7 @@ pub fn caption(text: &str) -> String {
     // format footnotes separately
     html = re::FOOTNOTE_TEXT
         .replace_all(&html, |c: &Captures| {
-            footnotes = format_notes(&c[2]);
+            footnotes = format_notes(&c["notes"]);
             ""
         })
         .into_owned();
@@ -136,17 +162,8 @@ pub fn caption(text: &str) -> String {
         })
         .into_owned();
 
-    // remove block quotes and wrap in fake tags that won't match
-    // subsequent operations
-    html = re::BLOCK_QUOTE
-        .replace_all(&html, |c: &Captures| {
-            let quote = re::CURLY_QUOTE.replace_all(&c[2], "").into_owned();
-            format!("[Q]{}[/Q]", quote)
-        })
-        .into_owned();
-
+    html = unformat_quote(&html);
     html = format!("<p>{}</p>", html);
-
     html = re::NEW_LINE.replace_all(&html, "</p><p>").into_owned();
     html = re::EMPTY_P_TAG.replace_all(&html, "").into_owned();
     html = re::QUIP
@@ -159,16 +176,7 @@ pub fn caption(text: &str) -> String {
         .replace_all(&html, "$1<sup>$2</sup>")
         .into_owned();
 
-    // restore block quotes
-    html = AFTER_BLOCK_QUOTE
-        .replace_all(&html, "[/Q]<p class=\"first\">$1")
-        .into_owned();
-    html = START_BLOCK_QUOTE
-        .replace_all(&html, "<blockquote><p>")
-        .into_owned();
-    html = END_BLOCK_QUOTE
-        .replace_all(&html, "</p></blockquote>")
-        .into_owned();
+    html = format_quote(&html);
 
     if !poem.is_empty() {
         html = html.replace(POEM, &format!("</p>{}<p class=\"first\">", poem));
@@ -179,7 +187,7 @@ pub fn caption(text: &str) -> String {
 }
 
 /// Format poetry text within a blockquote
-pub fn format_poem(text: &str) -> String {
+fn format_poem(text: &str) -> String {
     lazy_static! {
         static ref OPEN_QUOTE: Regex = Regex::new(r"^\s*“").unwrap();
         static ref CLOSE_QUOTE: Regex =
@@ -219,14 +227,15 @@ pub fn format_poem(text: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        category_icon, format_notes, fraction, icon_tag, photo_tag_list,
-        travel_mode_icon,
+        caption, category_icon, format_notes, format_quote, fraction, icon_tag,
+        photo_tag_list, travel_mode_icon, unformat_quote,
     };
     use crate::config::{CategoryConfig, CategoryIcon};
     use crate::tools::config_regex;
 
-    const NL: &str = "\r\n";
-    //const LIPSUM: &str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+    const NEW_LINE: &str = "\r\n";
+    const LIPSUM: &str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+    const QUOTE:&str = "Firefighters are working to get a handle on several wildfires that sparked during a lightning storm on Thursday night. Strong winds and poor visibility created challenges for firefighters working the blazes on Saturday ...";
 
     #[test]
     fn icon_tag_test() {
@@ -244,8 +253,8 @@ mod tests {
     #[test]
     fn footnotes_test() {
         let source = format!(
-            "* Note about photo credit{nl}¹ Some other note{nl}² Last note",
-            nl = NL
+            "* Note about photo credit{cr}¹ Some other note{cr}² Last note",
+            cr = NEW_LINE
         );
         let target = "<ol class=\"footnotes\" start=\"0\"><li class=\"credit\"><i class=\"material-icons star\">star</i><span>Note about photo credit</span></li><li><span>Some other note</span></li><li><span>Last note</span></li></ol>";
 
@@ -298,5 +307,84 @@ mod tests {
             travel_mode_icon(&"KTM", config_regex(config.what_regex)),
             Some("motorcycle".to_owned())
         );
+    }
+
+    #[test]
+    fn caption_ending_with_quote_test() {
+        let source =
+            format!("{txt}{cr}{cr}“{txt}”", txt = LIPSUM, cr = NEW_LINE);
+        let target = format!(
+            "<p>{txt}</p><blockquote><p>{txt}</p></blockquote>",
+            txt = LIPSUM
+        );
+        assert_eq!(caption(&source), target);
+    }
+
+    #[test]
+    fn caption_quoted_paragraph_test() {
+        let source = format!(
+            "{txt}{cr}{cr}“{txt}{cr}{cr}“{txt}{cr}{cr}“{txt}”",
+            txt = LIPSUM,
+            cr = NEW_LINE
+        );
+        let target = format!(
+            "<p>{txt}</p><blockquote><p>{txt}</p><p>{txt}</p><p>{txt}</p></blockquote>",
+            txt = LIPSUM
+        );
+        assert_eq!(caption(&source), target);
+    }
+
+    #[test]
+    fn caption_quote_within_text_test() {
+        let source = format!(
+            "{txt}{cr}{cr}“{txt}”{cr}{cr}{txt}",
+            txt = LIPSUM,
+            cr = NEW_LINE
+        );
+        let target = format!(
+            "<p>{txt}</p><blockquote><p>{txt}</p></blockquote><p class=\"first\">{txt}</p>",
+            txt = LIPSUM
+        );
+        assert_eq!(caption(&source), target);
+    }
+
+    #[test]
+    fn unformat_quote_test() {
+        let source = format!(
+            "{txt}{cr}{cr}“{q}”¹{cr}{cr}{txt}”",
+            txt = LIPSUM,
+            q = QUOTE,
+            cr = NEW_LINE
+        );
+        let target = format!("{txt}[Q]{p}¹[/Q]{txt}”", txt = LIPSUM, p = QUOTE);
+        assert_eq!(unformat_quote(&source), target);
+    }
+
+    #[test]
+    fn format_quote_test() {
+        let source = format!(
+            "{txt}</p>[Q]{q}<sup>¹</sup>[/Q]{txt}”",
+            txt = LIPSUM,
+            q = QUOTE
+        );
+        let target = format!(
+            "{txt}</p><blockquote><p>{q}<sup>¹</sup></p></blockquote><p class=\"first\">{txt}”",
+            txt = LIPSUM,
+            q = QUOTE
+        );
+        assert_eq!(format_quote(&source), target);
+    }
+
+    #[test]
+    fn caption_block_quote_ellipsis_test() {
+        let source = format!(
+            "{txt}{cr}{cr}“{q}”¹{cr}{cr}{txt}",
+            txt = LIPSUM,
+            q = QUOTE,
+            cr = NEW_LINE
+        );
+        let target = format!("<p>{txt}</p><blockquote><p>{p}<sup>¹</sup></p></blockquote><p class=\"first\">{txt}</p>", p = QUOTE, txt = LIPSUM);
+
+        assert_eq!(caption(&source), target);
     }
 }
