@@ -1,4 +1,4 @@
-use crate::photo::Photo;
+use crate::models::Photo;
 use crate::tools::min_date;
 use chrono::{DateTime, Local};
 use core::cmp::Ordering;

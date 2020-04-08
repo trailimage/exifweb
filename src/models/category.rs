@@ -1,4 +1,4 @@
-use crate::post::Post;
+use crate::models::Post;
 
 pub enum CategoryKind {
     Who,

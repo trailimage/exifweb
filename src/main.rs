@@ -2,26 +2,19 @@
 extern crate enum_primitive_derive;
 extern crate num_traits;
 
-mod blog;
-mod caption;
-mod category;
 mod config;
 mod html;
 mod image;
-mod photo;
-mod post;
+mod models;
 mod regex;
 mod tools;
 
-use blog::Blog;
-use category::Category;
 use config::*;
 //pub use photo::{Camera, ExposureMode, Location, Photo};
 use ::regex::Regex;
 use colored::*;
 use image::exif_tool::parse_dir;
-use photo::Photo;
-use post::Post;
+use models::{Blog, Category, Photo, Post};
 use serde::de::DeserializeOwned;
 use std::{
     fs,
