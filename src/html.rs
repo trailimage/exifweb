@@ -83,6 +83,12 @@ fn format_notes(notes: &str) -> String {
     html
 }
 
+fn symbols(text: &str) -> String {
+    text.replace("“", "&ldquo;")
+        .replace("”", "&rdquo;")
+        .replace("’", "&rsquo;")
+}
+
 /// Linked list of photo tags
 pub fn photo_tag_list(list: &mut Vec<&str>) -> String {
     let mut tag_list: String = String::new();
@@ -117,22 +123,26 @@ fn format_quote(text: &str) -> String {
         static ref AFTER_BLOCK_QUOTE: Regex =
             Regex::new(r"\[/Q\][\r\n\s]*([^<]+)").unwrap();
         static ref START_BLOCK_QUOTE: Regex =
-            Regex::new(r"(<p>)?\[Q]").unwrap();
+            Regex::new(r"(<p>)?\[Q\]").unwrap();
         static ref END_BLOCK_QUOTE: Regex =
             Regex::new(r"\[/Q\](</p>)?").unwrap();
+        /// Starting block quote with closing p tag will make an orphan if there
+        /// isn't any preceding text
+        static ref P_ORPHAN: Regex = Regex::new(r"^</p>").unwrap();
     }
     let mut html: String = text.to_string();
 
-    // restore block quotes
     html = AFTER_BLOCK_QUOTE
         .replace_all(&html, "[/Q]<p class=\"first\">$1")
         .into_owned();
     html = START_BLOCK_QUOTE
-        .replace_all(&html, "<blockquote><p>")
+        .replace_all(&html, "</p><blockquote><p>")
         .into_owned();
-    END_BLOCK_QUOTE
+    html = END_BLOCK_QUOTE
         .replace_all(&html, "</p></blockquote>")
-        .into_owned()
+        .into_owned();
+
+    P_ORPHAN.replace_all(&html, "").into_owned()
 }
 
 /// Convert new lines to HTML paragraphs and normalize links
@@ -144,7 +154,7 @@ pub fn caption(text: &str) -> String {
     const POEM: &'static str = "[POEM]";
     let mut footnotes: String = String::new();
     let mut poem: String = String::new();
-    let mut html: String = text.to_string();
+    let mut html: String = text.to_string(); //symbols(text);
 
     // format footnotes separately
     html = re::FOOTNOTE_TEXT
@@ -186,6 +196,36 @@ pub fn caption(text: &str) -> String {
     format!("{}{}", html, footnotes)
 }
 
+/// Format paragraphs and prose
+pub fn story(text: &str) -> String {
+    if text.is_empty() {
+        return text.to_owned();
+    }
+    let mut html: String = text.to_owned();
+
+    if re::ALL_POEM.is_match(&html) {
+        // text is entirely a poem or haiku
+        html = re::POEM_DELIMITER.replace_all(&html, "").into_owned();
+
+        if re::HAIKU.is_match(&html) {
+            html = format_haiku(&html, &re::HAIKU);
+        } else {
+            // not haiku
+            html = re::LINE_BREAK.replace_all(&html, "<br/>").into_owned();
+            html = re::POEM_INDENT
+                .replace_all(&html, "<span class=\"tab\"></span>")
+                .into_owned();
+            html = format!("<p class=\"poem\">{}</p>", html);
+        }
+    } else if re::BEGINS_WITH_HAIKU.is_match(&html) {
+        html = format_haiku(&html, &re::BEGINS_WITH_HAIKU);
+    } else {
+        html = caption(&html);
+    }
+
+    html
+}
+
 /// Format poetry text within a blockquote
 fn format_poem(text: &str) -> String {
     lazy_static! {
@@ -195,9 +235,6 @@ fn format_poem(text: &str) -> String {
         static ref POEM_START: Regex = Regex::new(r"(^|[\r\n]) *“").unwrap();
         static ref POEM_END: Regex =
             Regex::new(r"”([⁰¹²³⁴⁵⁶⁷⁸⁹])? *([\r\n]|$)").unwrap();
-        // TODO: this was needed because Flickr collapsed spaces -- validate
-        static ref INDENT: Regex = Regex::new(r"· · ").unwrap();
-
         static ref MULTI_BREAK: Regex = Regex::new(r"(<br/>){2,}").unwrap();
     }
 
@@ -214,7 +251,7 @@ fn format_poem(text: &str) -> String {
     poem = re::TRAILING_SPACE.replace_all(&poem, "").into_owned();
     poem = re::LINE_BREAK.replace_all(&poem, "<br/>").into_owned();
     poem = MULTI_BREAK.replace_all(&poem, "</p><p>").into_owned();
-    poem = INDENT
+    poem = re::POEM_INDENT
         .replace_all(&poem, "<span class=\"tab\"></span>")
         .into_owned();
     poem = re::FOOTNOTE_NUMBER
@@ -224,13 +261,31 @@ fn format_poem(text: &str) -> String {
     format!("<blockquote class=\"poem\"><p>{}</p></blockquote>", poem)
 }
 
+/// Format haiku into three lines
+fn format_haiku(text: &str, reg: &Regex) -> String {
+    match reg.captures(text) {
+        None => text.to_owned(),
+        Some(caps) => format!(
+            "<p class=\"haiku\">{}<br/>{}<br/>{}{}</p>{}",
+            &caps[1],
+            &caps[2],
+            &caps[3],
+            icon_tag("spa"),
+            // any subsequent non-haiku text
+            caption(&text.replace(&caps[0], ""))
+        ),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        caption, category_icon, format_notes, format_quote, fraction, icon_tag,
-        photo_tag_list, travel_mode_icon, unformat_quote,
+        caption, category_icon, format_haiku, format_notes, format_quote,
+        fraction, icon_tag, photo_tag_list, story, travel_mode_icon,
+        unformat_quote,
     };
     use crate::config::{CategoryConfig, CategoryIcon};
+    use crate::regex as re;
     use crate::tools::config_regex;
 
     const NEW_LINE: &str = "\r\n";
@@ -253,10 +308,16 @@ mod tests {
     #[test]
     fn footnotes_test() {
         let source = format!(
-            "* Note about photo credit{cr}¹ Some other note{cr}² Last note",
+            "* Note about photo credit{cr}\
+            ¹ Some other note{cr}\
+            ² Last note",
             cr = NEW_LINE
         );
-        let target = "<ol class=\"footnotes\" start=\"0\"><li class=\"credit\"><i class=\"material-icons star\">star</i><span>Note about photo credit</span></li><li><span>Some other note</span></li><li><span>Last note</span></li></ol>";
+        let target = "<ol class=\"footnotes\" start=\"0\">\
+            <li class=\"credit\"><i class=\"material-icons star\">star</i><span>Note about photo credit</span></li>\
+            <li><span>Some other note</span></li>\
+            <li><span>Last note</span></li>\
+            </ol>";
 
         assert_eq!(format_notes(&source), target);
     }
@@ -310,11 +371,60 @@ mod tests {
     }
 
     #[test]
+    fn caption_superscript_test() {
+        let source = format!("{}²", LIPSUM);
+        let target = format!("<p>{}<sup>²</sup></p>", LIPSUM);
+        assert_eq!(caption(&source), target);
+    }
+
+    #[test]
+    fn caption_footnote_test() {
+        let source = format!(
+            "{txt}{cr}\
+            ___{cr}\
+            * Note about photo credit{cr}\
+            ¹ Some other note{cr}\
+            ² Last note",
+            txt = LIPSUM,
+            cr = NEW_LINE
+        );
+        let target = format!("<p>{}</p>\
+            <ol class=\"footnotes\" start=\"0\">\
+                <li class=\"credit\">\
+                <i class=\"material-icons star\">star</i><span>Note about photo credit</span></li>\
+                <li><span>Some other note</span></li>\
+                <li><span>Last note</span></li>\
+            </ol>", LIPSUM);
+        assert_eq!(caption(&source), target);
+
+        let source = format!(
+            "{txt}{cr}___{cr}¹ Some other note{cr}² Last note",
+            txt = LIPSUM,
+            cr = NEW_LINE
+        );
+        let target = format!(
+            "<p>{}</p>\
+            <ol class=\"footnotes\">\
+                <li><span>Some other note</span></li>\
+                <li><span>Last note</span></li>\
+            </ol>",
+            LIPSUM
+        );
+        assert_eq!(caption(&source), target);
+
+        // should ignore trailing newline
+        let source = format!("{}{}", source, NEW_LINE);
+
+        assert_eq!(caption(&source), target);
+    }
+
+    #[test]
     fn caption_ending_with_quote_test() {
         let source =
             format!("{txt}{cr}{cr}“{txt}”", txt = LIPSUM, cr = NEW_LINE);
         let target = format!(
-            "<p>{txt}</p><blockquote><p>{txt}</p></blockquote>",
+            "<p>{txt}</p>\
+            <blockquote><p>{txt}</p></blockquote>",
             txt = LIPSUM
         );
         assert_eq!(caption(&source), target);
@@ -323,12 +433,20 @@ mod tests {
     #[test]
     fn caption_quoted_paragraph_test() {
         let source = format!(
-            "{txt}{cr}{cr}“{txt}{cr}{cr}“{txt}{cr}{cr}“{txt}”",
+            "{txt}{cr}{cr}\
+            “{txt}{cr}{cr}\
+            “{txt}{cr}{cr}\
+            “{txt}”",
             txt = LIPSUM,
             cr = NEW_LINE
         );
         let target = format!(
-            "<p>{txt}</p><blockquote><p>{txt}</p><p>{txt}</p><p>{txt}</p></blockquote>",
+            "<p>{txt}</p>\
+            <blockquote>\
+                <p>{txt}</p>\
+                <p>{txt}</p>\
+                <p>{txt}</p>\
+            </blockquote>",
             txt = LIPSUM
         );
         assert_eq!(caption(&source), target);
@@ -337,12 +455,16 @@ mod tests {
     #[test]
     fn caption_quote_within_text_test() {
         let source = format!(
-            "{txt}{cr}{cr}“{txt}”{cr}{cr}{txt}",
+            "{txt}{cr}{cr}\
+            “{txt}”{cr}{cr}\
+            {txt}",
             txt = LIPSUM,
             cr = NEW_LINE
         );
         let target = format!(
-            "<p>{txt}</p><blockquote><p>{txt}</p></blockquote><p class=\"first\">{txt}</p>",
+            "<p>{txt}</p>\
+            <blockquote><p>{txt}</p></blockquote>\
+            <p class=\"first\">{txt}</p>",
             txt = LIPSUM
         );
         assert_eq!(caption(&source), target);
@@ -363,12 +485,14 @@ mod tests {
     #[test]
     fn format_quote_test() {
         let source = format!(
-            "{txt}</p>[Q]{q}<sup>¹</sup>[/Q]{txt}”",
+            "{txt}[Q]{q}<sup>¹</sup>[/Q]{txt}”",
             txt = LIPSUM,
             q = QUOTE
         );
         let target = format!(
-            "{txt}</p><blockquote><p>{q}<sup>¹</sup></p></blockquote><p class=\"first\">{txt}”",
+            "{txt}</p>\
+            <blockquote><p>{q}<sup>¹</sup></p></blockquote>\
+            <p class=\"first\">{txt}”",
             txt = LIPSUM,
             q = QUOTE
         );
@@ -383,8 +507,102 @@ mod tests {
             q = QUOTE,
             cr = NEW_LINE
         );
-        let target = format!("<p>{txt}</p><blockquote><p>{p}<sup>¹</sup></p></blockquote><p class=\"first\">{txt}</p>", p = QUOTE, txt = LIPSUM);
+        let target = format!(
+            "<p>{txt}</p>\
+            <blockquote><p>{p}<sup>¹</sup></p></blockquote>\
+            <p class=\"first\">{txt}</p>",
+            p = QUOTE,
+            txt = LIPSUM
+        );
 
         assert_eq!(caption(&source), target);
+    }
+
+    #[test]
+    fn caption_entirely_block_quote_test() {
+        let source = format!("“{}”¹", LIPSUM);
+        let target =
+            format!("<blockquote><p>{}<sup>¹</sup></p></blockquote>", LIPSUM);
+
+        assert_eq!(caption(&source), target);
+    }
+
+    // do no blockquote when quote is interrupted
+    // “The constitutions of nearly all the states have qualifications for voters simply on citizenship,” Pefley countered, “without question with regard to what they believe on this or that question. Then I ask, why make a distinction of the people of Idaho?
+    // “It appears to have been reserved for Idaho’s constitution to put in the first religious test in regard to the right of suffrage and holding office … Political and religious persecution are supposed to have died at the termination of the revolution but it appears that Idaho is again an exception.”¹
+    // Pefley’s arguments were unheeded and the section was approved.
+    #[test]
+    fn caption_ignore_interrupted_quotes_test() {
+        let source = format!(
+            "“{txt},” he said, “{txt}{cr}{cr}“{txt}”{cr}{cr}",
+            txt = LIPSUM,
+            cr = NEW_LINE
+        );
+        let target = format!(
+            "<p>“{txt},” he said, “{txt}</p>\
+            <blockquote><p>{txt}</p></blockquote>",
+            txt = LIPSUM
+        );
+
+        assert_eq!(caption(&source), target);
+    }
+
+    #[test]
+    fn caption_entirely_poem_test() {
+        let source = format!(
+            "-{cr}\
+            Begotten Not Born{cr}\
+            Indwelling Transcendence{cr}\
+            · · · · Infinite Regress{cr}\
+            Uncertain Progress{cr}\
+            -",
+            cr = NEW_LINE
+        );
+        let target = "<p class=\"poem\">\
+            Begotten Not Born<br/>\
+            Indwelling Transcendence<br/>\
+            <span class=\"tab\"></span><span class=\"tab\"></span>\
+            Infinite Regress<br/>\
+            Uncertain Progress</p>";
+
+        assert_eq!(story(&source), target);
+    }
+
+    #[test]
+    fn caption_begins_haiku_test() {
+        let source = format!(
+            "cow stands chewing{cr}\
+            wet meadow grass{cr}\
+            while mud swallows wheels{cr}{cr}\
+            Here we have Joel “Runs with Cows” Abbott. \
+            He did a little loop out among them—kind of became one of them.",
+            cr = NEW_LINE
+        );
+        let target = "<p class=\"haiku\">\
+            cow stands chewing<br/>\
+            wet meadow grass<br/>\
+            while mud swallows wheels\
+            <i class=\"material-icons spa\">spa</i></p>\
+            <p>Here we have Joel “Runs with Cows” Abbott. \
+            He did a little loop out among them—kind of became one of them.</p>";
+
+        assert_eq!(story(&source), target);
+    }
+
+    #[test]
+    fn format_haiku_test() {
+        let source = format!(
+            "neck bent{cr}\
+            apply the brakes{cr}\
+            for the reign of fire",
+            cr = NEW_LINE
+        );
+        let target = "<p class=\"haiku\">\
+            neck bent<br/>\
+            apply the brakes<br/>\
+            for the reign of fire\
+            <i class=\"material-icons spa\">spa</i></p>";
+
+        assert_eq!(format_haiku(&source, &re::HAIKU), target);
     }
 }
