@@ -8,10 +8,9 @@ mod image;
 mod models;
 mod tools;
 
-use config::*;
-//pub use photo::{Camera, ExposureMode, Location, Photo};
 use ::regex::Regex;
 use colored::*;
+use config::*;
 use image::exif_tool::parse_dir;
 use models::{Blog, Category, Photo, Post};
 use serde::de::DeserializeOwned;

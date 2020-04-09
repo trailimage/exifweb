@@ -4,7 +4,7 @@ use crate::tools::Pairs;
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
-/// Categories to which the post has been assigned.
+/// Categories to which the post has been assigned
 #[derive(Deserialize, Debug)]
 pub struct PostCategories {
     pub who: String,
@@ -52,7 +52,7 @@ pub struct ExifConfig {
     pub lens: Pairs,
 }
 
-/// Photo sizes to generate from original.
+/// Photo sizes to generate from original
 #[derive(Deserialize, Debug)]
 pub struct SizeConfig {
     large: u16,
@@ -90,6 +90,14 @@ pub struct CategoryIcon {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct StyleConfig {
+    /// Maximum pixel height of static maps displayed with post summaries
+    pub pub_inline_map_height: i8,
+    /// Pixel width of main content used to compute generated image widths
+    pub content_width: i8,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct BlogConfig {
     /// Regex pattern to extract series part index from folder name
     ///
@@ -99,6 +107,7 @@ pub struct BlogConfig {
     pub series_index_regex: String,
     /// Redirect source slug to target
     pub redirects: Option<Pairs>,
+    pub style: StyleConfig,
     pub category: CategoryConfig,
     pub photo: PhotoConfig,
 }

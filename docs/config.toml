@@ -1,6 +1,6 @@
 # https://github.com/sunng87/handlebars-rust
 
-series_index_regex = "^(\\d+)\\."
+series_index_regex = "^(?P<index>\\d+)\\."
 # source to target slug
 redirects = [
    ["brother-rider-2013-a-night-in-pierce", "brother-ride-2013"],
@@ -8,6 +8,12 @@ redirects = [
    ["owyhee-snow-and-sands-uplands", "owyhee-snow-and-sand"],
    ["lunch-at-trinity-lookout", "trinity-lookout-lunch"]
 ]
+
+[style]
+# Maximum pixel height of static maps displayed with post summaries
+inline_map_height = 200
+# Pixel width of main content used to compute generated image widths
+content_width = 650
 
 [category]
 
@@ -31,7 +37,7 @@ redirects = [
 
 
 [photo]
-index_regex = "^(\\d{3}).(jpg|png|tif)$"
+index_regex = "^(?P<index>\\d{3}).(?P<ext>jpg|png|tif)$"
 
    [photo.size]
    large = 4096
