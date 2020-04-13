@@ -102,24 +102,24 @@ pub fn slugify(s: &str) -> String {
 }
 
 /// Middle value or average of the two middle values among a list of numbers
-pub fn median(numbers: &mut [i32]) -> f32 {
+pub fn median(numbers: &mut [i64]) -> f64 {
     if numbers.len() == 1 {
-        return numbers[0] as f32;
+        return numbers[0] as f64;
     }
     numbers.sort();
     let mid = (numbers.len() as f64 / 2.0).floor() as usize;
 
     if numbers.len() % 2 != 0 {
-        numbers[mid] as f32
+        numbers[mid] as f64
     } else {
-        ((numbers[mid - 1] + numbers[mid]) as f32) / 2.0
+        ((numbers[mid - 1] + numbers[mid]) as f64) / 2.0
     }
 }
 
 #[derive(Debug)]
 pub struct Limits {
-    min: f32,
-    max: f32,
+    pub min: f64,
+    pub max: f64,
 }
 
 impl PartialEq for Limits {
@@ -138,7 +138,7 @@ impl Eq for Limits {}
 /// `distance`: Constant used to calculate fence. Tukey proposed `1.5` for an
 /// "outlier" and `3` for "far out". This method defaults to `3` if no value is
 /// given.
-pub fn boundary(numbers: &mut [i32], distance: i32) -> Option<Limits> {
+pub fn boundary(numbers: &mut [i64], distance: i64) -> Option<Limits> {
     if numbers.is_empty() {
         return None;
     }
@@ -154,8 +154,8 @@ pub fn boundary(numbers: &mut [i32], distance: i32) -> Option<Limits> {
     let range = q3 - q1;
 
     Some(Limits {
-        min: q1 - range * (distance as f32),
-        max: q3 + range * (distance as f32),
+        min: q1 - range * (distance as f64),
+        max: q3 + range * (distance as f64),
     })
 }
 

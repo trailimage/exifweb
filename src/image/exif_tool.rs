@@ -5,7 +5,7 @@ use crate::image::deserialize::{
 };
 use crate::models::{Camera, ExposureMode, Location, Photo};
 use crate::tools::{path_name, pos_from_name, tab};
-use chrono::NaiveDateTime;
+use chrono::{DateTime, FixedOffset};
 use colored::*;
 use regex::Regex;
 use serde::Deserialize;
@@ -57,13 +57,13 @@ pub struct ExifToolOutput {
 
     // or ShutterSpeedValue
     #[serde(rename = "ShutterSpeed", deserialize_with = "string_number")]
-    shutter_speed: String,
+    shutter_speed: Option<String>,
 
     #[serde(
         rename = "ExposureCompensation",
         deserialize_with = "string_number"
     )]
-    exposure_compensation: String,
+    exposure_compensation: Option<String>,
 
     #[serde(default, rename = "ExposureProgram")]
     exposure_mode: ExposureMode,
@@ -85,7 +85,7 @@ pub struct ExifToolOutput {
 
     #[serde(rename = "DateTimeCreated", deserialize_with = "date_time_string")]
     // or DateTimeOriginal
-    taken_on: NaiveDateTime,
+    taken_on: DateTime<FixedOffset>,
 
     #[serde(rename = "GPSLatitude")]
     latitude: Option<f32>,
@@ -139,8 +139,7 @@ pub fn parse_dir(
                 tags: mem::replace(&mut i.tags, Vec::new()),
                 index,
                 primary: index == cover_index,
-                // TODO: restore date
-                //date_taken: Some(i.taken_on),
+                date_taken: Some(i.taken_on),
                 ..Photo::default()
             };
 
@@ -152,17 +151,11 @@ pub fn parse_dir(
 
                 let camera = Camera {
                     name,
-                    // TODO: allow this to be optional by updating custom deserializer
-                    // https://users.rust-lang.org/t/serde-handling-null-in-custom-deserializer/18191/2
-                    compensation: Some(mem::replace(
+                    compensation: mem::replace(
                         &mut i.exposure_compensation,
-                        String::new(),
-                    )),
-                    // TODO: also this
-                    shutter_speed: Some(mem::replace(
-                        &mut i.shutter_speed,
-                        String::new(),
-                    )),
+                        None,
+                    ),
+                    shutter_speed: mem::replace(&mut i.shutter_speed, None),
                     mode: i.exposure_mode,
                     aperture: i.aperture,
                     focal_length: i.focal_length,

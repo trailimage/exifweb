@@ -1,34 +1,34 @@
 //! Custom Serde deserializers
 //!
-use chrono::NaiveDateTime;
+use chrono::{DateTime, FixedOffset};
 use serde::{de, Deserialize, Deserializer};
 use std::{fmt, marker::PhantomData};
 
 /// Source value may be quoted or a bare number. Output should always be a
 /// string.
-struct StringOrNumber(PhantomData<String>);
+struct StringOrNumber(PhantomData<Option<String>>);
 
 impl<'de> de::Visitor<'de> for StringOrNumber {
-    type Value = String;
+    type Value = Option<String>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("string or number")
     }
 
     fn visit_i64<E: de::Error>(self, value: i64) -> Result<Self::Value, E> {
-        Ok(value.to_string())
+        Ok(Some(value.to_string()))
     }
 
     fn visit_u64<E: de::Error>(self, value: u64) -> Result<Self::Value, E> {
-        Ok(value.to_string())
+        Ok(Some(value.to_string()))
     }
 
     fn visit_f64<E: de::Error>(self, value: f64) -> Result<Self::Value, E> {
-        Ok(value.to_string())
+        Ok(Some(value.to_string()))
     }
 
     fn visit_str<E: de::Error>(self, value: &str) -> Result<Self::Value, E> {
-        Ok(value.to_owned())
+        Ok(Some(value.to_owned()))
     }
 }
 
@@ -55,22 +55,24 @@ impl<'de> de::Visitor<'de> for StringOrVec {
     }
 }
 
-struct DateTimeString(PhantomData<NaiveDateTime>);
+struct DateTimeString(PhantomData<DateTime<FixedOffset>>);
 
 impl<'de> de::Visitor<'de> for DateTimeString {
-    type Value = NaiveDateTime;
+    type Value = DateTime<FixedOffset>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("date-time string")
     }
 
     fn visit_str<E: de::Error>(self, value: &str) -> Result<Self::Value, E> {
-        NaiveDateTime::parse_from_str(value, "%Y:%m:%d %H:%M:%S%:z")
+        DateTime::parse_from_str(value, "%Y:%m:%d %H:%M:%S%:z")
             .map_err(de::Error::custom)
     }
 }
 
-pub fn string_number<'de, D>(deserializer: D) -> Result<String, D::Error>
+pub fn string_number<'de, D>(
+    deserializer: D,
+) -> Result<Option<String>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -88,7 +90,7 @@ where
 
 pub fn date_time_string<'de, D>(
     deserializer: D,
-) -> Result<NaiveDateTime, D::Error>
+) -> Result<DateTime<FixedOffset>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -98,7 +100,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::{date_time_string, string_number, string_sequence};
-    use chrono::{NaiveDate, NaiveDateTime};
+    use chrono::{DateTime, FixedOffset};
     use serde::Deserialize;
     use serde_json::from_str;
 
@@ -124,17 +126,20 @@ mod tests {
         #[derive(Debug, Deserialize)]
         struct SomeStruct {
             #[serde(deserialize_with = "string_number")]
-            field: String,
+            field: Option<String>,
         }
 
         let x: SomeStruct = from_str(r#"{ "field": "1/320" }"#).unwrap();
-        assert_eq!(x.field, "1/320");
+        assert_eq!(x.field, Some("1/320".to_owned()));
 
         let x: SomeStruct = from_str(r#"{ "field": 10 }"#).unwrap();
-        assert_eq!(x.field, "10");
+        assert_eq!(x.field, Some("10".to_owned()));
 
         let x: SomeStruct = from_str(r#"{ "field": 0.3 }"#).unwrap();
-        assert_eq!(x.field, "0.3");
+        assert_eq!(x.field, Some("0.3".to_owned()));
+
+        // let x: SomeStruct = from_str(r#"{ "field": null }"#).unwrap();
+        // assert_eq!(x.field, None);
     }
 
     #[test]
@@ -142,10 +147,11 @@ mod tests {
         #[derive(Debug, Deserialize)]
         struct SomeStruct {
             #[serde(deserialize_with = "date_time_string")]
-            field: NaiveDateTime,
+            field: DateTime<FixedOffset>,
         }
-        let dt: NaiveDateTime =
-            NaiveDate::from_ymd(2018, 2, 8).and_hms(11, 1, 12);
+        let dt: DateTime<FixedOffset> =
+            DateTime::parse_from_rfc3339("2018-02-08T11:01:12-06:00").unwrap();
+
         let x: SomeStruct =
             from_str(r#"{ "field": "2018:02:08 11:01:12-06:00"}"#).unwrap();
 

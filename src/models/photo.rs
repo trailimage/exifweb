@@ -1,7 +1,7 @@
 use crate::config::ExifConfig;
 use crate::num_traits::FromPrimitive;
-use crate::tools::{min_date, replace_pairs};
-use chrono::{DateTime, Local};
+use crate::tools::{boundary, min_date, replace_pairs};
+use chrono::{DateTime, FixedOffset};
 use core::cmp::Ordering;
 use serde::{de, Deserialize, Deserializer};
 use std::fmt;
@@ -124,7 +124,7 @@ pub struct Photo {
     /// Whether this is the post's main photo
     pub primary: bool,
     /// When the photograph was taken per camera EXIF
-    pub date_taken: Option<DateTime<Local>>,
+    pub date_taken: Option<DateTime<FixedOffset>>,
 
     /// Whether taken date is an outlier compared to other photos in the same
     /// post. Outliers may be removed from mini-maps so the maps aren't overly
@@ -202,4 +202,22 @@ impl Default for Photo {
 ///
 /// - https://en.wikipedia.org/wiki/Outlier
 /// - http://www.wikihow.com/Calculate-Outliers
-fn identify_outliers(photos: Vec<Photo>) {}
+fn identify_outliers(photos: Vec<Photo>) {
+    let mut times: Vec<i64> = photos
+        .iter()
+        .filter(|p| p.date_taken.is_some())
+        .map(|p| p.date_taken.unwrap().timestamp())
+        .collect();
+
+    if let Some(fence) = boundary(&mut times[..], 3) {
+        for mut p in photos {
+            if p.date_taken.is_none() {
+                continue;
+            }
+            let d = p.date_taken.unwrap().timestamp() as f64;
+            if d > fence.max || d < fence.min {
+                p.outlier_date = true;
+            }
+        }
+    }
+}
