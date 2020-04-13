@@ -74,8 +74,10 @@ pub struct PhotoConfig {
 
 #[derive(Deserialize, Debug)]
 pub struct CategoryConfig {
-    pub icon: CategoryIcon,
+    /// Match name of "what" category to transportation mode that may in turn
+    /// match an icon
     pub what_regex: Option<Pairs>,
+    pub icon: CategoryIcon,
 }
 
 /// Match category kind to material icon
@@ -92,9 +94,9 @@ pub struct CategoryIcon {
 #[derive(Deserialize, Debug)]
 pub struct StyleConfig {
     /// Maximum pixel height of static maps displayed with post summaries
-    pub pub_inline_map_height: i8,
+    pub inline_map_height: u16,
     /// Pixel width of main content used to compute generated image widths
-    pub content_width: i8,
+    pub content_width: u16,
 }
 
 #[derive(Deserialize, Debug)]

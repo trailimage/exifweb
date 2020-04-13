@@ -16,17 +16,16 @@ inline_map_height = 200
 content_width = 650
 
 [category]
+# Match name of "what" category to transportation mode that may in turn
+# match an icon
+what_regex = [
+    ["motorcycle", "(KTM|BMW|Honda)"],
+    ["bicycle", "bicycle"],
+    ["hike", "hike"],
+    ["jeep", "jeep"]
+]
 
-    # Match name of "what" category to transportation mode that may in turn
-    # match an icon
-    what_regex = [
-        ["motorcycle", "(KTM|BMW|Honda)"],
-        ["bicycle", "bicycle"],
-        ["hike", "hike"],
-        ["jeep", "jeep"]
-    ]
-
-    [icon]
+    [category.icon]
     # Map category kind to material icon
     # https://material.io/icons/
     who = "person"
@@ -34,7 +33,6 @@ content_width = 650
     when = "date_range"
     where = "map"
     default = "local_offer"
-
 
 [photo]
 index_regex = "^(?P<index>\\d{3}).(?P<ext>jpg|png|tif)$"

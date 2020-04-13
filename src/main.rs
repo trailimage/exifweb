@@ -246,13 +246,14 @@ fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
     };
     match toml::from_str::<D>(&content) {
         Ok(config) => Some(config),
-        _ => {
+        Err(e) => {
             println!(
-                "{:tab$}{} {}",
+                "{:tab$}{} {}, {err:?}",
                 "",
                 "failed to parse".red(),
                 CONFIG_FILE.red(),
-                tab = tab(1)
+                tab = tab(1),
+                err = e
             );
             None
         }

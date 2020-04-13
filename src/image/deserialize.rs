@@ -1,3 +1,6 @@
+//! Custom Serde deserializers
+//!
+use chrono::NaiveDateTime;
 use serde::{de, Deserialize, Deserializer};
 use std::{fmt, marker::PhantomData};
 
@@ -52,6 +55,21 @@ impl<'de> de::Visitor<'de> for StringOrVec {
     }
 }
 
+struct DateTimeString(PhantomData<NaiveDateTime>);
+
+impl<'de> de::Visitor<'de> for DateTimeString {
+    type Value = NaiveDateTime;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("date-time string")
+    }
+
+    fn visit_str<E: de::Error>(self, value: &str) -> Result<Self::Value, E> {
+        NaiveDateTime::parse_from_str(value, "%Y:%m:%d %H:%M:%S%:z")
+            .map_err(de::Error::custom)
+    }
+}
+
 pub fn string_number<'de, D>(deserializer: D) -> Result<String, D::Error>
 where
     D: Deserializer<'de>,
@@ -68,9 +86,19 @@ where
     deserializer.deserialize_any(StringOrVec(PhantomData))
 }
 
+pub fn date_time_string<'de, D>(
+    deserializer: D,
+) -> Result<NaiveDateTime, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    deserializer.deserialize_any(DateTimeString(PhantomData))
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{string_number, string_sequence};
+    use super::{date_time_string, string_number, string_sequence};
+    use chrono::{NaiveDate, NaiveDateTime};
     use serde::Deserialize;
     use serde_json::from_str;
 
@@ -107,5 +135,20 @@ mod tests {
 
         let x: SomeStruct = from_str(r#"{ "field": 0.3 }"#).unwrap();
         assert_eq!(x.field, "0.3");
+    }
+
+    #[test]
+    fn date_time_test() {
+        #[derive(Debug, Deserialize)]
+        struct SomeStruct {
+            #[serde(deserialize_with = "date_time_string")]
+            field: NaiveDateTime,
+        }
+        let dt: NaiveDateTime =
+            NaiveDate::from_ymd(2018, 2, 8).and_hms(11, 1, 12);
+        let x: SomeStruct =
+            from_str(r#"{ "field": "2018:02:08 11:01:12-06:00"}"#).unwrap();
+
+        assert_eq!(x.field, dt);
     }
 }

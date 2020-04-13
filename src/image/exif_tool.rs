@@ -1,6 +1,8 @@
 //! Use ExifTool to extract photo metadata
 
-use crate::image::deserialize::{string_number, string_sequence};
+use crate::image::deserialize::{
+    date_time_string, string_number, string_sequence,
+};
 use crate::models::{Camera, ExposureMode, Location, Photo};
 use crate::tools::{path_name, pos_from_name, tab};
 use chrono::NaiveDateTime;
@@ -81,9 +83,9 @@ pub struct ExifToolOutput {
     #[serde(default, rename = "Model")]
     camera_model: Option<String>,
 
-    // TODO: convert to date
-    #[serde(rename = "DateTimeCreated")] // or DateTimeOriginal
-    taken_on: Option<String>,
+    #[serde(rename = "DateTimeCreated", deserialize_with = "date_time_string")]
+    // or DateTimeOriginal
+    taken_on: NaiveDateTime,
 
     #[serde(rename = "GPSLatitude")]
     latitude: Option<f32>,
