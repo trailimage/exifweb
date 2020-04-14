@@ -1,8 +1,8 @@
 //! TOML configuration models
 
 use crate::tools::Pairs;
+use chrono::{DateTime, FixedOffset, Local};
 use serde::{Deserialize, Serialize};
-use std::time::SystemTime;
 
 /// Categories to which the post has been assigned
 #[derive(Deserialize, Debug)]
@@ -36,11 +36,10 @@ pub struct PostConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PostPhotos {
-    /// Date of second photo in folder (skip first since it's often a contextual
-    /// shot from another time)
-    pub when: SystemTime,
+    /// Date of first relevant photo in folder
+    pub when: Option<DateTime<FixedOffset>>,
     /// When folder was last processed
-    pub processed: SystemTime,
+    pub processed: DateTime<Local>,
     /// Photo tags
     pub tags: Vec<String>,
 }

@@ -9,6 +9,7 @@ mod models;
 mod tools;
 
 use ::regex::Regex;
+use chrono::{DateTime, FixedOffset, Local};
 use colored::*;
 use config::*;
 use image::exif_tool;
@@ -25,6 +26,7 @@ use tools::{
 };
 
 static CONFIG_FILE: &str = "config.toml";
+static LOG_FILE: &str = "log.toml";
 
 /// Patterns to extract position information from the names of photos and post
 /// folders in a series
@@ -190,6 +192,9 @@ fn load_series_post(
         if photos.is_empty() {
             None
         } else {
+            let happened_on = earliest_photo_date(&photos);
+            write_post_log(path, happened_on, &photos);
+
             Some(Post {
                 key: format!(
                     "{}/{}",
@@ -204,7 +209,7 @@ fn load_series_post(
                 total_parts: series_config.parts,
                 prev_is_part: part > 1,
                 next_is_part: part < series_config.parts,
-                happened_on: earliest_photo_date(&photos),
+                happened_on,
                 photos,
                 ..Post::default()
             })
@@ -220,11 +225,14 @@ fn load_post(path: &Path, re: &Match) -> Option<Post> {
         if photos.is_empty() {
             None
         } else {
+            let happened_on = earliest_photo_date(&photos);
+            write_post_log(path, happened_on, &photos);
+
             Some(Post {
                 key: slugify(&c.title),
                 title: c.title,
                 summary: c.summary,
-                happened_on: earliest_photo_date(&photos),
+                happened_on,
                 photos,
                 ..Post::default()
             })
@@ -272,9 +280,44 @@ fn load_photos(path: &Path, re: &Match, cover_photo_index: u8) -> Vec<Photo> {
 
     if photos.is_empty() {
         println!("{:tab$}{}", "", "found no photos".red(), tab = tab(1));
+    } else {
+        identify_outliers(&mut photos);
     }
 
-    identify_outliers(&mut photos);
-
     photos
+}
+
+fn write_post_log(
+    path: &Path,
+    earliest_date: Option<DateTime<FixedOffset>>,
+    photos: &Vec<Photo>,
+) {
+    let mut tags: Vec<String> = Vec::new();
+
+    for p in photos.iter() {
+        for t in p.tags.iter() {
+            if !tags.contains(&t) {
+                tags.push(t.clone())
+            }
+        }
+    }
+
+    tags.sort();
+
+    let log = PostPhotos {
+        when: earliest_date,
+        processed: Local::now(),
+        tags,
+    };
+
+    match toml::to_string(&log) {
+        Ok(content) => {
+            match fs::write(path.join(LOG_FILE), &content) {
+                Ok(_) => (),
+                Err(e) => eprintln!("Error writing {:?}", e),
+            };
+            return;
+        }
+        Err(e) => eprintln!("Error serializaing {:?}", e),
+    }
 }

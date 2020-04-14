@@ -185,7 +185,10 @@ pub fn earliest_photo_date(
 
 #[cfg(test)]
 mod tests {
-    use super::{boundary, identify_outliers, median, slugify, Limits};
+    use super::{
+        boundary, earliest_photo_date, identify_outliers, median, slugify,
+        Limits,
+    };
     use crate::Photo;
     use chrono::DateTime;
     use hashbrown::HashMap;
@@ -267,7 +270,7 @@ mod tests {
                 ),
                 ..Photo::default()
             },
-            // the outlier
+            // outlier
             Photo {
                 name: "Three".to_owned(),
                 date_taken: Some(
@@ -291,5 +294,54 @@ mod tests {
         assert!(!photos[0].outlier_date);
         assert_eq!(photos[2].name, "Three");
         assert!(photos[2].outlier_date);
+    }
+
+    #[test]
+    fn earliest_photo_date_test() {
+        let mut photos: Vec<Photo> = vec![
+            Photo {
+                name: "Two".to_owned(),
+                date_taken: Some(
+                    DateTime::parse_from_rfc3339("1996-12-19T16:40:57-08:00")
+                        .unwrap(),
+                ),
+                ..Photo::default()
+            },
+            Photo {
+                name: "One".to_owned(),
+                date_taken: Some(
+                    DateTime::parse_from_rfc3339("1996-12-19T16:39:57-08:00")
+                        .unwrap(),
+                ),
+                ..Photo::default()
+            },
+            // outlier
+            Photo {
+                name: "Three".to_owned(),
+                date_taken: Some(
+                    DateTime::parse_from_rfc3339("1992-12-19T16:39:57-08:00")
+                        .unwrap(),
+                ),
+                ..Photo::default()
+            },
+            Photo {
+                name: "Four".to_owned(),
+                date_taken: Some(
+                    DateTime::parse_from_rfc3339("1996-12-19T16:43:57-08:00")
+                        .unwrap(),
+                ),
+                ..Photo::default()
+            },
+        ];
+
+        identify_outliers(&mut photos);
+
+        assert_eq!(
+            earliest_photo_date(&photos),
+            Some(
+                DateTime::parse_from_rfc3339("1996-12-19T16:39:57-08:00")
+                    .unwrap()
+            )
+        );
     }
 }
