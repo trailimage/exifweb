@@ -19,7 +19,10 @@ use std::{
     path::{Path, PathBuf},
 };
 use toml;
-use tools::{identify_outliers, path_name, pos_from_path, slugify, tab};
+use tools::{
+    earliest_photo_date, identify_outliers, path_name, pos_from_path, slugify,
+    tab,
+};
 
 static CONFIG_FILE: &str = "config.toml";
 
@@ -185,26 +188,27 @@ fn load_series_post(
         let photos = load_photos(path, re, c.cover_photo_index);
 
         if photos.is_empty() {
-            return None;
+            None
+        } else {
+            Some(Post {
+                key: format!(
+                    "{}/{}",
+                    slugify(&series_config.title),
+                    slugify(&c.title)
+                ),
+                title: series_config.title.clone(),
+                sub_title: c.title,
+                summary: c.summary,
+                part,
+                is_partial: true,
+                total_parts: series_config.parts,
+                prev_is_part: part > 1,
+                next_is_part: part < series_config.parts,
+                happened_on: earliest_photo_date(&photos),
+                photos,
+                ..Post::default()
+            })
         }
-
-        Some(Post {
-            key: format!(
-                "{}/{}",
-                slugify(&series_config.title),
-                slugify(&c.title)
-            ),
-            title: series_config.title.clone(),
-            sub_title: c.title,
-            summary: c.summary,
-            part,
-            is_partial: true,
-            total_parts: series_config.parts,
-            prev_is_part: part > 1,
-            next_is_part: part < series_config.parts,
-            photos,
-            ..Post::default()
-        })
     })
 }
 
@@ -216,7 +220,14 @@ fn load_post(path: &Path, re: &Match) -> Option<Post> {
         if photos.is_empty() {
             None
         } else {
-            Some(Post::new(slugify(&c.title), c.title, c.summary, photos))
+            Some(Post {
+                key: slugify(&c.title),
+                title: c.title,
+                summary: c.summary,
+                happened_on: earliest_photo_date(&photos),
+                photos,
+                ..Post::default()
+            })
         }
     })
 }

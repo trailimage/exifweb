@@ -68,33 +68,6 @@ impl Post {
     pub fn cover_photo(&self) -> Option<&Photo> {
         self.photos.iter().find(|p| p.primary)
     }
-
-    pub fn new(
-        key: String,
-        title: String,
-        summary: String,
-        photos: Vec<Photo>,
-    ) -> Post {
-        let mut chronological = true;
-        let mut happened_on = None;
-
-        if let Some(p) = photos.iter().find(|p| !p.outlier_date) {
-            happened_on = p.date_taken;
-        } else {
-            // no regular dates -- should not actually be possible
-            chronological = false;
-        }
-
-        Post {
-            key,
-            title,
-            summary,
-            photos,
-            happened_on,
-            chronological,
-            ..Post::default()
-        }
-    }
 }
 
 impl Default for Post {

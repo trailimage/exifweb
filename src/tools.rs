@@ -1,4 +1,5 @@
 use crate::Photo;
+use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 use lazy_static::*;
 use regex::Regex;
@@ -80,7 +81,12 @@ pub fn median(numbers: &mut [i64]) -> f64 {
     if numbers.len() == 1 {
         return numbers[0] as f64;
     }
+    if numbers.is_empty() {
+        panic!("No numbers given for median()")
+    }
+
     numbers.sort();
+
     let mid = (numbers.len() as f64 / 2.0).floor() as usize;
 
     if numbers.len() % 2 != 0 {
@@ -111,31 +117,30 @@ impl Eq for Limits {}
 /// *Parameters*
 ///
 /// `distance`: Constant used to calculate fence. Tukey proposed `1.5` for an
-/// "outlier" and `3` for "far out". This method defaults to `3` if no value is
-/// given.
-fn boundary(numbers: &mut [i64], distance: i64) -> Option<Limits> {
+/// "outlier" and `3` for "far out".
+fn boundary(numbers: &mut [i64], distance: f64) -> Option<Limits> {
     if numbers.is_empty() {
         return None;
     }
-
     numbers.sort();
+
     let len = numbers.len();
     let mid = len / 2;
     // first quartile
     let q1 = median(&mut numbers[0..mid]);
     // third quartile
-    let q3 = median(&mut numbers[mid..len - 1]);
+    let q3 = median(&mut numbers[mid + 1..len]);
     // interquartile range: range of the middle 50% of the data
     let range = q3 - q1;
 
     Some(Limits {
-        min: q1 - range * (distance as f64),
-        max: q3 + range * (distance as f64),
+        min: q1 - range * distance,
+        max: q3 + range * distance,
     })
 }
 
 /// Simplistic outlier calculation identifies photos that are likely not part of
-/// the main sequence.
+/// the main sequence because of a large date deviation
 ///
 /// - https://en.wikipedia.org/wiki/Outlier
 /// - http://www.wikihow.com/Calculate-Outliers
@@ -143,10 +148,10 @@ pub fn identify_outliers(photos: &mut Vec<Photo>) {
     let mut times: Vec<i64> = photos
         .iter()
         .filter(|p| p.date_taken.is_some())
-        .map(|p| p.date_taken.unwrap().timestamp())
+        .map(|p: &Photo| p.date_taken.unwrap().timestamp())
         .collect();
 
-    if let Some(fence) = boundary(&mut times[..], 3) {
+    if let Some(fence) = boundary(&mut times[..], 0.05) {
         for mut p in photos {
             if p.date_taken.is_none() {
                 continue;
@@ -159,9 +164,30 @@ pub fn identify_outliers(photos: &mut Vec<Photo>) {
     }
 }
 
+/// Earliest pertinent date in a list of photos
+pub fn earliest_photo_date(
+    photos: &Vec<Photo>,
+) -> Option<DateTime<FixedOffset>> {
+    let mut dates: Vec<DateTime<FixedOffset>> = photos
+        .iter()
+        .filter(|p: &'_ &Photo| !p.outlier_date && p.date_taken.is_some())
+        .map(|p: &Photo| p.date_taken.unwrap())
+        .collect();
+
+    dates.sort();
+
+    if dates.is_empty() {
+        None
+    } else {
+        Some(dates[0])
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{boundary, median, slugify, Limits};
+    use super::{boundary, identify_outliers, median, slugify, Limits};
+    use crate::Photo;
+    use chrono::DateTime;
     use hashbrown::HashMap;
 
     #[test]
@@ -187,24 +213,83 @@ mod tests {
     #[test]
     fn median_test() {
         assert_eq!(median(&mut [1, 2, 3]), 2.0);
+        assert_eq!(median(&mut [1, 2, 13]), 2.0);
         assert_eq!(median(&mut [3]), 3.0);
         assert_eq!(median(&mut [4, 5, 6, 7]), 5.5);
+        assert_eq!(median(&mut [4, 5, 6, 9]), 5.5);
+
+        let mut numbers = [1, 2, 36, 9, 27, 3, 22];
+
+        assert_eq!(median(&mut numbers), 9.0);
+
+        let len = numbers.len();
+        let mid = len / 2;
+        // first quartile
+        assert_eq!(median(&mut numbers[0..mid]), 2.0);
+        // third quartile
+        assert_eq!(median(&mut numbers[mid + 1..len]), 27.0);
     }
 
     #[test]
     fn boundary_test() {
+        // q2 = [1, 2, 3, 9, 22, 27, 36] = 9
+        // q1 = [1, 2, 3] = 2
+        // q3 = [22, 27, 36] = 27
+        // range = q3 - q1 = 25
+        // min = 2 - 3(25) = -73
+        // max = 27 + 3(25) = 102
+
         assert_eq!(
-            boundary(&mut [1, 2, 3, 9, 27, 36, 22], 3),
+            boundary(&mut [1, 2, 36, 9, 27, 3, 22], 3.0),
             Some(Limits {
-                min: -65.5,
-                max: 92.0
+                min: -73.0,
+                max: 102.0
             })
         );
     }
 
-    // test('calculates median', () => {
-    //     expect(median(1, 2, 3)).toBe(2)
-    //     expect(median(3)).toBe(3)
-    //     expect(median(4, 5, 6, 7)).toBe(5.5)
-    //  })
+    #[test]
+    fn outlier_test() {
+        let mut photos: Vec<Photo> = vec![
+            Photo {
+                name: "One".to_owned(),
+                date_taken: Some(
+                    DateTime::parse_from_rfc3339("1996-12-19T16:39:57-08:00")
+                        .unwrap(),
+                ),
+                ..Photo::default()
+            },
+            Photo {
+                name: "Two".to_owned(),
+                date_taken: Some(
+                    DateTime::parse_from_rfc3339("1996-12-19T16:40:57-08:00")
+                        .unwrap(),
+                ),
+                ..Photo::default()
+            },
+            // the outlier
+            Photo {
+                name: "Three".to_owned(),
+                date_taken: Some(
+                    DateTime::parse_from_rfc3339("1992-12-19T16:39:57-08:00")
+                        .unwrap(),
+                ),
+                ..Photo::default()
+            },
+            Photo {
+                name: "Four".to_owned(),
+                date_taken: Some(
+                    DateTime::parse_from_rfc3339("1996-12-19T16:43:57-08:00")
+                        .unwrap(),
+                ),
+                ..Photo::default()
+            },
+        ];
+
+        identify_outliers(&mut photos);
+
+        assert!(!photos[0].outlier_date);
+        assert_eq!(photos[2].name, "Three");
+        assert!(photos[2].outlier_date);
+    }
 }
