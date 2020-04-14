@@ -11,7 +11,7 @@ mod tools;
 use ::regex::Regex;
 use colored::*;
 use config::*;
-use image::exif_tool::parse_dir;
+use image::exif_tool;
 use models::{Blog, Category, Photo, Post};
 use serde::de::DeserializeOwned;
 use std::{
@@ -214,16 +214,10 @@ fn load_post(path: &Path, re: &Match) -> Option<Post> {
         let photos = load_photos(path, re, c.cover_photo_index);
 
         if photos.is_empty() {
-            return None;
+            None
+        } else {
+            Some(Post::new(slugify(&c.title), c.title, c.summary, photos))
         }
-
-        Some(Post {
-            key: slugify(&c.title),
-            title: c.title,
-            summary: c.summary,
-            photos,
-            ..Post::default()
-        })
     })
 }
 
@@ -262,7 +256,8 @@ fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
 
 /// Load information about each post photo
 fn load_photos(path: &Path, re: &Match, cover_photo_index: u8) -> Vec<Photo> {
-    let photos: Vec<Photo> = parse_dir(&path, cover_photo_index, &re.photo);
+    let photos: Vec<Photo> =
+        exif_tool::parse_dir(&path, cover_photo_index, &re.photo);
 
     if photos.is_empty() {
         println!("{:tab$}{}", "", "found no photos".red(), tab = tab(1));

@@ -69,6 +69,21 @@ impl Post {
     pub fn cover_photo(&self) -> Option<&Photo> {
         self.photos.iter().find(|p| p.primary)
     }
+
+    pub fn new(
+        key: String,
+        title: String,
+        summary: String,
+        photos: Vec<Photo>,
+    ) -> Post {
+        Post {
+            key,
+            title,
+            summary,
+            photos,
+            ..Post::default()
+        }
+    }
 }
 
 impl Default for Post {

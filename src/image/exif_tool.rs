@@ -1,5 +1,6 @@
 //! Use ExifTool to extract photo metadata
 
+use crate::html;
 use crate::image::deserialize::{
     date_time_string, string_number, string_sequence,
 };
@@ -134,7 +135,8 @@ pub fn parse_dir(
                 name: mem::replace(&mut i.file_name, String::new()),
                 title: mem::replace(&mut i.title, None),
                 artist: mem::replace(&mut i.artist, String::new()),
-                caption: mem::replace(&mut i.caption, None),
+                caption: mem::replace(&mut i.caption, None)
+                    .map(|s| html::caption(&s)),
                 software: mem::replace(&mut i.software, String::new()),
                 tags: mem::replace(&mut i.tags, Vec::new()),
                 index,
