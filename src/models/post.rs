@@ -1,6 +1,5 @@
 use crate::models::Photo;
-use crate::tools::min_date;
-use chrono::{DateTime, Local};
+use chrono::{DateTime, FixedOffset};
 use core::cmp::Ordering;
 use yarte::Template;
 
@@ -21,11 +20,11 @@ pub struct Post {
     pub part_key: String,
 
     /// When the depicted events happened
-    pub happened_on: DateTime<Local>,
+    pub happened_on: Option<DateTime<FixedOffset>>,
     /// When the post was created
-    pub created_on: DateTime<Local>,
+    //pub created_on: DateTime<FixedOffset>,
     /// When the post was last updated
-    pub updated_on: DateTime<Local>,
+    //pub updated_on: DateTime<FixedOffset>,
 
     /// Title of the post. For series, this will be the series title and the
     /// configured post title will become the `sub_title`.
@@ -76,11 +75,23 @@ impl Post {
         summary: String,
         photos: Vec<Photo>,
     ) -> Post {
+        let mut chronological = true;
+        let mut happened_on = None;
+
+        if let Some(p) = photos.iter().find(|p| !p.outlier_date) {
+            happened_on = p.date_taken;
+        } else {
+            // no regular dates -- should not actually be possible
+            chronological = false;
+        }
+
         Post {
             key,
             title,
             summary,
             photos,
+            happened_on,
+            chronological,
             ..Post::default()
         }
     }
@@ -93,10 +104,9 @@ impl Default for Post {
             series_key: String::new(),
             part_key: String::new(),
 
-            happened_on: min_date(),
-            created_on: min_date(),
-            updated_on: min_date(),
-
+            happened_on: None,
+            //created_on: min_date(),
+            //updated_on: min_date(),
             title: String::new(),
             sub_title: String::new(),
             //original_title: "",

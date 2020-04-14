@@ -1,13 +1,15 @@
 use crate::config::ExifConfig;
 use crate::tools::slugify;
 use crate::{Category, Post};
-use chrono::{DateTime, Local};
+use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 
 /// Ephemeral struct to compute and capture chronological post order
 struct KeyTime {
+    /// Post key
     key: String,
-    time: DateTime<Local>,
+    /// Post `happened_on` date
+    time: DateTime<FixedOffset>,
 }
 
 /// Unique path to any blog photo
@@ -45,14 +47,14 @@ impl<'a> Blog<'a> {
     pub fn correlate_posts(&mut self) {
         let mut ordered: Vec<KeyTime> = Vec::new();
 
-        for kt in
-            self.posts
-                .values()
-                .filter(|p| p.chronological)
-                .map(|p| KeyTime {
-                    key: p.key.clone(),
-                    time: p.happened_on,
-                })
+        for kt in self
+            .posts
+            .values()
+            .filter(|p: &'_ &Post| p.chronological && p.happened_on.is_some())
+            .map(|p: &Post| KeyTime {
+                key: p.key.clone(),
+                time: p.happened_on.unwrap(),
+            })
         {
             ordered.push(kt);
         }
@@ -64,13 +66,15 @@ impl<'a> Blog<'a> {
 
         for (k, p) in self.posts.iter_mut() {
             // sorted position of post
-            let i = ordered.iter().position(|kt| kt.key == *k).unwrap();
-
-            if i > 0 {
-                p.prev_key = ordered.get(i - 1).unwrap().key.clone()
-            }
-            if i < len - 1 {
-                p.next_key = ordered.get(i + 1).unwrap().key.clone();
+            if let Some(i) = ordered.iter().position(|kt| kt.key == *k) {
+                if i > 0 {
+                    p.prev_key = ordered.get(i - 1).unwrap().key.clone()
+                }
+                if i < len - 1 {
+                    p.next_key = ordered.get(i + 1).unwrap().key.clone();
+                }
+            } else {
+                println!("Post {} is not chronological", k);
             }
         }
     }

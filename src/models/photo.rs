@@ -1,6 +1,6 @@
 use crate::config::ExifConfig;
 use crate::num_traits::FromPrimitive;
-use crate::tools::{boundary, min_date, replace_pairs};
+use crate::tools::replace_pairs;
 use chrono::{DateTime, FixedOffset};
 use core::cmp::Ordering;
 use serde::{de, Deserialize, Deserializer};
@@ -193,31 +193,6 @@ impl Default for Photo {
             date_taken: None,
             outlier_date: false,
             sanitized: false,
-        }
-    }
-}
-
-/// Simplistic outlier calculation identifies photos that are likely not part of
-/// the main sequence.
-///
-/// - https://en.wikipedia.org/wiki/Outlier
-/// - http://www.wikihow.com/Calculate-Outliers
-fn identify_outliers(photos: Vec<Photo>) {
-    let mut times: Vec<i64> = photos
-        .iter()
-        .filter(|p| p.date_taken.is_some())
-        .map(|p| p.date_taken.unwrap().timestamp())
-        .collect();
-
-    if let Some(fence) = boundary(&mut times[..], 3) {
-        for mut p in photos {
-            if p.date_taken.is_none() {
-                continue;
-            }
-            let d = p.date_taken.unwrap().timestamp() as f64;
-            if d > fence.max || d < fence.min {
-                p.outlier_date = true;
-            }
         }
     }
 }

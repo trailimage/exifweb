@@ -19,7 +19,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use toml;
-use tools::{path_name, pos_from_path, slugify, tab};
+use tools::{identify_outliers, path_name, pos_from_path, slugify, tab};
 
 static CONFIG_FILE: &str = "config.toml";
 
@@ -256,11 +256,14 @@ fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
 
 /// Load information about each post photo
 fn load_photos(path: &Path, re: &Match, cover_photo_index: u8) -> Vec<Photo> {
-    let photos: Vec<Photo> =
+    let mut photos: Vec<Photo> =
         exif_tool::parse_dir(&path, cover_photo_index, &re.photo);
 
     if photos.is_empty() {
         println!("{:tab$}{}", "", "found no photos".red(), tab = tab(1));
     }
+
+    identify_outliers(&mut photos);
+
     photos
 }

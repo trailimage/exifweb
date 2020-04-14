@@ -1,24 +1,11 @@
-use chrono::{DateTime, Local};
+use crate::Photo;
 use hashbrown::HashMap;
 use lazy_static::*;
 use regex::Regex;
 use std::path::{Path, PathBuf};
-use std::time::SystemTime;
-use std::{error, fmt};
 
 /// Hash represented as vector of string tuples
 pub type Pairs = Vec<(String, String)>;
-
-/// Error loading configuration, posts or photos
-// https://doc.rust-lang.org/rust-by-example/error/multiple_error_types/define_error_type.html
-#[derive(Debug, Clone)]
-pub struct LoadError;
-
-impl fmt::Display for LoadError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "invalid first item to double")
-    }
-}
 
 pub fn tab(n: usize) -> usize {
     n * 3
@@ -35,19 +22,6 @@ pub fn config_regex(pairs: Option<Pairs>) -> HashMap<String, Regex> {
         }
     }
     h
-}
-
-// This is important for other errors to wrap this one.
-impl error::Error for LoadError {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        // Generic error, underlying cause isn't tracked.
-        None
-    }
-}
-
-/// Unix epoch time (January 1, 1970)
-pub fn min_date() -> DateTime<Local> {
-    DateTime::from(SystemTime::UNIX_EPOCH)
 }
 
 /// Whether path ends with an extension
@@ -116,6 +90,7 @@ pub fn median(numbers: &mut [i64]) -> f64 {
     }
 }
 
+// Minimum and maximum for a range of values
 #[derive(Debug)]
 pub struct Limits {
     pub min: f64,
@@ -138,7 +113,7 @@ impl Eq for Limits {}
 /// `distance`: Constant used to calculate fence. Tukey proposed `1.5` for an
 /// "outlier" and `3` for "far out". This method defaults to `3` if no value is
 /// given.
-pub fn boundary(numbers: &mut [i64], distance: i64) -> Option<Limits> {
+fn boundary(numbers: &mut [i64], distance: i64) -> Option<Limits> {
     if numbers.is_empty() {
         return None;
     }
@@ -157,6 +132,31 @@ pub fn boundary(numbers: &mut [i64], distance: i64) -> Option<Limits> {
         min: q1 - range * (distance as f64),
         max: q3 + range * (distance as f64),
     })
+}
+
+/// Simplistic outlier calculation identifies photos that are likely not part of
+/// the main sequence.
+///
+/// - https://en.wikipedia.org/wiki/Outlier
+/// - http://www.wikihow.com/Calculate-Outliers
+pub fn identify_outliers(photos: &mut Vec<Photo>) {
+    let mut times: Vec<i64> = photos
+        .iter()
+        .filter(|p| p.date_taken.is_some())
+        .map(|p| p.date_taken.unwrap().timestamp())
+        .collect();
+
+    if let Some(fence) = boundary(&mut times[..], 3) {
+        for mut p in photos {
+            if p.date_taken.is_none() {
+                continue;
+            }
+            let d = p.date_taken.unwrap().timestamp() as f64;
+            if d > fence.max || d < fence.min {
+                p.outlier_date = true;
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -207,8 +207,4 @@ mod tests {
     //     expect(median(3)).toBe(3)
     //     expect(median(4, 5, 6, 7)).toBe(5.5)
     //  })
-
-    //  test('calculates Tukey fence boundaries', () => {
-    //     expect(boundary([1, 2, 3, 9, 27, 36, 22])).toEqual({ min: -65.5, max: 92 })
-    // })
 }
