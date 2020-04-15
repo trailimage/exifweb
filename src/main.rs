@@ -13,7 +13,7 @@ use chrono::{DateTime, FixedOffset, Local};
 use colored::*;
 use config::*;
 use image::exif_tool;
-use models::{Blog, Category, Photo, Post};
+use models::{Blog, Category, CategoryKind, Photo, Post};
 use serde::de::DeserializeOwned;
 use std::{
     fs,
@@ -112,18 +112,18 @@ fn main() {
 
     println!(
         "{}",
-        format!("\nFound {} total posts", blog.posts.len())
+        format!("\nFound {} total posts", blog.post_count())
             .bold()
             .green()
     );
 
-    if !blog.posts.is_empty() {
+    if !blog.is_empty() {
         blog.correlate_posts();
         blog.collate_tags();
 
         println!(
             "{}",
-            format!("\nFound {} unique photo tags", blog.tags.len())
+            format!("\nFound {} unique photo tags", blog.tag_count())
                 .bold()
                 .green()
         );
@@ -172,6 +172,32 @@ fn load_series(path: &Path, re: &Match) -> Option<Vec<Post>> {
     None
 }
 
+/// Convert configured categories to a vector
+fn parse_categories(config: &PostConfig) -> Vec<Category> {
+    let mut categories: Vec<Category> = vec![
+        Category {
+            name: config.categories.when.clone(),
+            kind: CategoryKind::When,
+        },
+        Category {
+            name: config.categories.what.clone(),
+            kind: CategoryKind::What,
+        },
+        Category {
+            name: config.categories.who.clone(),
+            kind: CategoryKind::Who,
+        },
+    ];
+
+    for w in config.categories.r#where.iter() {
+        categories.push(Category {
+            name: w.clone(),
+            kind: CategoryKind::Where,
+        });
+    }
+    categories
+}
+
 /// Create post that is part of a series. This differs from non-series post
 /// creation with the addition of several fields that identify how the post
 /// relates to the series.
@@ -181,19 +207,18 @@ fn load_series_post(
     re: &Match,
 ) -> Option<Post> {
     load_config::<PostConfig>(&path).and_then(|c| {
+        // TODO: load log
         let part = pos_from_path(&re.series_post, &path).unwrap_or(0);
 
         if part == 0 {
             return None;
         }
-
-        let photos = load_photos(path, re, c.cover_photo_index);
+        let (photos, happened_on) = load_photos(path, re, c.cover_photo_index);
 
         if photos.is_empty() {
             None
         } else {
-            let happened_on = earliest_photo_date(&photos);
-            write_post_log(path, happened_on, &photos);
+            let categories = parse_categories(&c);
 
             Some(Post {
                 key: format!(
@@ -211,6 +236,7 @@ fn load_series_post(
                 next_is_part: part < series_config.parts,
                 happened_on,
                 photos,
+                categories,
                 ..Post::default()
             })
         }
@@ -220,20 +246,20 @@ fn load_series_post(
 /// Create post that is not part of a series.
 fn load_post(path: &Path, re: &Match) -> Option<Post> {
     load_config::<PostConfig>(&path).and_then(|c| {
-        let photos = load_photos(path, re, c.cover_photo_index);
+        // TODO: load log
+        let (photos, happened_on) = load_photos(path, re, c.cover_photo_index);
 
         if photos.is_empty() {
             None
         } else {
-            let happened_on = earliest_photo_date(&photos);
-            write_post_log(path, happened_on, &photos);
-
+            let categories = parse_categories(&c);
             Some(Post {
                 key: slugify(&c.title),
                 title: c.title,
                 summary: c.summary,
                 happened_on,
                 photos,
+                categories,
                 ..Post::default()
             })
         }
@@ -244,13 +270,21 @@ fn load_post(path: &Path, re: &Match) -> Option<Post> {
 ///
 /// *See* https://gitter.im/rust-lang/rust/archives/2018/09/07
 fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
-    let content = match fs::read_to_string(path.join(CONFIG_FILE)) {
+    load_toml::<D>(path, CONFIG_FILE)
+}
+
+fn load_Log(path: &Path) -> Option<PostPhotos> {
+    load_toml(path, LOG_FILE)
+}
+
+fn load_toml<D: DeserializeOwned>(path: &Path, file_name: &str) -> Option<D> {
+    let content = match fs::read_to_string(path.join(file_name)) {
         Ok(txt) => txt,
         _ => {
             println!(
                 "{:tab$}{} {}",
                 "",
-                CONFIG_FILE.red(),
+                file_name.red(),
                 "not found: skipping".red(),
                 tab = tab(1)
             );
@@ -264,7 +298,7 @@ fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
                 "{:tab$}{} {}, {err:?}",
                 "",
                 "failed to parse".red(),
-                CONFIG_FILE.red(),
+                file_name.red(),
                 tab = tab(1),
                 err = e
             );
@@ -274,20 +308,28 @@ fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
 }
 
 /// Load information about each post photo
-fn load_photos(path: &Path, re: &Match, cover_photo_index: u8) -> Vec<Photo> {
+fn load_photos(
+    path: &Path,
+    re: &Match,
+    cover_photo_index: u8,
+) -> (Vec<Photo>, Option<DateTime<FixedOffset>>) {
     let mut photos: Vec<Photo> =
         exif_tool::parse_dir(&path, cover_photo_index, &re.photo);
 
     if photos.is_empty() {
         println!("{:tab$}{}", "", "found no photos".red(), tab = tab(1));
+
+        (photos, None)
     } else {
         identify_outliers(&mut photos);
-    }
+        let happened_on = earliest_photo_date(&photos);
+        write_log(path, happened_on, &photos);
 
-    photos
+        (photos, happened_on)
+    }
 }
 
-fn write_post_log(
+fn write_log(
     path: &Path,
     earliest_date: Option<DateTime<FixedOffset>>,
     photos: &Vec<Photo>,
@@ -307,6 +349,7 @@ fn write_post_log(
     let log = PostPhotos {
         when: earliest_date,
         processed: Local::now(),
+        // TODO: I think these need to be tags that map to photos
         tags,
     };
 

@@ -1,5 +1,4 @@
-use crate::models::Post;
-
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum CategoryKind {
     Who,
     When,
@@ -7,8 +6,8 @@ pub enum CategoryKind {
     What,
 }
 
-pub struct Category<'a> {
+#[derive(Debug, Clone)]
+pub struct Category {
     pub name: String,
-    pub posts: Vec<&'a Post>,
     pub kind: CategoryKind,
 }

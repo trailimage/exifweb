@@ -1,6 +1,6 @@
 use crate::config::ExifConfig;
 use crate::tools::slugify;
-use crate::{Category, Post};
+use crate::{Category, CategoryKind, Post};
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 
@@ -26,21 +26,67 @@ pub struct TagPhotos {
     pub photos: Vec<PhotoPath>,
 }
 
-#[derive(Default)]
-pub struct Blog<'a> {
-    /// Posts keyed to their slug
-    pub posts: HashMap<String, Post>,
-    pub categories: Vec<Category<'a>>,
-    /// Tag slugs mapped to the original tag names and photos with the tag
-    pub tags: HashMap<String, TagPhotos>,
+pub struct CategoryPosts {
+    pub name: String,
+    pub post_keys: Vec<String>,
+    pub kind: CategoryKind,
 }
 
-impl<'a> Blog<'a> {
+#[derive(Default)]
+pub struct Blog {
+    /// Posts keyed to their slug
+    posts: HashMap<String, Post>,
+    pub categories: Vec<CategoryPosts>,
+    /// Tag slugs mapped to the original tag names and photos with the tag
+    tags: HashMap<String, TagPhotos>,
+}
+
+impl Blog {
     pub fn add_post(&mut self, p: Post) {
-        if let Some(dup) = self.posts.insert(p.key.clone(), p) {
-            // if insert returns Post then same key was already present
-            panic!("Attempt to insert duplicate post {}", dup.key)
+        if self.posts.contains_key(&p.key) {
+            panic!("Attempt to insert duplicate post {}", p.key)
         }
+        for c in &p.categories {
+            self.add_category_post(c, &p)
+        }
+
+        self.posts.insert(p.key.clone(), p);
+    }
+
+    /// Get matching category or create and return the missing category
+    fn add_category_post(&mut self, c: &Category, p: &Post) {
+        let key = p.key.clone();
+
+        if let Some(category) = self
+            .categories
+            .iter_mut()
+            .find(|cp| cp.name == c.name && cp.kind == c.kind)
+        {
+            category.post_keys.push(key)
+        } else {
+            self.categories.push(CategoryPosts {
+                name: c.name.clone(),
+                kind: c.kind,
+                post_keys: vec![key],
+            });
+        }
+    }
+
+    /// Post with key
+    pub fn get(&self, key: &str) -> Option<&Post> {
+        self.posts.get(key)
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.posts.is_empty()
+    }
+
+    pub fn post_count(&self) -> usize {
+        self.posts.len()
+    }
+
+    pub fn tag_count(&self) -> usize {
+        self.tags.len()
     }
 
     /// Update post `prev_key` and `next_key` based on chronological ordering

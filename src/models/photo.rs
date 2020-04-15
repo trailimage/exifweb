@@ -4,8 +4,7 @@ use crate::tools::replace_pairs;
 use chrono::{DateTime, FixedOffset};
 use core::cmp::Ordering;
 use serde::{de, Deserialize, Deserializer};
-use std::fmt;
-use std::marker::Copy;
+use std::{fmt, marker::Copy};
 
 /// Latitude and longitude in degrees
 #[derive(Debug, Default)]
