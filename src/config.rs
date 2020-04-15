@@ -103,6 +103,10 @@ pub struct StyleConfig {
 
 #[derive(Deserialize, Debug)]
 pub struct BlogConfig {
+    pub site_url: String,
+    pub site_name: String,
+    pub author_name: String,
+    pub repo_url: String,
     /// Regex pattern to extract series part index from folder name
     ///
     /// *Examples*

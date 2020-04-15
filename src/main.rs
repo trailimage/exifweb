@@ -4,6 +4,7 @@ extern crate enum_primitive_derive;
 extern crate num_traits;
 
 mod config;
+mod context;
 mod deserialize;
 mod html;
 mod image;
@@ -14,6 +15,7 @@ use ::regex::Regex;
 use chrono::{DateTime, FixedOffset, Local};
 use colored::*;
 use config::*;
+use context::{Helpers, PostContext};
 use image::exif_tool;
 use models::{Blog, Category, CategoryKind, Photo, Post};
 use serde::de::DeserializeOwned;
@@ -100,8 +102,8 @@ fn main() {
 
         blog.sanitize_exif(&config.photo.exif);
 
-        for (_, p) in blog.posts {
-            write_post(root, &p)
+        for (_, p) in &blog.posts {
+            write_post(root, &config, &blog, &p)
         }
     }
 }
@@ -336,8 +338,15 @@ fn write_log(
     }
 }
 
-fn write_post(path: &Path, post: &Post) {
-    match post.call() {
+fn write_post(path: &Path, config: &BlogConfig, blog: &Blog, post: &Post) {
+    let context = PostContext {
+        post,
+        blog,
+        config,
+        html: Helpers {},
+    };
+
+    match context.call() {
         Ok(content) => {
             match fs::write(path.join(&post.path).join("index.html"), &content)
             {

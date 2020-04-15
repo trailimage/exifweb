@@ -1,5 +1,5 @@
 
-# https://yarte.netlify.com/config.html 
+# https://yarte.netlify.com/config.html
 # root dir of templates
 [main]
 dir = "templates"
@@ -7,9 +7,10 @@ debug = "code"
 
 # Alias for partials. In call, change the start of partial path with one of this, if exist.
 [partials]
-alias = "./deep/more/deep"
-doc = "./deep/more/doc"
-card = "./deep/more/card"
+head = "./partials/head"
+categories = "./partials/categories"
+footer = "./partials/footer"
+navigation = "./partials/navigation"
 
 [debug]
 # prettyprint themes, put anything for options

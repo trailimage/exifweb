@@ -1,5 +1,7 @@
-# https://github.com/sunng87/handlebars-rust
-
+site_name = "Trail Image"
+site_url = "https://trailimage.com"
+repo_url = "https://github.com/trailimage/"
+author_name = "Jason Abbott"
 capture_series_index = "^(?P<index>\\d+)\\."
 # source to target slug
 redirects = [

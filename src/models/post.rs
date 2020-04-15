@@ -1,10 +1,8 @@
 use crate::models::{Category, Photo};
 use chrono::{DateTime, FixedOffset};
 use core::cmp::Ordering;
-use yarte::Template;
 
-#[derive(Debug, Template)]
-#[template(path = "post.html")]
+#[derive(Debug)]
 pub struct Post {
     /// File path to the post
     ///
@@ -35,9 +33,9 @@ pub struct Post {
     pub summary: String,
 
     /// Whether post pictures occurred sequentially in a specific time range as
-    /// opposed to, for example, a themed set of images from various times.
+    /// opposed to, for example, a themed set of images from various times
     pub chronological: bool,
-    /// Whether post is featured in main navigation
+    /// Whether post is featured in main navigation (implies not chronological)
     pub featured: bool,
     pub photos: Vec<Photo>,
 

@@ -19,9 +19,10 @@
   "rust-analyzer.inlayHints.parameterHints": false,
   "rust-analyzer.highlightingOn": true,
   "files.associations": {
-    "**/templates/*.html": "handlebars",
+    "**/templates/**/*.html": "handlebars",
     "**/templates/*": "handlebars"
-},
-"rust-analyzer.inlayHints.chainingHints": false,
-"rust-analyzer.highlighting.semanticTokens": true
+  },
+  "rust-analyzer.inlayHints.chainingHints": false,
+  "rust-analyzer.highlighting.semanticTokens": true,
+  "html.format.enable": false
 }

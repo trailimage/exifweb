@@ -74,7 +74,11 @@ impl Blog {
 
     /// Post with path
     pub fn get(&self, path: &str) -> Option<&Post> {
-        self.posts.get(path)
+        if path.is_empty() {
+            None
+        } else {
+            self.posts.get(path)
+        }
     }
 
     /// Whether blog has any posts

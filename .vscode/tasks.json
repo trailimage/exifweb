@@ -19,18 +19,29 @@
       "label": "Run",
       "type": "shell",
       "command": "cargo",
-      "args": [
-        "run",
-        "--package",
-        "static-from-exif",
-        "--bin",
-        "static-from-exif"
-      ],
+      "args": ["run", "--package", "static-from-exif"],
       "presentation": {
         "echo": false,
         "clear": true
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Clean",
+      "type": "shell",
+      "command": "cargo",
+      "args": ["clean", "--package", "static-from-exif"],
+      "presentation": {
+        "echo": false,
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Clean Run",
+      "problemMatcher": [],
+      "dependsOn": ["Clean", "Run"],
+      "dependsOrder": "sequence"
     }
   ]
 }
