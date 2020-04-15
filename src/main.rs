@@ -1,3 +1,4 @@
+#![allow(warnings)]
 #[macro_use]
 extern crate enum_primitive_derive;
 extern crate num_traits;
@@ -22,8 +23,10 @@ use std::{
 };
 use toml;
 use tools::{
-    earliest_photo_date, identify_outliers, path_name, pos_from_path, slugify,
+    earliest_photo_date, identify_outliers, path_name, path_slice,
+    pos_from_path,
 };
+use yarte::Template;
 
 /// Configuration file for blog, for post series and for posts
 static CONFIG_FILE: &str = "config.toml";
@@ -73,7 +76,7 @@ fn main() {
         if let Some(posts) = load_series(&path, &config) {
             println!("   Found {} series posts", posts.len());
             for p in posts {
-                println!("{:>6} ({} photos)", &p.key, &p.photos.len());
+                println!("{:6}{} ({} photos)", "", &p.path, &p.photos.len());
                 blog.add_post(p);
             }
             // skip to next path entry if series was found
@@ -85,26 +88,26 @@ fn main() {
         }
     }
 
-    println!(
-        "{}",
-        format!("\nFound {} total posts", blog.post_count())
-            .bold()
-            .green()
-    );
+    print!("\n");
+    success_metric(blog.post_count(), "total posts");
 
     if !blog.is_empty() {
         blog.correlate_posts();
         blog.collate_tags();
 
-        println!(
-            "{}",
-            format!("\nFound {} unique photo tags", blog.tag_count())
-                .bold()
-                .green()
-        );
+        success_metric(blog.category_count(), "post categories");
+        success_metric(blog.tag_count(), "unique photo tags");
 
         blog.sanitize_exif(&config.photo.exif);
+
+        for (_, p) in blog.posts {
+            write_post(root, &p)
+        }
     }
+}
+
+fn success_metric(count: usize, label: &str) {
+    println!("{}", format!("{:>5} {}", count, label).bold().green());
 }
 
 /// Attempt to load path entries as if they constitute a post series. `None` is
@@ -117,7 +120,7 @@ fn load_series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
             .collect(),
         _ => {
             println!(
-                "{:>3} {}",
+                "   {} {}",
                 "Failed to open subdirectory".red(),
                 path_name(&path).red().bold()
             );
@@ -196,11 +199,7 @@ fn load_series_post(
             let categories = parse_categories(&c);
 
             Some(Post {
-                key: format!(
-                    "{}/{}",
-                    slugify(&series_config.title),
-                    slugify(&c.title)
-                ),
+                path: path_slice(path, 2),
                 title: series_config.title.clone(),
                 sub_title: c.title,
                 summary: c.summary,
@@ -230,7 +229,7 @@ fn load_post(path: &Path, config: &BlogConfig) -> Option<Post> {
         } else {
             let categories = parse_categories(&c);
             Some(Post {
-                key: slugify(&c.title),
+                path: path_slice(path, 1),
                 title: c.title,
                 summary: c.summary,
                 happened_on,
@@ -257,7 +256,11 @@ fn load_toml<D: DeserializeOwned>(path: &Path, file_name: &str) -> Option<D> {
     let content = match fs::read_to_string(path.join(file_name)) {
         Ok(txt) => txt,
         _ => {
-            println!("{:>3} {}", file_name.red(), "not found: skipping".red());
+            println!(
+                "   {} {}",
+                file_name.purple(),
+                "not found: skipping".purple()
+            );
             return None;
         }
     };
@@ -265,7 +268,7 @@ fn load_toml<D: DeserializeOwned>(path: &Path, file_name: &str) -> Option<D> {
         Ok(config) => Some(config),
         Err(e) => {
             println!(
-                "{:>3} {}, {:?}",
+                "   {} {}, {:?}",
                 "failed to parse".red(),
                 file_name.red(),
                 e
@@ -285,7 +288,7 @@ fn load_photos(
         exif_tool::parse_dir(&path, cover_photo_index, &re);
 
     if photos.is_empty() {
-        println!("{:>3}", "found no photos".red());
+        println!("   {}", "found no photos".red());
 
         (photos, None)
     } else {
@@ -330,5 +333,18 @@ fn write_log(
             return;
         }
         Err(e) => eprintln!("Error serializaing {:?}", e),
+    }
+}
+
+fn write_post(path: &Path, post: &Post) {
+    match post.call() {
+        Ok(content) => {
+            match fs::write(path.join(&post.path).join("index.html"), &content)
+            {
+                Ok(_) => (),
+                Err(e) => eprintln!("Error writing post {} {:?}", post.path, e),
+            }
+        }
+        Err(e) => eprintln!("Error rendering post {} {:?}", post.path, e),
     }
 }

@@ -14,6 +14,23 @@
       "command": "cargo",
       "args": ["test"],
       "problemMatcher": []
+    },
+    {
+      "label": "Run",
+      "type": "shell",
+      "command": "cargo",
+      "args": [
+        "run",
+        "--package",
+        "static-from-exif",
+        "--bin",
+        "static-from-exif"
+      ],
+      "presentation": {
+        "echo": false,
+        "clear": true
+      },
+      "problemMatcher": []
     }
   ]
 }

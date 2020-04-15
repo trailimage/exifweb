@@ -31,6 +31,16 @@ pub fn path_name(path: &Path) -> &str {
     path.file_name().unwrap().to_str().unwrap()
 }
 
+pub fn path_slice(path: &Path, depth: usize) -> String {
+    lazy_static! {
+        static ref SLASH: Regex = Regex::new(r"[/\\]+").unwrap();
+    }
+    let parts: Vec<&str> = SLASH.split(path.to_str().unwrap()).collect();
+    let end = parts.len();
+
+    parts[(end - depth)..end].join("/")
+}
+
 /// Update text by replacing source with target values from a `Pairs` hash
 pub fn replace_pairs(text: String, pairs: &[(String, String)]) -> String {
     let mut clean = text;
@@ -182,12 +192,13 @@ pub fn earliest_photo_date(
 #[cfg(test)]
 mod tests {
     use super::{
-        boundary, earliest_photo_date, identify_outliers, median, slugify,
-        Limits,
+        boundary, earliest_photo_date, identify_outliers, median, path_name,
+        path_slice, slugify, Limits,
     };
     use crate::Photo;
     use chrono::DateTime;
     use hashbrown::HashMap;
+    use std::path::Path;
 
     #[test]
     fn slugify_test() {
@@ -207,6 +218,21 @@ mod tests {
         for (k, v) in expect.iter() {
             assert_eq!(slugify(k), *v);
         }
+    }
+
+    #[test]
+    fn path_name_test() {
+        let path = Path::new("./docs/something/else");
+        assert_eq!(path_name(path), "else");
+    }
+
+    #[test]
+    fn path_slice_test() {
+        let path = Path::new("./docs/something/else");
+
+        assert_eq!(path_slice(path, 1), "else");
+        assert_eq!(path_slice(path, 2), "something/else");
+        assert_eq!(path_slice(path, 3), "docs/something/else");
     }
 
     #[test]

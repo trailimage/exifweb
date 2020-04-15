@@ -108,6 +108,7 @@ pub struct ExifToolOutput {
     height: u16,
 }
 
+/// Execute exif_tool for each image file in given `path` and capture output
 pub fn parse_dir(
     path: &Path,
     cover_index: u8,
@@ -116,6 +117,7 @@ pub fn parse_dir(
     read_dir(&path)
         .iter_mut()
         .map(|i: &mut ExifToolOutput| {
+            // Photo index based on its file name pattern
             let index = pos_from_name(&infer_pos, &i.file_name).unwrap_or(0);
 
             if index == 0 {
@@ -164,10 +166,10 @@ pub fn parse_dir(
                 photo.camera = Some(camera);
             }
 
-            if let Some(lat) = &i.latitude {
+            if i.latitude.is_some() && i.longitude.is_some() {
                 let loc = Location {
-                    latitude: lat.to_owned(),
-                    longitude: 0.0,
+                    latitude: i.latitude.unwrap(),
+                    longitude: i.longitude.unwrap(),
                 };
 
                 if loc.is_valid() {

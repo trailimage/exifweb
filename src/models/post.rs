@@ -6,18 +6,17 @@ use yarte::Template;
 #[derive(Debug, Template)]
 #[template(path = "post.html")]
 pub struct Post {
-    /// Unique identifer used as the URL slug. If post is part of a series then
-    /// the key is compound.
+    /// File path to the post
     ///
     /// *example* `brother-ride/2.trying-to-survive`
-    pub key: String,
-    /// Portion of key that is common among series members. For example, with
-    /// `brother-ride/2.trying-to-survive` the `seriesKey` is `brother-ride`.
-    pub series_key: String,
-    /// Portion of key that is unique among series members. For example, with
-    /// `brother-ride/2.trying-to-survive` the `partKey` is
+    pub path: String,
+    /// Portion of path that is common among series members. For example, with
+    /// `brother-ride/2.trying-to-survive` the `series_path` is `brother-ride`.
+    pub series_path: String,
+    /// Portion of path that is unique among series members. For example, with
+    /// `brother-ride/2.trying-to-survive` the `parth_path` is
     /// `2.trying-to-survive`.
-    pub part_key: String,
+    pub part_path: String,
 
     /// When the depicted events happened
     pub happened_on: Option<DateTime<FixedOffset>>,
@@ -42,10 +41,10 @@ pub struct Post {
     pub featured: bool,
     pub photos: Vec<Photo>,
 
-    /// Next chronological post (newer)
-    pub next_key: String,
-    /// Previous chronological post (older)
-    pub prev_key: String,
+    /// Next chronological post path (newer)
+    pub next_path: String,
+    /// Previous chronological post path (older)
+    pub prev_path: String,
 
     /// One-based position of this post in a series or 0 if it's not in a series
     pub part: u8,
@@ -75,9 +74,9 @@ impl Post {
 impl Default for Post {
     fn default() -> Self {
         Post {
-            key: String::new(),
-            series_key: String::new(),
-            part_key: String::new(),
+            path: String::new(),
+            series_path: String::new(),
+            part_path: String::new(),
 
             happened_on: None,
             //created_on: min_date(),
@@ -91,8 +90,8 @@ impl Default for Post {
             featured: false,
             photos: Vec::new(),
 
-            next_key: String::new(),
-            prev_key: String::new(),
+            next_path: String::new(),
+            prev_path: String::new(),
 
             part: 0,
             total_parts: 0,
@@ -121,7 +120,7 @@ impl Ord for Post {
 
 impl PartialEq for Post {
     fn eq(&self, other: &Self) -> bool {
-        self.key == other.key
+        self.path == other.path
     }
 }
 

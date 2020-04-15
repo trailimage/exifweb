@@ -6,15 +6,15 @@ use hashbrown::HashMap;
 
 /// Ephemeral struct to compute and capture chronological post order
 struct KeyTime {
-    /// Post key
-    key: String,
+    /// Post path
+    path: String,
     /// Post `happened_on` date
     time: DateTime<FixedOffset>,
 }
 
 /// Unique path to any blog photo
 pub struct PhotoPath {
-    pub post_key: String,
+    pub post_path: String,
     /// Photo file name without extension
     pub photo_name: String,
 }
@@ -28,14 +28,14 @@ pub struct TagPhotos {
 
 pub struct CategoryPosts {
     name: String,
-    post_keys: Vec<String>,
+    post_paths: Vec<String>,
     kind: CategoryKind,
 }
 
 #[derive(Default)]
 pub struct Blog {
     /// Posts keyed to their slug
-    posts: HashMap<String, Post>,
+    pub posts: HashMap<String, Post>,
     categories: Vec<CategoryPosts>,
     /// Tag slugs mapped to the original tag names and photos with the tag
     tags: HashMap<String, TagPhotos>,
@@ -43,38 +43,38 @@ pub struct Blog {
 
 impl Blog {
     pub fn add_post(&mut self, p: Post) {
-        if self.posts.contains_key(&p.key) {
-            panic!("Attempt to insert duplicate post {}", p.key)
+        if self.posts.contains_key(&p.path) {
+            panic!("Attempt to insert duplicate post {}", p.path)
         }
         for c in &p.categories {
             self.add_category_post(c, &p)
         }
 
-        self.posts.insert(p.key.clone(), p);
+        self.posts.insert(p.path.clone(), p);
     }
 
     /// Get matching category or create and return the missing category
     fn add_category_post(&mut self, c: &Category, p: &Post) {
-        let key = p.key.clone();
+        let path = p.path.clone();
 
         if let Some(category) = self
             .categories
             .iter_mut()
             .find(|cp| cp.name == c.name && cp.kind == c.kind)
         {
-            category.post_keys.push(key)
+            category.post_paths.push(path)
         } else {
             self.categories.push(CategoryPosts {
                 name: c.name.clone(),
                 kind: c.kind,
-                post_keys: vec![key],
+                post_paths: vec![path],
             });
         }
     }
 
-    /// Post with key
-    pub fn get(&self, key: &str) -> Option<&Post> {
-        self.posts.get(key)
+    /// Post with path
+    pub fn get(&self, path: &str) -> Option<&Post> {
+        self.posts.get(path)
     }
 
     /// Whether blog has any posts
@@ -90,6 +90,10 @@ impl Blog {
         self.tags.len()
     }
 
+    pub fn category_count(&self) -> usize {
+        self.categories.len()
+    }
+
     /// Update post `prev_key` and `next_key` based on chronological ordering
     pub fn correlate_posts(&mut self) {
         let mut ordered: Vec<KeyTime> = Vec::new();
@@ -99,7 +103,7 @@ impl Blog {
             .values()
             .filter(|p: &'_ &Post| p.chronological && p.happened_on.is_some())
             .map(|p: &Post| KeyTime {
-                key: p.key.clone(),
+                path: p.path.clone(),
                 time: p.happened_on.unwrap(),
             })
         {
@@ -113,15 +117,15 @@ impl Blog {
 
         for (k, p) in self.posts.iter_mut() {
             // sorted position of post
-            if let Some(i) = ordered.iter().position(|kt| kt.key == *k) {
+            if let Some(i) = ordered.iter().position(|kt| kt.path == *k) {
                 if i > 0 {
-                    p.prev_key = ordered.get(i - 1).unwrap().key.clone()
+                    p.prev_path = ordered.get(i - 1).unwrap().path.clone()
                 }
                 if i < len - 1 {
-                    p.next_key = ordered.get(i + 1).unwrap().key.clone();
+                    p.next_path = ordered.get(i + 1).unwrap().path.clone();
                 }
             } else {
-                println!("Post {} is not chronological", k);
+                eprintln!("Post {} is not chronological", k);
             }
         }
     }
@@ -145,7 +149,7 @@ impl Blog {
                 for tag in photo.tags.iter() {
                     let tag_slug = slugify(tag);
                     let photo_path = PhotoPath {
-                        post_key: p.key.clone(),
+                        post_path: p.path.clone(),
                         photo_name: photo.name.clone(),
                     };
                     match tags.get_mut(&tag_slug) {
