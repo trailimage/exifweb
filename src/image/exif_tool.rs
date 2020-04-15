@@ -3,7 +3,7 @@
 use crate::deserialize::{date_time_string, string_number, string_sequence};
 use crate::html;
 use crate::models::{Camera, ExposureMode, Location, Photo};
-use crate::tools::{path_name, pos_from_name, tab};
+use crate::tools::{path_name, pos_from_name};
 use chrono::{DateTime, FixedOffset};
 use colored::*;
 use regex::Regex;
@@ -120,11 +120,9 @@ pub fn parse_dir(
 
             if index == 0 {
                 println!(
-                    "{:tab$}{} {}",
-                    "",
+                    "{:>3} {}",
                     "failed to infer index of".red(),
-                    i.file_name.red(),
-                    tab = tab(1)
+                    i.file_name.red()
                 );
                 return None;
             }
@@ -228,11 +226,9 @@ pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
         Ok(out) => out,
         _ => {
             println!(
-                "{:tab$}{} {}",
-                "",
+                "{:>3} {}",
                 "failed to retrieve EXIF for".red(),
-                path_name(&path).magenta(),
-                tab = tab(1)
+                path_name(&path).magenta()
             );
             return Vec::new();
         }
@@ -242,11 +238,9 @@ pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
         Ok(text) => text,
         _ => {
             println!(
-                "{:tab$}{} {}",
-                "",
+                "{:>3} {}",
                 "Failed to convert EXIF output to UTF-8 for".red(),
-                path_name(&path).magenta(),
-                tab = tab(1)
+                path_name(&path).magenta()
             );
             return Vec::new();
         }
@@ -265,11 +259,9 @@ pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
         Ok(info) => info,
         Err(e) => {
             println!(
-                "{:tab$}{} {}",
-                "",
+                "{:>3} {}",
                 "unable to parse EXIF JSON for".red(),
-                path_name(&path).magenta(),
-                tab = tab(1)
+                path_name(&path).magenta()
             );
             //println!("{}", text);
             println!("—\n{:?}\n—", e);

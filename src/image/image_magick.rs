@@ -1,5 +1,5 @@
 use crate::models::Photo;
-use crate::tools::{path_name, pos_from_name, tab};
+use crate::tools::{path_name, pos_from_name};
 use colored::*;
 use encoding::all::*;
 use encoding::{DecoderTrap, Encoding};
@@ -74,11 +74,9 @@ pub fn parse_dir(
 
             if index == 0 {
                 println!(
-                    "{:tab$}{} {}",
-                    "",
+                    "{:>3} {}",
                     "failed to infer index of".red(),
                     i.image.file_name.red(),
-                    tab = tab(1)
                 );
                 return None;
             }
@@ -109,11 +107,9 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
         Ok(out) => out,
         _ => {
             println!(
-                "{:tab$}{} {}",
-                "",
+                "{:>3} {}",
                 "Failed to generate EXIF for".red(),
                 path_name(&path).magenta(),
-                tab = tab(1)
             );
             return Vec::new();
         }
@@ -124,11 +120,9 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
         Ok(text) => text,
         _ => {
             println!(
-                "{:tab$}{} {}",
-                "",
+                "{:>3} {}",
                 "Failed to convert EXIF output to UTF-8 for".red(),
                 path_name(&path).magenta(),
-                tab = tab(1)
             );
             return Vec::new();
         }
@@ -147,11 +141,9 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
         Ok(info) => info,
         Err(e) => {
             println!(
-                "{:tab$}{} {}",
-                "",
+                "{:>3} {}",
                 "Unable to parse EXIF JSON for".red(),
                 path_name(&path).magenta(),
-                tab = tab(1)
             );
             println!("{}", text);
             println!("{:?}", e);

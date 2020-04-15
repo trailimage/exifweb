@@ -8,10 +8,6 @@ use std::path::{Path, PathBuf};
 /// Hash represented as vector of string tuples
 pub type Pairs = Vec<(String, String)>;
 
-pub fn tab(n: usize) -> usize {
-    n * 3
-}
-
 /// Convert vector of tuples, used in configuration, to hashmap of strings and
 /// regular expressions
 pub fn config_regex(pairs: Option<Pairs>) -> HashMap<String, Regex> {

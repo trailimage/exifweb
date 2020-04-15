@@ -23,7 +23,6 @@ use std::{
 use toml;
 use tools::{
     earliest_photo_date, identify_outliers, path_name, pos_from_path, slugify,
-    tab,
 };
 
 /// Configuration file for blog, for post series and for posts
@@ -72,20 +71,9 @@ fn main() {
         );
 
         if let Some(posts) = load_series(&path, &config) {
-            println!(
-                "{:tab$}Found {} series posts",
-                "",
-                posts.len(),
-                tab = tab(1)
-            );
+            println!("   Found {} series posts", posts.len());
             for p in posts {
-                println!(
-                    "{:tab$}{} ({} photos)",
-                    "",
-                    &p.key,
-                    &p.photos.len(),
-                    tab = tab(2)
-                );
+                println!("{:>6} ({} photos)", &p.key, &p.photos.len());
                 blog.add_post(p);
             }
             // skip to next path entry if series was found
@@ -129,11 +117,9 @@ fn load_series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
             .collect(),
         _ => {
             println!(
-                "{:tab$}{} {}",
-                "",
+                "{:>3} {}",
                 "Failed to open subdirectory".red(),
-                path_name(&path).red().bold(),
-                tab = tab(1)
+                path_name(&path).red().bold()
             );
             return None;
         }
@@ -271,13 +257,7 @@ fn load_toml<D: DeserializeOwned>(path: &Path, file_name: &str) -> Option<D> {
     let content = match fs::read_to_string(path.join(file_name)) {
         Ok(txt) => txt,
         _ => {
-            println!(
-                "{:tab$}{} {}",
-                "",
-                file_name.red(),
-                "not found: skipping".red(),
-                tab = tab(1)
-            );
+            println!("{:>3} {}", file_name.red(), "not found: skipping".red());
             return None;
         }
     };
@@ -285,12 +265,10 @@ fn load_toml<D: DeserializeOwned>(path: &Path, file_name: &str) -> Option<D> {
         Ok(config) => Some(config),
         Err(e) => {
             println!(
-                "{:tab$}{} {}, {err:?}",
-                "",
+                "{:>3} {}, {:?}",
                 "failed to parse".red(),
                 file_name.red(),
-                tab = tab(1),
-                err = e
+                e
             );
             None
         }
@@ -307,7 +285,7 @@ fn load_photos(
         exif_tool::parse_dir(&path, cover_photo_index, &re);
 
     if photos.is_empty() {
-        println!("{:tab$}{}", "", "found no photos".red(), tab = tab(1));
+        println!("{:>3}", "found no photos".red());
 
         (photos, None)
     } else {
