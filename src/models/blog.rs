@@ -27,16 +27,16 @@ pub struct TagPhotos {
 }
 
 pub struct CategoryPosts {
-    pub name: String,
-    pub post_keys: Vec<String>,
-    pub kind: CategoryKind,
+    name: String,
+    post_keys: Vec<String>,
+    kind: CategoryKind,
 }
 
 #[derive(Default)]
 pub struct Blog {
     /// Posts keyed to their slug
     posts: HashMap<String, Post>,
-    pub categories: Vec<CategoryPosts>,
+    categories: Vec<CategoryPosts>,
     /// Tag slugs mapped to the original tag names and photos with the tag
     tags: HashMap<String, TagPhotos>,
 }
@@ -77,6 +77,7 @@ impl Blog {
         self.posts.get(key)
     }
 
+    /// Whether blog has any posts
     pub fn is_empty(&self) -> bool {
         self.posts.is_empty()
     }

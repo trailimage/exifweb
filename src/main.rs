@@ -3,6 +3,7 @@ extern crate enum_primitive_derive;
 extern crate num_traits;
 
 mod config;
+mod deserialize;
 mod html;
 mod image;
 mod models;
@@ -25,17 +26,10 @@ use tools::{
     tab,
 };
 
+/// Configuration file for blog, for post series and for posts
 static CONFIG_FILE: &str = "config.toml";
+/// File the stores photo tag information and last process time
 static LOG_FILE: &str = "log.toml";
-
-/// Patterns to extract position information from the names of photos and post
-/// folders in a series
-struct Match {
-    // pattern to extract one-based index from series path name
-    series_post: Regex,
-    // pattern to extract one-based index from photo file name
-    photo: Regex,
-}
 
 fn main() {
     // GitHub pages feature requires root at / or /docs
@@ -62,13 +56,6 @@ fn main() {
 
     let mut blog = Blog::default();
 
-    // It is apparently tricky to have Serde automatically deserialize these
-    // to Regex instances so instead do it manually
-    let infer_position = Match {
-        series_post: Regex::new(&config.series_index_regex).unwrap(),
-        photo: Regex::new(&config.photo.index_regex).unwrap(),
-    };
-
     // iterate over every file or subdirectory within root
     for entry in entries {
         let path: PathBuf = entry.unwrap().path();
@@ -84,7 +71,7 @@ fn main() {
             path_name(&path).bold().yellow()
         );
 
-        if let Some(posts) = load_series(&path, &infer_position) {
+        if let Some(posts) = load_series(&path, &config) {
             println!(
                 "{:tab$}Found {} series posts",
                 "",
@@ -105,7 +92,7 @@ fn main() {
             continue;
         }
 
-        if let Some(post) = load_post(path.as_path(), &infer_position) {
+        if let Some(post) = load_post(path.as_path(), &config) {
             blog.add_post(post);
         }
     }
@@ -134,7 +121,7 @@ fn main() {
 
 /// Attempt to load path entries as if they constitute a post series. `None` is
 /// returned if there are no subdirectories or they don't contain valid posts.
-fn load_series(path: &Path, re: &Match) -> Option<Vec<Post>> {
+fn load_series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
     let sub_dirs: Vec<PathBuf> = match fs::read_dir(&path) {
         Ok(entries) => entries
             .map(|e| e.unwrap().path())
@@ -157,11 +144,11 @@ fn load_series(path: &Path, re: &Match) -> Option<Vec<Post>> {
         return None;
     }
 
-    if let Some(config) = load_config::<SeriesConfig>(path) {
+    if let Some(series_config) = load_config::<SeriesConfig>(path) {
         return Some(
             sub_dirs
                 .iter()
-                .map(|p| load_series_post(p.as_path(), &config, re))
+                .map(|p| load_series_post(p.as_path(), config, &series_config))
                 // ignore None results already logged to console
                 .filter(|p| p.is_some())
                 .map(|p| p.unwrap())
@@ -203,17 +190,19 @@ fn parse_categories(config: &PostConfig) -> Vec<Category> {
 /// relates to the series.
 fn load_series_post(
     path: &Path,
+    config: &BlogConfig,
     series_config: &SeriesConfig,
-    re: &Match,
 ) -> Option<Post> {
     load_config::<PostConfig>(&path).and_then(|c| {
         // TODO: load log
-        let part = pos_from_path(&re.series_post, &path).unwrap_or(0);
+        let part =
+            pos_from_path(&config.capture_series_index, &path).unwrap_or(0);
 
         if part == 0 {
             return None;
         }
-        let (photos, happened_on) = load_photos(path, re, c.cover_photo_index);
+        let (photos, happened_on) =
+            load_photos(path, &config.photo.capture_index, c.cover_photo_index);
 
         if photos.is_empty() {
             None
@@ -244,10 +233,11 @@ fn load_series_post(
 }
 
 /// Create post that is not part of a series.
-fn load_post(path: &Path, re: &Match) -> Option<Post> {
+fn load_post(path: &Path, config: &BlogConfig) -> Option<Post> {
     load_config::<PostConfig>(&path).and_then(|c| {
         // TODO: load log
-        let (photos, happened_on) = load_photos(path, re, c.cover_photo_index);
+        let (photos, happened_on) =
+            load_photos(path, &config.photo.capture_index, c.cover_photo_index);
 
         if photos.is_empty() {
             None
@@ -310,11 +300,11 @@ fn load_toml<D: DeserializeOwned>(path: &Path, file_name: &str) -> Option<D> {
 /// Load information about each post photo
 fn load_photos(
     path: &Path,
-    re: &Match,
+    re: &Regex,
     cover_photo_index: u8,
 ) -> (Vec<Photo>, Option<DateTime<FixedOffset>>) {
     let mut photos: Vec<Photo> =
-        exif_tool::parse_dir(&path, cover_photo_index, &re.photo);
+        exif_tool::parse_dir(&path, cover_photo_index, &re);
 
     if photos.is_empty() {
         println!("{:tab$}{}", "", "found no photos".red(), tab = tab(1));

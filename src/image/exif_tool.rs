@@ -1,9 +1,7 @@
 //! Use ExifTool to extract photo metadata
 
+use crate::deserialize::{date_time_string, string_number, string_sequence};
 use crate::html;
-use crate::image::deserialize::{
-    date_time_string, string_number, string_sequence,
-};
 use crate::models::{Camera, ExposureMode, Location, Photo};
 use crate::tools::{path_name, pos_from_name, tab};
 use chrono::{DateTime, FixedOffset};

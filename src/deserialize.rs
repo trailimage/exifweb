@@ -1,12 +1,19 @@
 //! Custom Serde deserializers
-//!
+
 use chrono::{DateTime, FixedOffset};
+use regex::Regex;
 use serde::{de, Deserialize, Deserializer};
 use std::{fmt, marker::PhantomData};
 
 /// Source value may be quoted or a bare number. Output should always be a
 /// string.
 struct StringOrNumber(PhantomData<Option<String>>);
+
+// impl StringOrNumber {
+//     fn out<T>(value: dyn ToString) -> Result<Option<String>, E> {
+//         Ok(Some(value.to_string()))
+//     }
+// }
 
 impl<'de> de::Visitor<'de> for StringOrNumber {
     type Value = Option<String>;
@@ -32,6 +39,15 @@ impl<'de> de::Visitor<'de> for StringOrNumber {
     }
 }
 
+pub fn string_number<'de, D>(
+    deserializer: D,
+) -> Result<Option<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    deserializer.deserialize_any(StringOrNumber(PhantomData))
+}
+
 /// Source value may be a string or list of strings. Output value should always
 /// be a list of strings.
 struct StringOrVec(PhantomData<Vec<String>>);
@@ -55,6 +71,15 @@ impl<'de> de::Visitor<'de> for StringOrVec {
     }
 }
 
+/// Handle vector fields that have been serialized as a bare string when the
+/// vector has only one member
+pub fn string_sequence<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    deserializer.deserialize_any(StringOrVec(PhantomData))
+}
+
 struct DateTimeString(PhantomData<DateTime<FixedOffset>>);
 
 impl<'de> de::Visitor<'de> for DateTimeString {
@@ -70,24 +95,6 @@ impl<'de> de::Visitor<'de> for DateTimeString {
     }
 }
 
-pub fn string_number<'de, D>(
-    deserializer: D,
-) -> Result<Option<String>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    deserializer.deserialize_any(StringOrNumber(PhantomData))
-}
-
-/// Handle vector fields that have been serialized as a bare string when the
-/// vector has only one member
-pub fn string_sequence<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    deserializer.deserialize_any(StringOrVec(PhantomData))
-}
-
 pub fn date_time_string<'de, D>(
     deserializer: D,
 ) -> Result<DateTime<FixedOffset>, D::Error>
@@ -97,10 +104,34 @@ where
     deserializer.deserialize_any(DateTimeString(PhantomData))
 }
 
+struct RegExString(PhantomData<Regex>);
+
+impl<'de> de::Visitor<'de> for RegExString {
+    type Value = Regex;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("regular expression")
+    }
+
+    fn visit_str<E: de::Error>(self, value: &str) -> Result<Self::Value, E> {
+        Regex::new(value).map_err(de::Error::custom)
+    }
+}
+
+pub fn regex_string<'de, D>(deserializer: D) -> Result<Regex, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    deserializer.deserialize_any(RegExString(PhantomData))
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{date_time_string, string_number, string_sequence};
+    use super::{
+        date_time_string, regex_string, string_number, string_sequence,
+    };
     use chrono::{DateTime, FixedOffset};
+    use regex::Regex;
     use serde::Deserialize;
     use serde_json::from_str;
 
@@ -156,5 +187,18 @@ mod tests {
             from_str(r#"{ "field": "2018:02:08 11:01:12-06:00"}"#).unwrap();
 
         assert_eq!(x.field, dt);
+    }
+
+    #[test]
+    fn regex_test() {
+        #[derive(Debug, Deserialize)]
+        struct SomeStruct {
+            #[serde(deserialize_with = "regex_string")]
+            field: Regex,
+        }
+        let x: SomeStruct =
+            from_str(r#"{ "field": "^(?P<index>\\d+)\\."}"#).unwrap();
+
+        assert!(x.field.is_match("1.something"));
     }
 }

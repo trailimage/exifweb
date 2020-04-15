@@ -1,6 +1,6 @@
 # https://github.com/sunng87/handlebars-rust
 
-series_index_regex = "^(?P<index>\\d+)\\."
+capture_series_index = "^(?P<index>\\d+)\\."
 # source to target slug
 redirects = [
    ["brother-rider-2013-a-night-in-pierce", "brother-ride-2013"],
@@ -35,7 +35,7 @@ what_regex = [
     default = "local_offer"
 
 [photo]
-index_regex = "^(?P<index>\\d{3}).(?P<ext>jpg|png|tif)$"
+capture_index = "^(?P<index>\\d{3}).(?P<ext>jpg|png|tif)$"
 
    [photo.size]
    large = 4096

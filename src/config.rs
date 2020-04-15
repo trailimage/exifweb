@@ -1,7 +1,9 @@
 //! TOML configuration models
 
+use crate::deserialize::regex_string;
 use crate::tools::Pairs;
 use chrono::{DateTime, FixedOffset, Local};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 /// Categories to which the post has been assigned
@@ -65,7 +67,8 @@ pub struct PhotoConfig {
     /// Regex pattern to extract photo index and count from file name
     ///
     /// *Exmaple* `(\\d{3})-of-(\\d{3})\\.jpg$` for `neat_place_012-of-015.jpg`
-    pub index_regex: String,
+    #[serde(deserialize_with = "regex_string")]
+    pub capture_index: Regex,
     pub size: SizeConfig,
     /// EXIF normalization settings
     pub exif: ExifConfig,
@@ -105,7 +108,8 @@ pub struct BlogConfig {
     /// *Examples*
     ///  - `^(\d) - ` for `3 - Cold Ride Home`
     ///  - `^(\d)\.` for `3.cold-ride-home`
-    pub series_index_regex: String,
+    #[serde(deserialize_with = "regex_string")]
+    pub capture_series_index: Regex,
     /// Redirect source slug to target
     pub redirects: Option<Pairs>,
     pub style: StyleConfig,
