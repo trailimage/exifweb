@@ -31,7 +31,7 @@ impl PartialEq for Location {
 
 impl Eq for Location {}
 
-#[derive(Debug, Primitive, Copy)]
+#[derive(Debug, Primitive, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum ExposureMode {
     Undefined = 0,
@@ -96,7 +96,7 @@ pub struct Camera {
     pub shutter_speed: Option<String>,
     pub mode: ExposureMode,
     pub aperture: Option<f32>,
-    pub focal_length: Option<u16>,
+    pub focal_length: Option<f32>,
     pub iso: Option<u16>,
     /// Description of the lens used
     pub lens: Option<String>,

@@ -1,6 +1,7 @@
 //! Custom Serde deserializers
 
-use chrono::{DateTime, FixedOffset};
+use chrono::{DateTime, FixedOffset, Local};
+use lazy_static::*;
 use regex::Regex;
 use serde::{de, Deserialize, Deserializer};
 use std::{fmt, marker::PhantomData};
@@ -90,7 +91,19 @@ impl<'de> de::Visitor<'de> for DateTimeString {
     }
 
     fn visit_str<E: de::Error>(self, value: &str) -> Result<Self::Value, E> {
-        DateTime::parse_from_str(value, "%Y:%m:%d %H:%M:%S%:z")
+        lazy_static! {
+            static ref TZ: Regex = Regex::new(r"[+-]\d{2}:\d{2}$").unwrap();
+            static ref OFFSET: String =
+                format!("{}", Local::today().format("%:z"));
+        }
+        let mut d = value.to_owned();
+
+        if !TZ.is_match(value) {
+            // append local timezone offset if not included
+            d.push_str(&OFFSET);
+        }
+
+        DateTime::parse_from_str(&d, "%Y:%m:%d %H:%M:%S%:z")
             .map_err(de::Error::custom)
     }
 }
@@ -130,7 +143,7 @@ mod tests {
     use super::{
         date_time_string, regex_string, string_number, string_sequence,
     };
-    use chrono::{DateTime, FixedOffset};
+    use chrono::{DateTime, FixedOffset, Local};
     use regex::Regex;
     use serde::Deserialize;
     use serde_json::from_str;
@@ -185,6 +198,15 @@ mod tests {
 
         let x: SomeStruct =
             from_str(r#"{ "field": "2018:02:08 11:01:12-06:00"}"#).unwrap();
+
+        assert_eq!(x.field, dt);
+
+        // adds missing timezone
+        let dt: DateTime<FixedOffset> =
+            DateTime::parse_from_rfc3339("2013-10-05T16:18:35-06:00").unwrap();
+
+        let x: SomeStruct =
+            from_str(r#"{ "field": "2013:10:05 16:18:35"}"#).unwrap();
 
         assert_eq!(x.field, dt);
     }

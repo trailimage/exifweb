@@ -3,9 +3,8 @@
 # root dir of templates
 [main]
 dir = "templates"
-debug = "code"
+#debug = "code"
 
-# Alias for partials. In call, change the start of partial path with one of this, if exist.
 [partials]
 head = "./partials/head"
 categories = "./partials/categories"
@@ -16,10 +15,9 @@ side_menu = "./partials/side_menu"
 contact_link = "./partials/contact_link"
 
 [debug]
-# prettyprint themes, put anything for options
 theme = "zenburn"
 grid = true
 header = true
-number_line = true
+number_line = false
 paging = false
-short = false
+short = true

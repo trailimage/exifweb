@@ -1,4 +1,4 @@
-use crate::config::CategoryConfig;
+use crate::{config::CategoryConfig, tools::slugify};
 use hashbrown::HashMap;
 use lazy_static::*;
 use regex::{Captures, NoExpand, Regex};
@@ -124,23 +124,22 @@ fn format_footnotes(notes: &str) -> String {
 }
 
 /// Linked list of photo tags
-pub fn photo_tag_list(list: &mut Vec<&str>) -> String {
+pub fn photo_tag_list(list: &Vec<String>) -> String {
     lazy_static! {
         static ref NON_WORD: Regex = Regex::new(r"\W").unwrap();
     }
-    let mut tag_list: String = String::new();
-
-    list.sort();
+    let mut tag_list: Vec<String> = Vec::new();
 
     for t in list.iter() {
-        let slug = NON_WORD.replace_all(&t.to_lowercase(), "").into_owned();
-        let tag =
-            format!("<a href=\"/photo-tag/{}\" rel=\"tag\">{}</a> ", slug, t);
-
-        tag_list.push_str(&tag);
+        tag_list.push(format!(
+            "<a href=\"/photo-tag/{}\" rel=\"tag\">{}</a>",
+            slugify(&t),
+            t
+        ));
     }
 
-    tag_list
+    tag_list.sort();
+    tag_list.join("\n")
 }
 
 /// Remove block quotes and wrap in fake tags that won't match subsequent
@@ -335,10 +334,16 @@ mod tests {
 
     #[test]
     fn photo_tag_lists() {
-        let mut tags = vec!["Second", "First", "Third and Last"];
-        let target = "<a href=\"/photo-tag/first\" rel=\"tag\">First</a> <a href=\"/photo-tag/second\" rel=\"tag\">Second</a> <a href=\"/photo-tag/thirdandlast\" rel=\"tag\">Third and Last</a> ";
+        let tags: Vec<String> = vec![
+            "Second".to_owned(),
+            "First".to_owned(),
+            "Third and Last".to_owned(),
+        ];
+        let target = "<a href=\"/photo-tag/first\" rel=\"tag\">First</a>\n\
+            <a href=\"/photo-tag/second\" rel=\"tag\">Second</a>\n\
+            <a href=\"/photo-tag/third-and-last\" rel=\"tag\">Third and Last</a>";
 
-        assert_eq!(photo_tag_list(&mut tags), target);
+        assert_eq!(photo_tag_list(&tags), target);
     }
 
     #[test]

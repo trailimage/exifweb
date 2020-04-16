@@ -68,7 +68,7 @@ pub struct ExifToolOutput {
     exposure_mode: ExposureMode,
 
     #[serde(rename = "FocalLength")]
-    focal_length: Option<u16>,
+    focal_length: Option<f32>,
 
     #[serde(rename = "MaxApertureValue")]
     max_aperture: Option<f32>,
@@ -83,7 +83,7 @@ pub struct ExifToolOutput {
     camera_model: Option<String>,
 
     #[serde(rename = "DateTimeCreated", deserialize_with = "date_time_string")]
-    // or DateTimeOriginal
+    // or DateTimeOriginal, DateTimeCreated
     taken_on: DateTime<FixedOffset>,
 
     #[serde(rename = "GPSLatitude")]
@@ -107,6 +107,41 @@ pub struct ExifToolOutput {
     #[serde(rename = "ImageHeight")]
     height: u16,
 }
+
+impl PartialEq for ExifToolOutput {
+    fn eq(&self, other: &Self) -> bool {
+        self.file_name == other.file_name
+            && self.artist == other.artist
+            && self.title == other.title
+            && self.caption == other.caption
+            && self.tags == other.tags
+            && self.city == other.city
+            && self.state == other.state
+            && self.copyright == other.copyright
+            && self.usage_terms == other.usage_terms
+            && self.software == other.software
+            && self.aperture == other.aperture
+            && self.iso == other.iso
+            && self.shutter_speed == other.shutter_speed
+            && self.exposure_compensation == other.exposure_compensation
+            && self.exposure_mode == other.exposure_mode
+            && self.focal_length == other.focal_length
+            && self.max_aperture == other.max_aperture
+            && self.lens == other.lens
+            && self.camera_make == other.camera_make
+            && self.camera_model == other.camera_model
+            && self.taken_on == other.taken_on
+            && self.latitude == other.latitude
+            && self.longitude == other.longitude
+            && self.color_profile == other.color_profile
+            && self.color_temperature == other.color_temperature
+            && self.field_of_view == other.field_of_view
+            && self.width == other.width
+            && self.height == other.height
+    }
+}
+
+impl Eq for ExifToolOutput {}
 
 /// Execute exif_tool for each image file in given `path` and capture output
 pub fn parse_dir(
@@ -227,11 +262,7 @@ pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
     {
         Ok(out) => out,
         _ => {
-            println!(
-                "{:>3} {}",
-                "failed to retrieve EXIF for".red(),
-                path_name(&path).magenta()
-            );
+            println!("   {}", "failed to retrieve EXIF".red());
             return Vec::new();
         }
     };
@@ -239,35 +270,101 @@ pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
     let text = match String::from_utf8(output.stdout) {
         Ok(text) => text,
         _ => {
-            println!(
-                "{:>3} {}",
-                "Failed to convert EXIF output to UTF-8 for".red(),
-                path_name(&path).magenta()
-            );
+            println!("   {}", "Failed to convert EXIF output to UTF-8".red());
             return Vec::new();
         }
     };
 
     if text.is_empty() {
-        println!(
-            "{} {}",
-            "EXIF JSON is empty for".red(),
-            path_name(&path).magenta()
-        );
+        println!("   {}", "EXIF JSON is empty".red());
         return Vec::new();
     }
 
     match serde_json::from_str::<Vec<ExifToolOutput>>(&text) {
         Ok(info) => info,
         Err(e) => {
-            println!(
-                "{:>3} {}",
-                "unable to parse EXIF JSON for".red(),
-                path_name(&path).magenta()
-            );
-            //println!("{}", text);
-            println!("—\n{:?}\n—", e);
+            println!("   {}", "unable to parse EXIF JSON".red());
+            println!("   —\n   {:?}\n   —", e);
+            println!("{}", text);
             Vec::new()
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ExifToolOutput;
+    use crate::models::ExposureMode;
+    use chrono::DateTime;
+    use serde_json;
+
+    #[test]
+    fn deserialize_test() {
+        let json = r#"[{
+            "SourceFile": "001.tif",
+            "Aperture": 2.2,
+            "Artist": "Jason Abbott",
+            "ColorTemperature": 5800,
+            "Copyright": "© Copyright 2017 Jason Abbott",
+            "DateTimeCreated": "2017:08:06 11:25:41",
+            "Description": "We worked all day yesterday, and various days before that, to get the bikes in working order. A hot and hazy day isn’t my first choice to ride the Boise Ridge but Nick and I want to put the bikes through their paces before a four-day ride in a few weeks.",
+            "ExposureProgram": 2,
+            "FileName": "001.tif",
+            "FocalLength": 4.15,
+            "FOV": 63.6549469203798,
+            "GPSLatitude": 43.579192,
+            "GPSLongitude": -116.173061,
+            "ImageHeight": 75,
+            "ImageWidth": 100,
+            "ISO": 25,
+            "Keywords": ["Gas Station","KTM 500 XC-W","Motorcycle"],
+            "Lens": "iPhone 6s back camera 4.15mm f/2.2",
+            "Make": "Apple",
+            "Model": "iPhone 6s",
+            "ProfileDescription": "ProPhoto RGB",
+            "ShutterSpeed": "1/500",
+            "Software": "Adobe Photoshop Lightroom Classic 9.2 (Windows)",
+            "Title": "Fuel stop",
+            "UsageTerms": "All Rights Reserved"
+          }]"#;
+
+        let target = vec![ExifToolOutput {
+            file_name: "001.tif".to_owned(),
+            artist: "Jason Abbott".to_owned(),
+            title: Some("Fuel stop".to_owned()),
+            caption: Some("We worked all day yesterday, and various days before that, to get the bikes in working order. A hot and hazy day isn’t my first choice to ride the Boise Ridge but Nick and I want to put the bikes through their paces before a four-day ride in a few weeks.".to_owned()),
+            tags: vec!["Gas Station".to_owned(),"KTM 500 XC-W".to_owned(),"Motorcycle".to_owned()],
+            city: None,
+            state: None,
+            copyright: "© Copyright 2017 Jason Abbott".to_owned(),
+            usage_terms: "All Rights Reserved".to_owned(),
+            software: "Adobe Photoshop Lightroom Classic 9.2 (Windows)".to_owned(),
+            aperture: Some(2.2),
+            iso: Some(25),
+            shutter_speed: Some("1/500".to_owned()),
+            exposure_compensation: None,
+            exposure_mode: ExposureMode::ProgramAE,
+            focal_length: Some(4.15),
+            max_aperture: None,
+            lens: Some("iPhone 6s back camera 4.15mm f/2.2".to_owned()),
+            camera_make: Some("Apple".to_owned()),
+            camera_model: Some("iPhone 6s".to_owned()),
+            taken_on: DateTime::parse_from_rfc3339("2017-08-06T11:25:41-06:00").unwrap(),
+            latitude: Some(43.579192),
+            longitude: Some(-116.173061),
+            color_profile: Some("ProPhoto RGB".to_owned()),
+            color_temperature: Some(5800),
+            field_of_view: Some(63.6549469203798),
+            width: 75,
+            height: 100
+        }];
+
+        match serde_json::from_str::<Vec<ExifToolOutput>>(&json) {
+            Ok(exif) => assert_eq!(exif, target),
+            Err(e) => {
+                eprintln!("{:?}", e);
+                assert!(false);
+            }
         }
     }
 }

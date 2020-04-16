@@ -71,7 +71,7 @@
         <nav class="tags">
             {{{ super::html.icon("local_offer") }}}
             <h4>More photos like this</h4>
-            {{!makeTagList tags!}}
+            {{{ super::html.tag_list(&tags) }}}
         </nav>
         {{~/if }}
 

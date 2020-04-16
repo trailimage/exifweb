@@ -9,6 +9,9 @@ impl Helpers {
     pub fn icon(&self, name: &str) -> String {
         html::icon_tag(name)
     }
+    pub fn tag_list(&self, list: &Vec<String>) -> String {
+        html::photo_tag_list(list)
+    }
 }
 
 #[derive(Template)]
