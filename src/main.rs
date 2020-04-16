@@ -15,7 +15,7 @@ use ::regex::Regex;
 use chrono::{DateTime, FixedOffset, Local};
 use colored::*;
 use config::*;
-use context::{Helpers, PostContext};
+use context::{Helpers, PostContext, SitemapContext};
 use image::exif_tool;
 use models::{Blog, Category, CategoryKind, Photo, Post};
 use serde::de::DeserializeOwned;
@@ -106,6 +106,8 @@ fn main() {
             write_post(root, &config, &blog, &p)
         }
     }
+
+    write_sitemap(root, &config, &blog);
 }
 
 fn success_metric(count: usize, label: &str) {
@@ -358,4 +360,14 @@ fn write_post(path: &Path, config: &BlogConfig, blog: &Blog, post: &Post) {
     }
 }
 
-fn write_sitemap(path: &Path, config: &BlogConfig, blog: &Blog) {}
+fn write_sitemap(path: &Path, config: &BlogConfig, blog: &Blog) {
+    let context = SitemapContext { blog, config };
+
+    match context.call() {
+        Ok(content) => match fs::write(path.join("sitemap.xml"), &content) {
+            Ok(_) => (),
+            Err(e) => eprintln!("Error writing sitemap {:?}", e),
+        },
+        Err(e) => eprintln!("Error rendering sitemap {:?}", e),
+    }
+}

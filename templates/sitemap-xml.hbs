@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>{{ config.site_url }}/</loc>
+        <loc>{{{ config.site_url }}}/</loc>
         <changefreq>daily</changefreq>
         <priority>1</priority>
     </url>
     <url>
-        <loc>{{config.site_url}}/about</loc>
+        <loc>{{{ config.site_url }}}/about</loc>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
     </url>
     {{#each blog.posts }}
     <url>
-        <loc>{{ super::config.site_url }}/{{ path }}</loc>
+        <loc>{{{ super::config.site_url }}}/{{{ this.1.path }}}</loc>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     {{/each }}
     {{#each blog.categories }}
     <url>
-        <loc>{{ super::config.site_url }}/{{ this }}</loc>
+        <loc>{{{ super::config.site_url }}}/{{ this.name }}</loc>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>
     {{/each}}
-    {{#each tags }}
+    {{#each blog.tags }}
     <url>
-        <loc>{{ super::config.site_url }}/photo-tag/{{@key}}</loc>
+        <loc>{{{ super::config.site_url }}}/photo-tag/{{ this.0 }}</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>

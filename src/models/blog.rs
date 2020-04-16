@@ -27,18 +27,18 @@ pub struct TagPhotos {
 }
 
 pub struct CategoryPosts {
-    name: String,
-    post_paths: Vec<String>,
-    kind: CategoryKind,
+    pub name: String,
+    pub post_paths: Vec<String>,
+    pub kind: CategoryKind,
 }
 
 #[derive(Default)]
 pub struct Blog {
     /// Posts keyed to their slug
     pub posts: HashMap<String, Post>,
-    categories: Vec<CategoryPosts>,
+    pub categories: Vec<CategoryPosts>,
     /// Tag slugs mapped to the original tag names and photos with the tag
-    tags: HashMap<String, TagPhotos>,
+    pub tags: HashMap<String, TagPhotos>,
 }
 
 impl Blog {

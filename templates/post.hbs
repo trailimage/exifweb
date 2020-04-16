@@ -10,7 +10,7 @@
         {{~/if }}
     {{~/unless }}
     {{~> head_facebook }}
-    <script src='/js/post.js' type='text/javascript' defer></script>
+    <script src="/js/post.js" type="text/javascript" defer></script>
 {{~/head }}
 <body>
     <header class="page content">
@@ -19,17 +19,17 @@
         <!--googleon: index-->
         <div id="top-bar">
             <h1>{{ post.title }}</h1>
-        {{~#if !post.sub_title.is_empty() }}
+        {{~#if !post.sub_title.is_empty() && !post.is_partial }}
             <h4>{{ post.sub_title }}</h4>
         {{~/if }}
             <div id="mobile-menu-button">{{{ html.icon("menu") }}}</div>
-        {{~#if post.is_partial}}
+        {{~#if post.is_partial }}
             <div class="subtitle">
                 <div class="parts"><span>Part </span>{{ post.part }} of {{ post.total_parts }}:</div>
                 <p>{{ post.sub_title }}</p>
             </div>
         {{~/if }}
-        {{~#if let Some(d) = post.happened_on}}
+        {{~#if let Some(d) = post.happened_on }}
             <div id="post-date">{{ d.to_rfc3339() }}</div>
         {{~/if }}
         </div>
@@ -46,7 +46,7 @@
     <div class="post content">
     {{~#unless post.featured }}
         {{~> categories post }}
-    {{~/unless }}
+    {{/unless }}
         <nav id="nav-top">
             {{~> navigation ~}}
         </nav>
@@ -57,7 +57,7 @@
     {{~#each post.photos.as_slice() }}
 
     <figure itemscope title="Click to enlarge image {{ name }}" data-exif="/exif/{{ name }}"
-        style='width: {{!size.normal.width!}}px; height: {{!size.normal.height!}}px;'>
+        style="width: {{!size.normal.width!}}px; height: {{!size.normal.height!}}px;">
         <a name="{{ name }}"></a>
         {{! data-src attribute supports lazyload !}}
         <img src="{{!size.preview.url!}}" alt="{{! title !}}"
@@ -92,17 +92,16 @@
     {{~/each}}
 
     <nav id="nav-bottom">
-        {{~> navigation ~}}
+        {{> navigation }}
     </nav>
-    <div class='by-line content{{#if post.featured }} feature{{/if }}'>
-        <p rel='author'>by {{ config.author_name }}</p>
+
+    <div class="by-line content{{#if post.featured }} feature{{/if }}">
+        <p rel="author">by {{ config.author_name }}</p>
     </div>
 
-    {{~#unless post.featured }}
-    <div class="footer-tags content">
-        {{> categories post }}
-    </div>
-    {{~/unless ~}}
+    {{#unless post.featured ~}}
+    <div class="footer-tags content">{{> categories post }}</div>
+    {{/unless }}
 
     <footer class="post content">
         <div class="fb-comments" data-href="{{{ config.site_url }}}/{{{ post.path }}}/" data-width="648" data-num-posts="20"></div>
