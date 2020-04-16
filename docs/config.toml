@@ -38,6 +38,13 @@ what_regex = [
 
 [photo]
 capture_index = "^(?P<index>\\d{3}).(?P<ext>jpg|png|tif)$"
+remove_tags = [
+    'Idaho',
+    'United States of America',
+    'Abbott',
+    'LensTagger',
+    'Boise'
+]
 
    [photo.size]
    large = 4096
@@ -86,3 +93,40 @@ capture_index = "^(?P<index>\\d{3}).(?P<ext>jpg|png|tif)$"
       ['Voigtlander Heliar 15mm', 'Voigtländer Heliar 15mm ƒ4.5 III']
    ]
 
+[facebook]
+app_id = "599065673763481"
+page_id = "241863632579825"
+site_id = "578261855525416"
+admin_id = "1332883594"
+author_url = "https://www.facebook.com/jason.e.abbott"
+
+[mapbox]
+access_token = ""   # env('MAPBOX_ACCESS_TOKEN')
+max_static_markers = 70
+
+    [mapbox.style]
+    # used for interactive maps
+    dynamic = "jabbott7/cj1qniq9r00322sqxt3pastcf"
+    # used for static maps
+    static = "jabbott7/cj1prg25g002o2ro2xtzos6cy"
+
+[google]
+api_key = ""    # env('GOOGLE_KEY', null)
+project_id = "316480757902"
+analytics_id = "22180727"
+search_engine_id = ""   # env('GOOGLE_SEARCH_ID', null),
+blog_id = "118459106898417641"
+
+[gps_track]
+min_track_points = 5
+max_point_deviation_feet = 0.5
+max_possible_speed_mph = 150
+allow_download = true
+
+
+#    link: {
+#       googleEarth:
+#          'https://earth.google.com/web/@{lat},{lon},1100a,{altitude}d,35y,0h,0t,0r',
+#       gaiaGPS:
+#          'https://www.gaiagps.com/map/?layer=GaiaTopoRasterFeet&lat={lat}&lon={lon}&zoom={zoom}'
+#    },

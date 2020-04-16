@@ -1,111 +1,113 @@
-{{#contentFor "html-head"}}
-{{#unless post.feature}}
-{{! http://googlewebmastercentral.blogspot.com/2011/09/pagination-with-relnext-and-relprev.html }}
-{{#if post.previousIsPart}}
-<link rel="prev" href="/{{post.previous.key}}" />
-{{/if}}
-{{#if post.nextIsPart}}
-<link rel="next" href="/{{post.next.key}}" />
-{{/if}}
-{{/unless}}
-{{> head-facebook}}
-<script src='/js/post.js' type='text/javascript' defer></script>
-{{/contentFor}}
+<!DOCTYPE html>
+<html lang="en">
+{{~#> head title=post.title, description=post.summary }}
+    {{~#unless post.featured }}
+        {{~#if post.prev_is_part }}
+    <link rel="prev" href="/{{{ post.prev_path }}}" />
+        {{~/if }}
+        {{~#if post.next_is_part }}
+    <link rel="prev" href="/{{{ post.next_path }}}" />
+        {{~/if }}
+    {{~/unless }}
+    {{~> head_facebook }}
+    <script src='/js/post.js' type='text/javascript' defer></script>
+{{~/head }}
+<body>
+    <header class="page content">
+        <!--googleoff: index-->
+        <nav id="mobile-menu"></nav>
+        <!--googleon: index-->
+        <div id="top-bar">
+            <h1>{{ post.title }}</h1>
+        {{~#if !post.sub_title.is_empty() }}
+            <h4>{{ post.sub_title }}</h4>
+        {{~/if }}
+            <div id="mobile-menu-button">{{{ html.icon("menu") }}}</div>
+        {{~#if post.is_partial}}
+            <div class="subtitle">
+                <div class="parts"><span>Part </span>{{ post.part }} of {{ post.total_parts }}:</div>
+                <p>{{ post.sub_title }}</p>
+            </div>
+        {{~/if }}
+        {{~#if let Some(d) = post.happened_on}}
+            <div id="post-date">{{ d.to_rfc3339() }}</div>
+        {{~/if }}
+        </div>
+    </header>
 
-{{#contentFor "header"}}
-{{#if post.isPartial}}
-<div class='subtitle'>
-    <div class='parts'><span>Part </span>{{post.part}} of {{post.totalParts}}:</div>
-    <p>{{post.subTitle}}</p>
-</div>
-{{/if}}
+    {{> side_menu }}
 
-{{#if post.happenedOn}}
-<div id="post-date">{{date post.happenedOn}}</div>
-{{/if}}
-
-{{/contentFor}}
-
-{{#if post.description}}
-<div class="synopsis content">
-    <p>{{post.description}}</p>
-</div>
-{{/if}}
-
-<div class="post content">
-    {{#unless post.feature}}
-    {{> categories post.categories}}
-    {{#if post.photoLocations}}
-    {{! https://www.mapbox.com/api-documentation/#static }}
-    <div class='map'>
-        <a href="/{{slug}}/map" title="View Full Screen Map" rel="nofollow">
-            <img src="/img/blank.png" width="{{config.style.contentWidth}}" height="200" class="static-map"
-                data-locations="{{json post.photoLocations}}"
-                data-href="https://api.mapbox.com/styles/v1/{{config.mapbox.style.static}}/static/-pins-/auto/{{config.style.contentWidth}}x200?access_token={{config.mapbox.accessToken}}&attribution=false&logo=false" />
-        </a>
+    {{~#if !post.summary.is_empty() }}
+    <div class="synopsis content">
+        <p>{{ post.summary }}</p>
     </div>
-    {{/if}}
-    <nav id="nav-top">{{> navigation}}</nav>
-    {{/unless}}
-</div>
+    {{~/if}}
 
-<div id="light-box"><img src="/img/topo-map-tile.jpg" /></div>
-
-{{#each post.photos}}
-
-<figure itemscope title="Click to enlarge image {{index}}" data-exif="/exif/{{id}}"
-    style='width: {{size.normal.width}}px; height: {{size.normal.height}}px;'>
-    {{! links from photo tag search are anchored to ID }}
-    <a name="{{id}}"></a><a name="{{index}}"></a>
-    {{! data-src attribute supports lazyload }}
-    <img src="{{size.preview.url}}" alt="{{title}}"
-        style="width: {{size.normal.width}}px; height: {{size.normal.height}}px;" data-src="{{size.normal.url}}"
-        data-big="{{size.big.url}}" data-big-width="{{size.big.width}}" data-big-height="{{size.big.height}}" />
-    <div class="info-button">{{{icon 'photo_camera'}}}<p>Camera Settings</p>
+    <div class="post content">
+    {{~#unless post.featured }}
+        {{~> categories post }}
+    {{~/unless }}
+        <nav id="nav-top">
+            {{~> navigation ~}}
+        </nav>
     </div>
 
-    {{#if tags.size}}
-    <nav class="tags">
-        {{{icon 'local_offer'}}}
-        <h4>More photos like this</h4>
-        {{{makeTagList tags}}}
+    <div id="light-box"><img src="/img/topo-map-tile.jpg" /></div>
+
+    {{~#each post.photos.as_slice() }}
+
+    <figure itemscope title="Click to enlarge image {{ name }}" data-exif="/exif/{{ name }}"
+        style='width: {{!size.normal.width!}}px; height: {{!size.normal.height!}}px;'>
+        <a name="{{ name }}"></a>
+        {{! data-src attribute supports lazyload !}}
+        <img src="{{!size.preview.url!}}" alt="{{! title !}}"
+            style="width: {{!size.normal.width!}}px; height: {{!size.normal.height!}}px;" data-src="{{!size.normal.url!}}"
+            data-big="{{!size.big.url!}}" data-big-width="{{!size.big.width!}}" data-big-height="{{!size.big.height!}}" />
+        <div class="info-button">{{{ super::html.icon("photo_camera") }}}
+            <p>Camera Settings</p>
+        </div>
+
+        {{~#if !tags.is_empty() }}
+        <nav class="tags">
+            {{{ super::html.icon("local_offer") }}}
+            <h4>More photos like this</h4>
+            {{!makeTagList tags!}}
+        </nav>
+        {{~/if }}
+
+        {{~#if location.is_some() }}
+        <a class="map" title="View on map" href="/{{ super::post.path }}/map/{{ name }}"
+            rel="nofollow"><span>map</span>{{{ super::html.icon("map") }}}</a>
+        {{~/if }}
+
+        {{~#if let Some(text) = &title }}
+        <figcaption><span>{{{ text }}}</span></figcaption>
+        {{~/if }}
+    </figure>
+
+    <div class="caption content">
+        {{~#if let Some(text) = &caption }}{{{ text }}}{{~/if ~}}
+    </div>
+
+    {{~/each}}
+
+    <nav id="nav-bottom">
+        {{~> navigation ~}}
     </nav>
-    {{/if}}
+    <div class='by-line content{{#if post.featured }} feature{{/if }}'>
+        <p rel='author'>by {{ config.author_name }}</p>
+    </div>
 
-    {{#if longitude}}
-    {{! http://handlebarsjs.com/#paths }}
-    <a class='map' title='View on map' href="/{{../post.key}}/map/{{id}}"
-        rel="nofollow"><span>map</span>{{{icon 'map'}}}</a>
-    {{/if}}
+    {{~#unless post.featured }}
+    <div class="footer-tags content">
+        {{> categories post }}
+    </div>
+    {{~/unless ~}}
 
-    {{#if title}}
-    <figcaption><span>{{{formatTitle title}}}</span></figcaption>
-    {{/if}}
-    {{#if sourceUrl}}
-    <a class="source-link" href="http://{{sourceUrl}}">http://{{sourceUrl}}</a>
-    {{/if}}
-</figure>
+    <footer class="post content">
+        <div class="fb-comments" data-href="{{{ config.site_url }}}/{{{ post.path }}}/" data-width="648" data-num-posts="20"></div>
+    </footer>
 
-<div class="caption content">{{{formatCaption description}}}</div>
-
-{{/each}}
-
-{{#if post.video}}
-<div class="video" style="width: {{{add post.video.width 8}}}px;">
-    <iframe width="{{post.video.width}}" height="{{post.video.height}}"
-        src="//www.youtube.com/embed/{{post.video.id}}?rel=0" frameborder="0" allowfullscreen></iframe>
-</div>
-{{/if}}
-
-<nav id="nav-bottom">{{> navigation}}</nav>
-<div class='by-line content{{#if post.feature}} feature{{/if}}'>
-    <p rel='author'>by {{config.owner.name}}</p>
-</div>
-{{#unless post.feature}}
-<div class="footer-tags content">{{> categories post.categories}}</div>
-{{/unless}}
-
-<footer class="post content">
-    <div class="fb-comments" data-href="{{config.site.url}}/{{post.key}}/" data-width="648" data-num-posts="20"></div>
-</footer>
-</div>
+    {{> footer }}
+</body>
+</html>

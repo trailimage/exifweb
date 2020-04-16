@@ -11,6 +11,9 @@ head = "./partials/head"
 categories = "./partials/categories"
 footer = "./partials/footer"
 navigation = "./partials/navigation"
+head_facebook = "./partials/head_facebook"
+side_menu = "./partials/side_menu"
+contact_link = "./partials/contact_link"
 
 [debug]
 # prettyprint themes, put anything for options

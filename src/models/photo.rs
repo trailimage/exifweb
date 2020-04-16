@@ -7,7 +7,7 @@ use serde::{de, Deserialize, Deserializer};
 use std::{fmt, marker::Copy};
 
 /// Latitude and longitude in degrees
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Deserialize)]
 pub struct Location {
     pub longitude: f32,
     pub latitude: f32,

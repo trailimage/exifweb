@@ -12,10 +12,17 @@ impl Helpers {
 }
 
 #[derive(Template)]
-#[template(path = "post.html")]
+#[template(path = "post.hbs")]
 pub struct PostContext<'c> {
     pub post: &'c Post,
     pub blog: &'c Blog,
     pub html: Helpers,
+    pub config: &'c BlogConfig,
+}
+
+#[derive(Template)]
+#[template(path = "sitemap-xml.hbs")]
+pub struct SitemapContext<'c> {
+    pub blog: &'c Blog,
     pub config: &'c BlogConfig,
 }

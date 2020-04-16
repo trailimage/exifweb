@@ -1,0 +1,36 @@
+{{! Next and Previous links displayed within a post }}
+
+{{#if post.previous}}
+<!--googleoff: index-->
+<div class='previous'>
+    {{#if post.previousIsPart}}
+    <a href="/{{post.previous.key}}">
+        <h4>{{{icon 'chevron_left'}}} Part {{post.previous.part}}</h4>
+        {{post.previous.subTitle}}
+    </a>
+    {{else}}
+    <a href="/{{post.previous.key}}">
+        <h4>{{{icon 'chevron_left'}}} Previous</h4>
+        {{post.previous.title}}
+    </a>
+    {{/if}}
+</div>
+<!--googleon: index-->
+{{/if}}
+{{#if post.next}}
+<!--googleoff: index-->
+<div class='next'>
+    {{#if post.nextIsPart}}
+    <a href="/{{post.next.key}}">
+        <h4>Part {{post.next.part}}{{{icon 'chevron_right'}}}</h4>
+        {{post.next.subTitle}}
+    </a>
+    {{else}}
+    <a href="/{{post.next.key}}">
+        <h4>Next {{{icon 'chevron_right'}}}</h4>
+        {{post.next.title}}
+    </a>
+    {{/if}}
+</div>
+<!--googleon: index-->
+{{/if}}

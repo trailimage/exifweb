@@ -357,3 +357,5 @@ fn write_post(path: &Path, config: &BlogConfig, blog: &Blog, post: &Post) {
         Err(e) => eprintln!("Error rendering post {} {:?}", post.path, e),
     }
 }
+
+fn write_sitemap(path: &Path, config: &BlogConfig, blog: &Blog) {}
