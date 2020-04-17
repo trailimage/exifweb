@@ -104,7 +104,6 @@ admin_id = "1332883594"
 author_url = "https://www.facebook.com/jason.e.abbott"
 
 [mapbox]
-access_token = ""   # env('MAPBOX_ACCESS_TOKEN')
 max_static_markers = 70
 
     [mapbox.style]
@@ -114,10 +113,8 @@ max_static_markers = 70
     static = "jabbott7/cj1prg25g002o2ro2xtzos6cy"
 
 [google]
-api_key = ""    # env('GOOGLE_KEY', null)
 project_id = "316480757902"
 analytics_id = "22180727"
-search_engine_id = ""   # env('GOOGLE_SEARCH_ID', null),
 blog_id = "118459106898417641"
 
 [gps_track]

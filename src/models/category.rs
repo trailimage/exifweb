@@ -17,12 +17,17 @@ impl Display for CategoryKind {
 
 #[derive(Debug, Clone)]
 pub struct Category {
+    pub slug: String,
     pub name: String,
     pub kind: CategoryKind,
 }
 
 impl Category {
-    pub fn slug(&self) -> String {
-        format!("{}/{}", slugify(&self.kind.to_string()), slugify(&self.name))
+    pub fn new(name: &str, kind: CategoryKind) -> Self {
+        Category {
+            name: name.to_owned(),
+            kind,
+            slug: format!("{}/{}", slugify(&kind.to_string()), slugify(&name)),
+        }
     }
 }

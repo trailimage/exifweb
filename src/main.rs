@@ -12,32 +12,26 @@ mod template;
 mod tools;
 
 use ::regex::Regex;
-use chrono::{DateTime, FixedOffset, Local};
+use chrono::{DateTime, FixedOffset};
 use colored::*;
-use config::*;
+use config::{BlogConfig, PhotoLog, PostConfig, SeriesConfig};
 use image::exif_tool;
 use models::{Blog, Category, CategoryKind, Photo, Post};
-use serde::de::DeserializeOwned;
 use std::{
     env, fs,
     path::{Path, PathBuf},
 };
 use template::{write_about, write_post, write_sitemap};
-use toml;
+
 use tools::{
     earliest_photo_date, identify_outliers, path_name, path_slice,
     pos_from_path,
 };
 
-/// Configuration file for blog, for post series and for posts
-static CONFIG_FILE: &str = "config.toml";
-/// File the stores photo tag information and last process time
-static LOG_FILE: &str = "log.toml";
-
 fn main() {
     // GitHub pages feature requires root at / or /docs
     let root = Path::new("./docs/");
-    let mut config = match load_config::<BlogConfig>(root) {
+    let mut config = match BlogConfig::load(root) {
         Some(config) => config,
         _ => {
             println!("{}", "Missing root configuration file".red());
@@ -62,7 +56,12 @@ fn main() {
 
     config.force_rerender = args.contains(&"force".to_owned());
 
-    println!("Force re-render: {}", config.force_rerender);
+    println!(
+        "{}",
+        format!("\nForce re-render: {}", config.force_rerender)
+            .cyan()
+            .bold()
+    );
 
     // iterate over every file or subdirectory within root
     for entry in entries {
@@ -142,7 +141,7 @@ fn load_series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
         return None;
     }
 
-    if let Some(series_config) = load_config::<SeriesConfig>(path) {
+    if let Some(series_config) = SeriesConfig::load(path) {
         return Some(
             sub_dirs
                 .iter()
@@ -157,32 +156,6 @@ fn load_series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
     None
 }
 
-/// Convert configured categories to a vector
-fn parse_categories(config: &PostConfig) -> Vec<Category> {
-    let mut categories: Vec<Category> = vec![
-        Category {
-            name: config.categories.when.clone(),
-            kind: CategoryKind::When,
-        },
-        Category {
-            name: config.categories.what.clone(),
-            kind: CategoryKind::What,
-        },
-        Category {
-            name: config.categories.who.clone(),
-            kind: CategoryKind::Who,
-        },
-    ];
-
-    for w in config.categories.r#where.iter() {
-        categories.push(Category {
-            name: w.clone(),
-            kind: CategoryKind::Where,
-        });
-    }
-    categories
-}
-
 /// Create post that is part of a series. This differs from non-series post
 /// creation with the addition of several fields that identify how the post
 /// relates to the series.
@@ -191,7 +164,7 @@ fn load_series_post(
     config: &BlogConfig,
     series_config: &SeriesConfig,
 ) -> Option<Post> {
-    load_config::<PostConfig>(&path).and_then(|c| {
+    PostConfig::load(&path).and_then(|c| {
         // TODO: load log
         let part =
             pos_from_path(&config.capture_series_index, &path).unwrap_or(0);
@@ -205,7 +178,7 @@ fn load_series_post(
         if photos.is_empty() {
             None
         } else {
-            let categories = parse_categories(&c);
+            let categories = c.categories();
 
             Some(Post {
                 path: path_slice(path, 2),
@@ -228,7 +201,7 @@ fn load_series_post(
 
 /// Create post that is not part of a series.
 fn load_post(path: &Path, config: &BlogConfig) -> Option<Post> {
-    load_config::<PostConfig>(&path).and_then(|c| {
+    PostConfig::load(&path).and_then(|c| {
         // TODO: load log
         let (photos, happened_on) =
             load_photos(path, &config.photo.capture_index, c.cover_photo_index);
@@ -236,7 +209,8 @@ fn load_post(path: &Path, config: &BlogConfig) -> Option<Post> {
         if photos.is_empty() {
             None
         } else {
-            let categories = parse_categories(&c);
+            let categories = c.categories();
+
             Some(Post {
                 path: path_slice(path, 1),
                 title: c.title,
@@ -248,43 +222,6 @@ fn load_post(path: &Path, config: &BlogConfig) -> Option<Post> {
             })
         }
     })
-}
-
-/// Load configuration from file in given path
-///
-/// *See* https://gitter.im/rust-lang/rust/archives/2018/09/07
-fn load_config<D: DeserializeOwned>(path: &Path) -> Option<D> {
-    load_toml::<D>(path, CONFIG_FILE)
-}
-
-fn load_Log(path: &Path) -> Option<PostPhotos> {
-    load_toml(path, LOG_FILE)
-}
-
-fn load_toml<D: DeserializeOwned>(path: &Path, file_name: &str) -> Option<D> {
-    let content = match fs::read_to_string(path.join(file_name)) {
-        Ok(txt) => txt,
-        _ => {
-            println!(
-                "   {} {}",
-                file_name.purple(),
-                "not found: skipping".purple()
-            );
-            return None;
-        }
-    };
-    match toml::from_str::<D>(&content) {
-        Ok(config) => Some(config),
-        Err(e) => {
-            println!(
-                "   {} {}, {:?}",
-                "failed to parse".red(),
-                file_name.red(),
-                e
-            );
-            None
-        }
-    }
 }
 
 /// Load information about each post photo
@@ -303,45 +240,9 @@ fn load_photos(
     } else {
         identify_outliers(&mut photos);
         let happened_on = earliest_photo_date(&photos);
-        write_log(path, happened_on, &photos);
+
+        PhotoLog::write(path, happened_on, &photos);
 
         (photos, happened_on)
-    }
-}
-
-/// Save information about loaded photos to avoid unecessary re-processing
-fn write_log(
-    path: &Path,
-    earliest_date: Option<DateTime<FixedOffset>>,
-    photos: &Vec<Photo>,
-) {
-    let mut tags: Vec<String> = Vec::new();
-
-    for p in photos.iter() {
-        for t in p.tags.iter() {
-            if !tags.contains(&t) {
-                tags.push(t.clone())
-            }
-        }
-    }
-
-    tags.sort();
-
-    let log = PostPhotos {
-        when: earliest_date,
-        processed: Local::now(),
-        // TODO: I think these need to be tags that map to photos
-        tags,
-    };
-
-    match toml::to_string(&log) {
-        Ok(content) => {
-            match fs::write(path.join(LOG_FILE), &content) {
-                Ok(_) => (),
-                Err(e) => eprintln!("Error writing {:?}", e),
-            };
-            return;
-        }
-        Err(e) => eprintln!("Error serializaing {:?}", e),
     }
 }

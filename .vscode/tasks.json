@@ -19,7 +19,7 @@
       "label": "Run",
       "type": "shell",
       "command": "cargo",
-      "args": ["run", "force"],
+      "args": ["run", "noforce"],
       "presentation": {
         "echo": false,
         "clear": true

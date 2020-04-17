@@ -1,9 +1,9 @@
-{{~#if !categories.is_empty()}}
+{{~#if !categories.is_empty() }}
         <nav class="tag-wrapper">
             <ul class="tags">
-                {{~#each categories.as_slice()}}
-                <li><span>#</span><a href="/{{{ this.slug()}}}" rel="tag">{{name}}</a></li>
-                {{~/each}}
+                {{~#each categories.as_slice() }}
+                <li><span>#</span><a href="/{{{ slug }}}" rel="tag">{{ name }}</a></li>
+                {{~/each }}
             </ul>
         </nav>
-{{~/if}}
+{{~/if }}

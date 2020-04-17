@@ -1,41 +1,12 @@
-//! TOML configuration models
+//! TOML blog configuration
 
+use super::{env_or_empty, load_config, ReadsEnv};
 use crate::deserialize::regex_string;
 use crate::models::Location;
 use crate::tools::Pairs;
-use chrono::{DateTime, FixedOffset, Local};
 use regex::Regex;
-use serde::{Deserialize, Serialize};
-
-/// Categories to which the post has been assigned
-#[derive(Deserialize, Debug)]
-pub struct PostCategories {
-    pub who: String,
-    pub when: String,
-    pub r#where: Vec<String>,
-    pub what: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct SeriesConfig {
-    /// Series title. This becomes the main post title while the configured
-    /// post title becomes the subtitle.
-    pub title: String,
-    /// Number of parts in the series
-    pub parts: u8,
-}
-/// Configuration within each post folder
-#[derive(Deserialize, Debug)]
-pub struct PostConfig {
-    pub title: String,
-    pub summary: String,
-    /// Categories to which the post has been assigned
-    pub categories: PostCategories,
-    /// One-based index of cover photo
-    pub cover_photo_index: u8,
-    /// YouTube ID used to embed video
-    pub youtube_id: Option<String>,
-}
+use serde::Deserialize;
+use std::path::Path;
 
 // https://developers.facebook.com/docs/reference/plugins/like/
 // https://developers.facebook.com/apps/110860435668134/summary
@@ -56,32 +27,36 @@ pub struct MapBoxStyles {
 
 #[derive(Deserialize, Debug)]
 pub struct MapBoxConfig {
-    pub access_token: String,
+    #[serde(skip)]
+    pub access_token: String, // env::var("MAPBOX_ACCESS_TOKEN")
     /// Maximum number of photo markers to show on static map
     pub max_static_markers: u16,
     pub style: MapBoxStyles,
 }
 
+impl ReadsEnv for MapBoxConfig {
+    fn from_env(&mut self) {
+        self.access_token = env_or_empty("MAPBOX_ACCESS_TOKEN")
+    }
+}
+
 #[derive(Deserialize, Debug)]
 pub struct GoogleConfig {
-    pub api_key: String,
+    #[serde(skip)]
+    pub api_key: String, // env::var("GOOGLE_KEY")
     pub project_id: String,
     /// Shown as `UA-<analytics_id>-1`
     pub analytics_id: String,
-    pub search_engine_id: String,
+    #[serde(skip)]
+    pub search_engine_id: String, // env::var("GOOGLE_SEARCH_ID")
     pub blog_id: String,
 }
 
-/// Log processed photo information per post folder to determine when
-/// re-processing is necessary
-#[derive(Serialize, Deserialize, Debug)]
-pub struct PostPhotos {
-    /// Date of first relevant (not an outlier) photo in folder
-    pub when: Option<DateTime<FixedOffset>>,
-    /// When folder was last processed
-    pub processed: DateTime<Local>,
-    /// Photo tags
-    pub tags: Vec<String>,
+impl ReadsEnv for GoogleConfig {
+    fn from_env(&mut self) {
+        self.api_key = env_or_empty("GOOGLE_KEY");
+        self.search_engine_id = env_or_empty("GOOGLE_SEARCH_ID");
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -205,4 +180,10 @@ pub struct BlogConfig {
     pub facebook: FacebookConfig,
     pub mapbox: MapBoxConfig,
     pub google: GoogleConfig,
+}
+
+impl BlogConfig {
+    pub fn load(path: &Path) -> Option<Self> {
+        load_config::<Self>(path)
+    }
 }

@@ -3,7 +3,7 @@
 use crate::deserialize::{date_time_string, string_number, string_sequence};
 use crate::html;
 use crate::models::{Camera, ExposureMode, Location, Photo};
-use crate::tools::{path_name, pos_from_name};
+use crate::tools::pos_from_name;
 use chrono::{DateTime, FixedOffset};
 use colored::*;
 use regex::Regex;
