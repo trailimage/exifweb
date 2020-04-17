@@ -170,7 +170,7 @@ pub fn identify_outliers(photos: &mut Vec<Photo>) {
     }
 }
 
-/// Earliest pertinent date in a list of photos
+/// Earliest pertinent (not an outlier) date in a list of photos
 pub fn earliest_photo_date(
     photos: &Vec<Photo>,
 ) -> Option<DateTime<FixedOffset>> {

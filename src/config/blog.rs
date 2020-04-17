@@ -59,6 +59,7 @@ impl ReadsEnv for GoogleConfig {
     }
 }
 
+/// Replacement camera, lens and software text
 #[derive(Deserialize, Debug)]
 pub struct ExifConfig {
     pub camera: Pairs,

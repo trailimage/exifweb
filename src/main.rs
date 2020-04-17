@@ -14,15 +14,17 @@ mod tools;
 use ::regex::Regex;
 use chrono::{DateTime, FixedOffset};
 use colored::*;
-use config::{BlogConfig, PhotoLog, PostConfig, SeriesConfig};
+use config::{BlogConfig, PhotoLog, PostConfig, SeriesConfig, CONFIG_FILE};
 use image::exif_tool;
 use models::{Blog, Category, CategoryKind, Photo, Post};
 use std::{
-    env, fs,
+    env,
+    fs::{self, DirEntry},
+    io,
     path::{Path, PathBuf},
+    time::UNIX_EPOCH,
 };
 use template::{write_about, write_post, write_sitemap};
-
 use tools::{
     earliest_photo_date, identify_outliers, path_name, path_slice,
     pos_from_path,
@@ -164,6 +166,11 @@ fn load_series_post(
     config: &BlogConfig,
     series_config: &SeriesConfig,
 ) -> Option<Post> {
+    if !has_changed(path) {
+        println!("   {}", "No changes detected: skipping".purple());
+        return None;
+    }
+
     PostConfig::load(&path).and_then(|c| {
         // TODO: load log
         let part =
@@ -201,8 +208,11 @@ fn load_series_post(
 
 /// Create post that is not part of a series.
 fn load_post(path: &Path, config: &BlogConfig) -> Option<Post> {
+    if !has_changed(path) {
+        println!("   {}", "No changes detected: skipping".purple());
+        return None;
+    }
     PostConfig::load(&path).and_then(|c| {
-        // TODO: load log
         let (photos, happened_on) =
             load_photos(path, &config.photo.capture_index, c.cover_photo_index);
 
@@ -245,4 +255,55 @@ fn load_photos(
 
         (photos, happened_on)
     }
+}
+
+/// Whether post photos or configuration has changed
+fn has_changed(path: &Path) -> bool {
+    let last_read: i64 = if let Some(l) = PhotoLog::load(path) {
+        l.processed.timestamp()
+    } else {
+        // no log implies the post is new
+        return true;
+    };
+
+    let filter = |name: &str| name.ends_with(".tif") || name == CONFIG_FILE;
+
+    match is_modified_after(path, last_read, filter) {
+        Ok(changed) => changed,
+        Err(e) => {
+            println!("Failed to check {} for change {:?}", path_name(path), e);
+            // re-render if there's an error
+            return true;
+        }
+    }
+}
+
+fn is_modified_after(
+    path: &Path,
+    threshold: i64,
+    allow_name: fn(name: &str) -> bool,
+) -> io::Result<bool> {
+    if path.is_dir() {
+        for entry in fs::read_dir(path)? {
+            let entry: DirEntry = entry?;
+            let os_name = entry.file_name();
+            let name: &str = os_name.to_str().unwrap();
+
+            if !allow_name(name) {
+                continue;
+            }
+
+            let modified: i64 = entry
+                .metadata()?
+                .modified()?
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs() as i64;
+
+            if threshold < modified {
+                return Ok(true);
+            }
+        }
+    }
+    Ok(false)
 }

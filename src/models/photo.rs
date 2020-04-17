@@ -141,6 +141,7 @@ pub struct Photo {
 }
 
 impl Photo {
+    /// Standardize EXIF data based on configuration and remove invalid values
     pub fn sanitize(&mut self, config: &ExifConfig) {
         if self.sanitized {
             return;
@@ -152,6 +153,12 @@ impl Photo {
 
             if let Some(lens) = &camera.lens {
                 camera.lens = Some(replace_pairs(lens.clone(), &config.lens));
+            }
+        }
+
+        if let Some(l) = &self.location {
+            if !l.is_valid() {
+                self.location = None;
             }
         }
 

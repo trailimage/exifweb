@@ -14,7 +14,7 @@ use std::{env, fs, path::Path};
 use toml;
 
 /// Configuration file for blog, for post series and for posts
-static CONFIG_FILE: &str = "config.toml";
+pub static CONFIG_FILE: &str = "config.toml";
 
 /// Configuration that reads some values from environment variables
 trait ReadsEnv {

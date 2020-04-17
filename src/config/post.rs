@@ -48,29 +48,3 @@ impl PostConfig {
         load_config::<Self>(path)
     }
 }
-
-// Convert configured categories to a vector
-// fn parse_categories(config: &PostConfig) -> Vec<Category> {
-//     let mut categories: Vec<Category> = vec![
-//         Category {
-//             name: config.categories.when.clone(),
-//             kind: CategoryKind::When,
-//         },
-//         Category {
-//             name: config.categories.what.clone(),
-//             kind: CategoryKind::What,
-//         },
-//         Category {
-//             name: config.categories.who.clone(),
-//             kind: CategoryKind::Who,
-//         },
-//     ];
-
-//     for w in config.categories.r#where.iter() {
-//         categories.push(Category {
-//             name: w.clone(),
-//             kind: CategoryKind::Where,
-//         });
-//     }
-//     categories
-// }
