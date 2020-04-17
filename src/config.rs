@@ -24,7 +24,7 @@ pub struct SeriesConfig {
     /// Number of parts in the series
     pub parts: u8,
 }
-
+/// Configuration within each post folder
 #[derive(Deserialize, Debug)]
 pub struct PostConfig {
     pub title: String,
@@ -33,7 +33,7 @@ pub struct PostConfig {
     pub categories: PostCategories,
     /// One-based index of cover photo
     pub cover_photo_index: u8,
-
+    /// YouTube ID used to embed video
     pub youtube_id: Option<String>,
 }
 
@@ -72,9 +72,11 @@ pub struct GoogleConfig {
     pub blog_id: String,
 }
 
+/// Log processed photo information per post folder to determine when
+/// re-processing is necessary
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PostPhotos {
-    /// Date of first relevant photo in folder
+    /// Date of first relevant (not an outlier) photo in folder
     pub when: Option<DateTime<FixedOffset>>,
     /// When folder was last processed
     pub processed: DateTime<Local>,
@@ -179,6 +181,13 @@ pub struct SiteConfig {
 pub struct BlogConfig {
     pub author_name: String,
     pub repo_url: String,
+
+    /// Whether to render post pages even if there have been no changes since
+    /// the last render. This is set with a `--force` argument rather than
+    /// configuration.
+    #[serde(skip)]
+    pub force_rerender: bool,
+
     /// Regex pattern to extract series part index from folder name
     ///
     /// *Examples*
@@ -186,6 +195,7 @@ pub struct BlogConfig {
     ///  - `^(\d)\.` for `3.cold-ride-home`
     #[serde(deserialize_with = "regex_string")]
     pub capture_series_index: Regex,
+
     /// Redirect source slug to target
     pub redirects: Option<Pairs>,
     pub site: SiteConfig,

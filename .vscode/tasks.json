@@ -19,7 +19,7 @@
       "label": "Run",
       "type": "shell",
       "command": "cargo",
-      "args": ["run", "--package", "static-from-exif"],
+      "args": ["run", "force"],
       "presentation": {
         "echo": false,
         "clear": true
@@ -30,7 +30,7 @@
       "label": "Clean",
       "type": "shell",
       "command": "cargo",
-      "args": ["clean", "--package", "static-from-exif"],
+      "args": ["clean"],
       "presentation": {
         "echo": false,
         "clear": true

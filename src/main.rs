@@ -19,10 +19,10 @@ use image::exif_tool;
 use models::{Blog, Category, CategoryKind, Photo, Post};
 use serde::de::DeserializeOwned;
 use std::{
-    fs,
+    env, fs,
     path::{Path, PathBuf},
 };
-use template::{write_post, write_sitemap, write_about};
+use template::{write_about, write_post, write_sitemap};
 use toml;
 use tools::{
     earliest_photo_date, identify_outliers, path_name, path_slice,
@@ -37,7 +37,7 @@ static LOG_FILE: &str = "log.toml";
 fn main() {
     // GitHub pages feature requires root at / or /docs
     let root = Path::new("./docs/");
-    let config = match load_config::<BlogConfig>(root) {
+    let mut config = match load_config::<BlogConfig>(root) {
         Some(config) => config,
         _ => {
             println!("{}", "Missing root configuration file".red());
@@ -57,7 +57,12 @@ fn main() {
         }
     };
 
+    let args: Vec<String> = env::args().collect();
     let mut blog = Blog::default();
+
+    config.force_rerender = args.contains(&"force".to_owned());
+
+    println!("Force re-render: {}", config.force_rerender);
 
     // iterate over every file or subdirectory within root
     for entry in entries {
