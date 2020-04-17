@@ -260,7 +260,7 @@ pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
         .arg("-Copyright")
         .arg("-DateTimeCreated")
         .arg("-CreateDate")
-        // Offsets seem only to be present if tool has modified date
+        // Offsets seem only to be present for software modified dates
         //.arg("-OffsetTimeOriginal")
         //.arg("-OffsetTimeDigitized")
         .arg("-Description")

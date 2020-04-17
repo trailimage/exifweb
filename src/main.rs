@@ -15,7 +15,7 @@ use ::regex::Regex;
 use chrono::{DateTime, FixedOffset, Local};
 use colored::*;
 use config::*;
-use context::{Helpers, PostContext, SitemapContext};
+use context::{Features, Helpers, PostContext, SitemapContext};
 use image::exif_tool;
 use models::{Blog, Category, CategoryKind, Photo, Post};
 use serde::de::DeserializeOwned;
@@ -346,6 +346,7 @@ fn write_post(path: &Path, config: &BlogConfig, blog: &Blog, post: &Post) {
         blog,
         config,
         html: Helpers {},
+        feature: Features::default(),
     };
 
     match context.call() {
