@@ -1,5 +1,3 @@
-site_name = "Trail Image"
-site_url = "https://trailimage.com"
 repo_url = "https://github.com/trailimage/"
 author_name = "Jason Abbott"
 capture_series_index = "^(?P<index>\\d+)\\."
@@ -10,6 +8,11 @@ redirects = [
    ["owyhee-snow-and-sands-uplands", "owyhee-snow-and-sand"],
    ["lunch-at-trinity-lookout", "trinity-lookout-lunch"]
 ]
+
+[site]
+name = "Trail Image"
+description = "Stories and images of small adventure trips in and around the state of Idaho"
+url = "https://trailimage.com"
 
 [style]
 # Maximum pixel height of static maps displayed with post summaries

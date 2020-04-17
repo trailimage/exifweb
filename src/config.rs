@@ -169,9 +169,14 @@ pub struct StyleConfig {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct SiteConfig {
+    pub url: String,
+    pub name: String,
+    pub description: String,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct BlogConfig {
-    pub site_url: String,
-    pub site_name: String,
     pub author_name: String,
     pub repo_url: String,
     /// Regex pattern to extract series part index from folder name
@@ -183,6 +188,7 @@ pub struct BlogConfig {
     pub capture_series_index: Regex,
     /// Redirect source slug to target
     pub redirects: Option<Pairs>,
+    pub site: SiteConfig,
     pub style: StyleConfig,
     pub category: CategoryConfig,
     pub photo: PhotoConfig,

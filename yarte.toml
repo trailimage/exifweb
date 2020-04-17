@@ -6,13 +6,14 @@ dir = "templates"
 #debug = "code"
 
 [partials]
-head = "./partials/head"
 categories = "./partials/categories"
-footer = "./partials/footer"
-navigation = "./partials/navigation"
-head_facebook = "./partials/head_facebook"
-side_menu = "./partials/side_menu"
 contact_link = "./partials/contact_link"
+footer = "./partials/footer"
+header = "./partials/header"
+html_head = "./partials/html_head"
+html_head_facebook = "./partials/head_facebook"
+navigation = "./partials/navigation"
+side_menu = "./partials/side_menu"
 
 [debug]
 theme = "zenburn"

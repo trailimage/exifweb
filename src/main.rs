@@ -1,21 +1,20 @@
-#![allow(warnings)]
+//#![allow(warnings)]
 #[macro_use]
 extern crate enum_primitive_derive;
 extern crate num_traits;
 
 mod config;
-mod context;
 mod deserialize;
 mod html;
 mod image;
 mod models;
+mod template;
 mod tools;
 
 use ::regex::Regex;
 use chrono::{DateTime, FixedOffset, Local};
 use colored::*;
 use config::*;
-use context::{Features, Helpers, PostContext, SitemapContext};
 use image::exif_tool;
 use models::{Blog, Category, CategoryKind, Photo, Post};
 use serde::de::DeserializeOwned;
@@ -23,12 +22,12 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
+use template::{write_post, write_sitemap, write_about};
 use toml;
 use tools::{
     earliest_photo_date, identify_outliers, path_name, path_slice,
     pos_from_path,
 };
-use yarte::Template;
 
 /// Configuration file for blog, for post series and for posts
 static CONFIG_FILE: &str = "config.toml";
@@ -108,6 +107,7 @@ fn main() {
     }
 
     write_sitemap(root, &config, &blog);
+    write_about(root, &config);
 }
 
 fn success_metric(count: usize, label: &str) {
@@ -304,6 +304,7 @@ fn load_photos(
     }
 }
 
+/// Save information about loaded photos to avoid unecessary re-processing
 fn write_log(
     path: &Path,
     earliest_date: Option<DateTime<FixedOffset>>,
@@ -337,38 +338,5 @@ fn write_log(
             return;
         }
         Err(e) => eprintln!("Error serializaing {:?}", e),
-    }
-}
-
-fn write_post(path: &Path, config: &BlogConfig, blog: &Blog, post: &Post) {
-    let context = PostContext {
-        post,
-        blog,
-        config,
-        html: Helpers {},
-        feature: Features::default(),
-    };
-
-    match context.call() {
-        Ok(content) => {
-            match fs::write(path.join(&post.path).join("index.html"), &content)
-            {
-                Ok(_) => (),
-                Err(e) => eprintln!("Error writing post {} {:?}", post.path, e),
-            }
-        }
-        Err(e) => eprintln!("Error rendering post {} {:?}", post.path, e),
-    }
-}
-
-fn write_sitemap(path: &Path, config: &BlogConfig, blog: &Blog) {
-    let context = SitemapContext { blog, config };
-
-    match context.call() {
-        Ok(content) => match fs::write(path.join("sitemap.xml"), &content) {
-            Ok(_) => (),
-            Err(e) => eprintln!("Error writing sitemap {:?}", e),
-        },
-        Err(e) => eprintln!("Error rendering sitemap {:?}", e),
     }
 }
