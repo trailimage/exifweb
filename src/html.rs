@@ -67,7 +67,7 @@ fn link_urls(text: &str) -> String {
     lazy_static! {
         static ref URL: Regex =
             Regex::new(r"\b(?P<url>https?://[^\s]+)\b").unwrap();
-        static ref DOMAIN: Regex = Regex::new(r"https?://[^/]+/").unwrap();
+        static ref DOMAIN: Regex = Regex::new(r"https?://[^/]+/?").unwrap();
         static ref LAST_PATH: Regex =
             Regex::new(r"/([^/?#]+)(\?|\#|$)").unwrap();
     }
@@ -76,9 +76,14 @@ fn link_urls(text: &str) -> String {
         let url: &str = &c["url"];
         let domain: &str = &DOMAIN.captures(url).unwrap()[0];
         let path = url.replace(domain, "");
-        let page: &str = &LAST_PATH.captures(&path).unwrap()[1];
+        let domain = domain.replace("//www.", "//");
 
-        format!("<a href=\"{}\">{}&hellip;/{}</a>", url, domain, page)
+        if path.contains("/") {
+            let page: &str = &LAST_PATH.captures(&path).unwrap()[1];
+            format!("<a href=\"{}\">{}&hellip;/{}</a>", url, domain, page)
+        } else {
+            format!("<a href=\"{}\">{}{}</a>", url, domain, path)
+        }
     })
     .into_owned()
 }
@@ -406,7 +411,8 @@ mod tests {
     #[test]
     fn url_formatting() {
         const URL1: &str = "http://en.wikipedia.org/wiki/Sweet_Pickles";
-        const URL2:&str = "http://www.amazon.com/Cheryl-Dudley/e/B001JP7LNO/ref=ntt_athr_dp_pel_1";
+        const URL2: &str = "http://www.amazon.com/Cheryl-Dudley/e/B001JP7LNO/ref=ntt_athr_dp_pel_1";
+        const URL3: &str = "http://www.trailimage.com/trinity-ridge-fire-tour";
 
         let source = format!(
             "¹ Wikipedia: {} ² Cheryl Reed, January 17, 2003: {}",
@@ -415,8 +421,19 @@ mod tests {
 
         let target = format!(
             "¹ Wikipedia: <a href=\"{}\">http://en.wikipedia.org/&hellip;/Sweet_Pickles</a> \
-            ² Cheryl Reed, January 17, 2003: <a href=\"{}\">http://www.amazon.com/&hellip;/ref=ntt_athr_dp_pel_1</a>",
+            ² Cheryl Reed, January 17, 2003: <a href=\"{}\">http://amazon.com/&hellip;/ref=ntt_athr_dp_pel_1</a>",
             URL1, URL2,
+        );
+
+        assert_eq!(link_urls(&source), target);
+
+        let source =
+            format!("¹ Trail Image, “Trinity Ridge Fire Tour”: {}", URL3);
+
+        let target = format!(
+            "¹ Trail Image, “Trinity Ridge Fire Tour”: \
+            <a href=\"{}\">http://trailimage.com/trinity-ridge-fire-tour</a>",
+            URL3
         );
 
         assert_eq!(link_urls(&source), target);

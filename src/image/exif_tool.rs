@@ -16,8 +16,8 @@ pub struct ExifToolOutput {
     #[serde(rename = "FileName")]
     file_name: String,
 
-    #[serde(rename = "Artist")]
-    artist: String,
+    #[serde(default, rename = "Artist")]
+    artist: Option<String>,
 
     #[serde(rename = "Title")] // or ObjectName
     title: Option<String>,
@@ -39,11 +39,11 @@ pub struct ExifToolOutput {
     #[serde(rename = "State")] // or Province-State
     state: Option<String>,
 
-    #[serde(rename = "Copyright")] // or Rights or CopyrightNotice
-    copyright: String,
+    #[serde(default, rename = "Copyright")] // or Rights or CopyrightNotice
+    copyright: Option<String>,
 
-    #[serde(rename = "UsageTerms")]
-    usage_terms: String,
+    #[serde(default, rename = "UsageTerms")]
+    usage_terms: Option<String>,
 
     #[serde(rename = "Software")] // or CreatorTool
     software: String,
@@ -55,10 +55,15 @@ pub struct ExifToolOutput {
     iso: Option<u16>,
 
     // or ShutterSpeedValue
-    #[serde(rename = "ShutterSpeed", deserialize_with = "string_number")]
+    #[serde(
+        default,
+        rename = "ShutterSpeed",
+        deserialize_with = "string_number"
+    )]
     shutter_speed: Option<String>,
 
     #[serde(
+        default,
         rename = "ExposureCompensation",
         deserialize_with = "string_number"
     )]
@@ -82,9 +87,20 @@ pub struct ExifToolOutput {
     #[serde(default, rename = "Model")]
     camera_model: Option<String>,
 
-    #[serde(rename = "DateTimeCreated", deserialize_with = "date_time_string")]
-    // or DateTimeOriginal, DateTimeCreated
-    taken_on: DateTime<FixedOffset>,
+    #[serde(
+        default,
+        rename = "DateTimeCreated",
+        deserialize_with = "date_time_string"
+    )]
+    // or DateTimeOriginal or DateTimeCreated
+    taken_on: Option<DateTime<FixedOffset>>,
+
+    #[serde(
+        default,
+        rename = "CreateDate",
+        deserialize_with = "date_time_string"
+    )]
+    created_on: Option<DateTime<FixedOffset>>,
 
     #[serde(rename = "GPSLatitude")]
     latitude: Option<f32>,
@@ -131,6 +147,7 @@ impl PartialEq for ExifToolOutput {
             && self.camera_make == other.camera_make
             && self.camera_model == other.camera_model
             && self.taken_on == other.taken_on
+            && self.created_on == other.created_on
             && self.latitude == other.latitude
             && self.longitude == other.longitude
             && self.color_profile == other.color_profile
@@ -157,7 +174,7 @@ pub fn parse_dir(
 
             if index == 0 {
                 println!(
-                    "{:>3} {}",
+                    "   {} {}",
                     "failed to infer index of".red(),
                     i.file_name.red()
                 );
@@ -167,14 +184,20 @@ pub fn parse_dir(
             let mut photo = Photo {
                 name: mem::replace(&mut i.file_name, String::new()),
                 title: mem::replace(&mut i.title, None),
-                artist: mem::replace(&mut i.artist, String::new()),
+                artist: mem::replace(&mut i.artist, None),
                 caption: mem::replace(&mut i.caption, None)
                     .map(|s| html::caption(&s)),
                 software: mem::replace(&mut i.software, String::new()),
                 tags: mem::replace(&mut i.tags, Vec::new()),
                 index,
                 primary: index == cover_index,
-                date_taken: Some(i.taken_on),
+                width: i.width,
+                height: i.height,
+                date_taken: if i.taken_on.is_some() {
+                    i.taken_on
+                } else {
+                    i.created_on
+                },
                 ..Photo::default()
             };
 
@@ -236,6 +259,10 @@ pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
         .arg("-ColorTemperature#")
         .arg("-Copyright")
         .arg("-DateTimeCreated")
+        .arg("-CreateDate")
+        // Offsets seem only to be present if tool has modified date
+        //.arg("-OffsetTimeOriginal")
+        //.arg("-OffsetTimeDigitized")
         .arg("-Description")
         .arg("-ExposureCompensation")
         .arg("-ExposureProgram#")
@@ -284,8 +311,8 @@ pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
         Ok(info) => info,
         Err(e) => {
             println!("   {}", "unable to parse EXIF JSON".red());
-            println!("   —\n   {:?}\n   —", e);
             println!("{}", text);
+            println!("   —\n   {:?}\n   —", e);
             Vec::new()
         }
     }
@@ -330,14 +357,14 @@ mod tests {
 
         let target = vec![ExifToolOutput {
             file_name: "001.tif".to_owned(),
-            artist: "Jason Abbott".to_owned(),
+            artist: Some("Jason Abbott".to_owned()),
             title: Some("Fuel stop".to_owned()),
             caption: Some("We worked all day yesterday, and various days before that, to get the bikes in working order. A hot and hazy day isn’t my first choice to ride the Boise Ridge but Nick and I want to put the bikes through their paces before a four-day ride in a few weeks.".to_owned()),
             tags: vec!["Gas Station".to_owned(),"KTM 500 XC-W".to_owned(),"Motorcycle".to_owned()],
             city: None,
             state: None,
-            copyright: "© Copyright 2017 Jason Abbott".to_owned(),
-            usage_terms: "All Rights Reserved".to_owned(),
+            copyright: Some("© Copyright 2017 Jason Abbott".to_owned()),
+            usage_terms: Some("All Rights Reserved".to_owned()),
             software: "Adobe Photoshop Lightroom Classic 9.2 (Windows)".to_owned(),
             aperture: Some(2.2),
             iso: Some(25),
@@ -349,14 +376,15 @@ mod tests {
             lens: Some("iPhone 6s back camera 4.15mm f/2.2".to_owned()),
             camera_make: Some("Apple".to_owned()),
             camera_model: Some("iPhone 6s".to_owned()),
-            taken_on: DateTime::parse_from_rfc3339("2017-08-06T11:25:41-06:00").unwrap(),
+            taken_on: Some(DateTime::parse_from_rfc3339("2017-08-06T11:25:41-06:00").unwrap()),
+            created_on: None,
             latitude: Some(43.579192),
             longitude: Some(-116.173061),
             color_profile: Some("ProPhoto RGB".to_owned()),
             color_temperature: Some(5800),
             field_of_view: Some(63.6549469203798),
-            width: 75,
-            height: 100
+            width: 100,
+            height: 75
         }];
 
         match serde_json::from_str::<Vec<ExifToolOutput>>(&json) {

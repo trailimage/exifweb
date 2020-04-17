@@ -84,7 +84,7 @@ where
 struct DateTimeString(PhantomData<DateTime<FixedOffset>>);
 
 impl<'de> de::Visitor<'de> for DateTimeString {
-    type Value = DateTime<FixedOffset>;
+    type Value = Option<DateTime<FixedOffset>>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         formatter.write_str("date-time string")
@@ -103,14 +103,16 @@ impl<'de> de::Visitor<'de> for DateTimeString {
             d.push_str(&OFFSET);
         }
 
-        DateTime::parse_from_str(&d, "%Y:%m:%d %H:%M:%S%:z")
-            .map_err(de::Error::custom)
+        match DateTime::parse_from_str(&d, "%Y:%m:%d %H:%M:%S%:z") {
+            Ok(d) => Ok(Some(d)),
+            Err(e) => Err(de::Error::custom(e)),
+        }
     }
 }
 
 pub fn date_time_string<'de, D>(
     deserializer: D,
-) -> Result<DateTime<FixedOffset>, D::Error>
+) -> Result<Option<DateTime<FixedOffset>>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -191,7 +193,7 @@ mod tests {
         #[derive(Debug, Deserialize)]
         struct SomeStruct {
             #[serde(deserialize_with = "date_time_string")]
-            field: DateTime<FixedOffset>,
+            field: Option<DateTime<FixedOffset>>,
         }
         let dt: DateTime<FixedOffset> =
             DateTime::parse_from_rfc3339("2018-02-08T11:01:12-06:00").unwrap();
@@ -199,7 +201,7 @@ mod tests {
         let x: SomeStruct =
             from_str(r#"{ "field": "2018:02:08 11:01:12-06:00"}"#).unwrap();
 
-        assert_eq!(x.field, dt);
+        assert_eq!(x.field.unwrap(), dt);
 
         // adds missing timezone
         let dt: DateTime<FixedOffset> =
@@ -208,7 +210,7 @@ mod tests {
         let x: SomeStruct =
             from_str(r#"{ "field": "2013:10:05 16:18:35"}"#).unwrap();
 
-        assert_eq!(x.field, dt);
+        assert_eq!(x.field.unwrap(), dt);
     }
 
     #[test]

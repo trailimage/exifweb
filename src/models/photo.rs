@@ -107,7 +107,7 @@ pub struct Photo {
     /// File name of the photo without extension
     pub name: String,
     /// Name of photographer recorded in EXIF
-    pub artist: String,
+    pub artist: Option<String>,
     /// Name of software used to process the photo
     pub software: String,
     pub title: Option<String>,
@@ -135,6 +135,9 @@ pub struct Photo {
 
     /// Whether values have been formatted based on configuration
     pub sanitized: bool,
+
+    pub width: u16,
+    pub height: u16,
 }
 
 impl Photo {
@@ -180,7 +183,7 @@ impl Default for Photo {
     fn default() -> Self {
         Photo {
             name: String::new(),
-            artist: String::new(),
+            artist: None,
             software: String::new(),
             title: None,
             caption: None,
@@ -192,6 +195,8 @@ impl Default for Photo {
             date_taken: None,
             outlier_date: false,
             sanitized: false,
+            width: 0,
+            height: 0,
         }
     }
 }
