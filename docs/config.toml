@@ -8,6 +8,15 @@ redirects = [
    ["owyhee-snow-and-sands-uplands", "owyhee-snow-and-sand"],
    ["lunch-at-trinity-lookout", "trinity-lookout-lunch"]
 ]
+ignore_folders = [
+    "about",
+    "css",
+    "img",
+    "js",
+    "map",
+    "photo-tag",
+    "ruminations"
+]
 
 [site]
 name = "Trail Image"

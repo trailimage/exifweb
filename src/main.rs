@@ -14,7 +14,7 @@ mod tools;
 use ::regex::Regex;
 use chrono::{DateTime, FixedOffset};
 use colored::*;
-use config::{BlogConfig, PhotoLog, PostConfig, SeriesConfig, CONFIG_FILE};
+use config::{BlogConfig, PostConfig, PostLog, SeriesConfig, CONFIG_FILE};
 use image::exif_tool;
 use models::{Blog, Category, CategoryKind, Photo, Post};
 use std::{
@@ -68,22 +68,26 @@ fn main() {
     // iterate over every file or subdirectory within root
     for entry in entries {
         let path: PathBuf = entry.unwrap().path();
+        let dir_name: &str = path_name(&path);
 
-        if !path.is_dir() {
-            // ignore root files
+        if !path.is_dir()
+            || config.ignore_folders.contains(&dir_name.to_string())
+        {
+            // ignore root files and configured folders
             continue;
         }
 
-        println!(
-            "\n{} {}",
-            "Found root directory".bold(),
-            path_name(&path).bold().yellow()
-        );
+        println!("\n{} └ {}", "Found root directory".bold(), dir_name.bold());
 
         if let Some(posts) = load_series(&path, &config) {
-            println!("   Found {} series posts", posts.len());
+            println!("   Series of {} posts:", posts.len());
             for p in posts {
-                println!("{:6}{} ({} photos)", "", &p.path, &p.photos.len());
+                println!(
+                    "{:6}{} ({} photos)",
+                    "",
+                    p.sub_title.yellow(),
+                    p.photo_count
+                );
                 blog.add_post(p);
             }
             // skip to next path entry if series was found
@@ -91,14 +95,22 @@ fn main() {
         }
 
         if let Some(post) = load_post(path.as_path(), &config) {
+            println!(
+                "   {} ({} photos)",
+                post.title.yellow(),
+                post.photo_count
+            );
             blog.add_post(post);
         }
     }
 
+    let changed_count = blog.changed_count();
+
     print!("\n");
     success_metric(blog.post_count(), "total posts");
+    success_metric(changed_count, "changed posts");
 
-    if !blog.is_empty() {
+    if !blog.is_empty() && changed_count > 0 {
         blog.correlate_posts();
         blog.collate_tags();
 
@@ -108,12 +120,13 @@ fn main() {
         blog.sanitize_exif(&config.photo.exif);
 
         for (_, p) in &blog.posts {
-            write_post(root, &config, &blog, &p)
+            if p.changed {
+                write_post(root, &config, &blog, &p)
+            }
         }
+        write_sitemap(root, &config, &blog);
+        write_about(root, &config);
     }
-
-    write_sitemap(root, &config, &blog);
-    write_about(root, &config);
 }
 
 fn success_metric(count: usize, label: &str) {
@@ -166,71 +179,43 @@ fn load_series_post(
     config: &BlogConfig,
     series_config: &SeriesConfig,
 ) -> Option<Post> {
-    if !has_changed(path) {
-        println!("   {}", "No changes detected: skipping".purple());
+    let part = pos_from_path(&config.capture_series_index, &path).unwrap_or(0);
+
+    if part == 0 {
         return None;
     }
 
-    PostConfig::load(&path).and_then(|c| {
-        // TODO: load log
-        let part =
-            pos_from_path(&config.capture_series_index, &path).unwrap_or(0);
-
-        if part == 0 {
-            return None;
-        }
-        let (photos, happened_on) =
-            load_photos(path, &config.photo.capture_index, c.cover_photo_index);
-
-        if photos.is_empty() {
-            None
-        } else {
-            let categories = c.categories();
-
+    PostConfig::load(&path).and_then(|post_config| {
+        post_from_log_or_photos(path, config, &post_config).and_then(|p| {
             Some(Post {
-                path: path_slice(path, 2),
-                title: series_config.title.clone(),
-                sub_title: c.title,
-                summary: c.summary,
+                categories: post_config.categories(),
+                path: path_slice(path, 1),
                 part,
-                is_partial: true,
                 total_parts: series_config.parts,
+                is_partial: true,
                 prev_is_part: part > 1,
                 next_is_part: part < series_config.parts,
-                happened_on,
-                photos,
-                categories,
-                ..Post::default()
+                title: series_config.title.clone(),
+                sub_title: post_config.title,
+                summary: post_config.summary,
+                ..p
             })
-        }
+        })
     })
 }
 
-/// Create post that is not part of a series.
+/// Create post that is not part of a series
 fn load_post(path: &Path, config: &BlogConfig) -> Option<Post> {
-    if !has_changed(path) {
-        println!("   {}", "No changes detected: skipping".purple());
-        return None;
-    }
-    PostConfig::load(&path).and_then(|c| {
-        let (photos, happened_on) =
-            load_photos(path, &config.photo.capture_index, c.cover_photo_index);
-
-        if photos.is_empty() {
-            None
-        } else {
-            let categories = c.categories();
-
+    PostConfig::load(&path).and_then(|post_config| {
+        post_from_log_or_photos(path, config, &post_config).and_then(|p| {
             Some(Post {
+                categories: post_config.categories(),
                 path: path_slice(path, 1),
-                title: c.title,
-                summary: c.summary,
-                happened_on,
-                photos,
-                categories,
-                ..Post::default()
+                title: post_config.title,
+                summary: post_config.summary,
+                ..p
             })
-        }
+        })
     })
 }
 
@@ -251,59 +236,116 @@ fn load_photos(
         identify_outliers(&mut photos);
         let happened_on = earliest_photo_date(&photos);
 
-        PhotoLog::write(path, happened_on, &photos);
+        PostLog::write(path, happened_on, &photos);
 
         (photos, happened_on)
     }
 }
 
-/// Whether post photos or configuration has changed
-fn has_changed(path: &Path) -> bool {
-    let last_read: i64 = if let Some(l) = PhotoLog::load(path) {
-        l.processed.timestamp()
-    } else {
-        // no log implies the post is new
-        return true;
-    };
+/// Load basic post from previous render log or by reading photo files
+fn post_from_log_or_photos(
+    path: &Path,
+    config: &BlogConfig,
+    post_config: &PostConfig,
+) -> Option<Post> {
+    match load_post_log(path) {
+        Some(log) => Some(Post {
+            happened_on: log.when,
+            photo_count: log.photo_count,
+            changed: false, // unchanged if log is valid
+            ..Post::default()
+        }),
+        _ => {
+            let (photos, happened_on) = load_photos(
+                path,
+                &config.photo.capture_index,
+                post_config.cover_photo_index,
+            );
 
-    let filter = |name: &str| name.ends_with(".tif") || name == CONFIG_FILE;
-
-    match is_modified_after(path, last_read, filter) {
-        Ok(changed) => changed,
-        Err(e) => {
-            println!("Failed to check {} for change {:?}", path_name(path), e);
-            // re-render if there's an error
-            return true;
+            if photos.is_empty() {
+                None
+            } else {
+                Some(Post {
+                    happened_on,
+                    photo_count: photos.len(),
+                    photos,
+                    ..Post::default()
+                })
+            }
         }
     }
 }
 
-fn is_modified_after(
-    path: &Path,
-    threshold: i64,
-    allow_name: fn(name: &str) -> bool,
-) -> io::Result<bool> {
-    if path.is_dir() {
-        for entry in fs::read_dir(path)? {
-            let entry: DirEntry = entry?;
-            let os_name = entry.file_name();
-            let name: &str = os_name.to_str().unwrap();
-
-            if !allow_name(name) {
-                continue;
+/// Load post log if source files are still valid (no additions or deletions and
+/// unchanged)
+fn load_post_log(path: &Path) -> Option<PostLog> {
+    PostLog::load(path).and_then(|log| {
+        match is_modified(
+            path,
+            log.processed.timestamp(),
+            log.photo_count + 1, // photos plus configuration file
+            |name: &str| name.ends_with(".tif") || name == CONFIG_FILE,
+        ) {
+            Ok(modified) => {
+                if modified {
+                    None // do not return log if post files have changed
+                } else {
+                    Some(log)
+                }
             }
-
-            let modified: i64 = entry
-                .metadata()?
-                .modified()?
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_secs() as i64;
-
-            if threshold < modified {
-                return Ok(true);
+            Err(e) => {
+                println!(
+                    "Failed to check {} for change {:?}",
+                    path_name(path),
+                    e
+                );
+                None
             }
         }
+    })
+}
+
+/// Whether `path` contains any `allow_name` files modified after `threshold`
+/// timestamp
+fn is_modified(
+    path: &Path,
+    threshold: i64,
+    file_count: usize,
+    allow_name: fn(name: &str) -> bool,
+) -> io::Result<bool> {
+    if !path.is_dir() {
+        return Ok(true);
     }
-    Ok(false)
+    let mut count: usize = 0;
+
+    for entry in fs::read_dir(path)? {
+        let entry: DirEntry = entry?;
+        let os_name = entry.file_name();
+        let name: &str = os_name.to_str().unwrap();
+
+        if !allow_name(name) {
+            continue;
+        }
+        count += 1;
+
+        if count > file_count {
+            // more than expected files
+            return Ok(true);
+        }
+
+        let modified: i64 = entry
+            .metadata()?
+            .modified()?
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs() as i64;
+
+        if threshold < modified {
+            // file modified more recently than threshold
+            return Ok(true);
+        }
+    }
+
+    // path is modified if it has a different file count
+    Ok(file_count != count)
 }

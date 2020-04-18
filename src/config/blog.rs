@@ -157,6 +157,7 @@ pub struct SiteConfig {
 pub struct BlogConfig {
     pub author_name: String,
     pub repo_url: String,
+    pub ignore_folders: Vec<String>,
 
     /// Whether to render post pages even if there have been no changes since
     /// the last render. This is set with a `--force` argument rather than

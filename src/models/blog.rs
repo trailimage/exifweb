@@ -72,6 +72,17 @@ impl Blog {
         }
     }
 
+    /// Number of changed posts
+    pub fn changed_count(&self) -> usize {
+        let mut total: usize = 0;
+        for (_, p) in &self.posts {
+            if p.changed {
+                total += 1;
+            }
+        }
+        total
+    }
+
     /// Post with path
     pub fn get(&self, path: &str) -> Option<&Post> {
         if path.is_empty() {

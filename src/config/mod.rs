@@ -4,7 +4,7 @@ pub mod post;
 pub mod series;
 
 pub use blog::{BlogConfig, CategoryConfig, ExifConfig};
-pub use log::PhotoLog;
+pub use log::PostLog;
 pub use post::PostConfig;
 pub use series::SeriesConfig;
 

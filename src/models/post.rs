@@ -60,6 +60,11 @@ pub struct Post {
     pub has_track: bool,
     /// Categories to which this post belongs
     pub categories: Vec<Category>,
+
+    pub photo_count: usize,
+
+    /// Whether post photos or configuration has changed, requiring re-render
+    pub changed: bool,
 }
 
 impl Post {
@@ -100,6 +105,10 @@ impl Default for Post {
             has_track: false,
 
             categories: Vec::new(),
+
+            photo_count: 0,
+            // mark as changed to cause render
+            changed: true,
         }
     }
 }
