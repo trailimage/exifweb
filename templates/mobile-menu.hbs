@@ -1,0 +1,14 @@
+{{{ html.icon("close") }}}
+
+{{! same as partials/side_menu with the addition of icons !}}
+<ul class="links">
+    <li><a href="/" rel="home">Home {{{ html.icon("home") }}}</a></li>
+    <li><a href="/about" rel="author">About {{{ html.icon("info") }}}</a></li>
+    <li><a href="/photo-tag" rel="search">Photo Tags {{{ html.icon("collections") }}}</a></li>
+    <li><a href="/ruminations">Ruminations {{{ html.icon("local_florist") }}}</a></li>
+    <li>Categories {{{ html.icon("label") }}}</li>
+</ul>
+
+<div class="menu-categories">
+    {{> category_selectors }}
+</div>

@@ -7,6 +7,7 @@ dir = "templates"
 
 [partials]
 categories = "./partials/categories"
+category_selectors = "./partials/category_selectors"
 contact_link = "./partials/contact_link"
 footer = "./partials/footer"
 header = "./partials/header"

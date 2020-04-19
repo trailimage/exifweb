@@ -25,7 +25,8 @@ use std::{
     time::UNIX_EPOCH,
 };
 use template::{
-    write_about_page, write_category_menu, write_post, write_sitemap,
+    write_about_page, write_category_menu, write_mobile_menu, write_post,
+    write_sitemap,
 };
 use tools::{
     earliest_photo_date, final_path_name, identify_outliers, path_slice,
@@ -145,6 +146,7 @@ fn main() {
         write_sitemap(root, &config, &blog);
         write_about_page(root, &config);
         write_category_menu(root, &blog);
+        write_mobile_menu(root, &blog);
     }
 }
 

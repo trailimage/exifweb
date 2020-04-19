@@ -13,6 +13,7 @@ ignore_folders = [
     "category-menu",
     "css",
     "img",
+    "mobile-menu",
     "js",
     "map",
     "photo-tag",

@@ -8,6 +8,7 @@ use yarte::Template;
 // TODO: render category page
 // TODO: render category kind page
 // TODO: render photo tag page
+// TODO: render mobile menu
 
 /// Template rendering helpers
 struct Helpers {}
@@ -82,6 +83,13 @@ struct CategoryMenuContext<'c> {
 }
 
 #[derive(Template)]
+#[template(path = "mobile-menu.hbs")]
+struct MobileMenuContext<'c> {
+    pub blog: &'c Blog,
+    pub html: Helpers,
+}
+
+#[derive(Template)]
 #[template(path = "sitemap-xml.hbs")]
 struct SitemapContext<'c> {
     pub blog: &'c Blog,
@@ -115,6 +123,17 @@ pub fn write_about_page(root: &Path, config: &BlogConfig) {
 
 pub fn write_category_menu(root: &Path, blog: &Blog) {
     write_default_page(root, "category-menu", CategoryMenuContext { blog });
+}
+
+pub fn write_mobile_menu(root: &Path, blog: &Blog) {
+    write_default_page(
+        root,
+        "mobile-menu",
+        MobileMenuContext {
+            blog,
+            html: Helpers {},
+        },
+    );
 }
 
 pub fn write_sitemap(root: &Path, config: &BlogConfig, blog: &Blog) {
