@@ -25,7 +25,7 @@ pub struct Blog {
     pub posts: HashMap<String, Post>,
     pub categories: Vec<CategoryPosts>,
     /// Tag slugs mapped to the original tag names and photos with the tag
-    pub tags: HashMap<String, TagPhotos>,
+    pub tags: HashMap<String, TagPhotos<PhotoPath>>,
 }
 
 impl Blog {
@@ -68,7 +68,7 @@ impl Blog {
         }
     }
 
-    /// Number of posts needing to be rendered
+    /// Number of posts that need to be rendered
     pub fn needs_render_count(&self) -> usize {
         let mut total: usize = 0;
         for (_, p) in &self.posts {
@@ -179,14 +179,17 @@ impl Blog {
     /// Collect unique photo tags as keys to the list of photos that applied
     /// those tags
     pub fn collate_tags(&mut self) {
-        let mut tags: HashMap<String, TagPhotos> = HashMap::new();
+        let mut tags: HashMap<String, TagPhotos<PhotoPath>> = HashMap::new();
 
         for (_, p) in self.posts.iter() {
             for (slug, post_tag) in p.tags.iter() {
                 let mut photo_paths: Vec<PhotoPath> = post_tag
                     .photos
                     .iter()
-                    .map(|p: &PhotoPath| p.clone())
+                    .map(|i| PhotoPath {
+                        post_path: p.path.clone(),
+                        photo_index: *i,
+                    })
                     .collect();
 
                 match tags.get_mut(slug) {

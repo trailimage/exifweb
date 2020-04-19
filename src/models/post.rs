@@ -1,6 +1,6 @@
 use crate::config::PostLog;
 use crate::models::{Category, Photo, TagPhotos};
-use chrono::{DateTime, FixedOffset, Local};
+use chrono::{DateTime, FixedOffset};
 use core::cmp::Ordering;
 use hashbrown::HashMap;
 
@@ -81,7 +81,7 @@ pub struct Post {
     /// Zero-based index of cover photo within vector of photos
     pub cover_photo_index: usize,
 
-    pub tags: HashMap<String, TagPhotos>,
+    pub tags: HashMap<String, TagPhotos<u8>>,
 
     /// Information about previous post photos and configuration
     pub history: Option<PostLog>,

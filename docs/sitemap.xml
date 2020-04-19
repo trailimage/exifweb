@@ -12,13 +12,13 @@
     </url>
     
     <url>
-        <loc>https://trailimage.com/brother-ride-2008/2.camping-with-cows</loc>
+        <loc>https://trailimage.com/boiling-over</loc>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     
     <url>
-        <loc>https://trailimage.com/brother-ride-2008/1.party-on-crater-peak</loc>
+        <loc>https://trailimage.com/brother-ride-2008/3.cold-ride-home</loc>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
@@ -30,13 +30,13 @@
     </url>
     
     <url>
-        <loc>https://trailimage.com/boiling-over</loc>
+        <loc>https://trailimage.com/brother-ride-2008/1.party-on-crater-peak</loc>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     
     <url>
-        <loc>https://trailimage.com/brother-ride-2008/3.cold-ride-home</loc>
+        <loc>https://trailimage.com/brother-ride-2008/2.camping-with-cows</loc>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
@@ -98,265 +98,7 @@
     
     
     <url>
-        <loc>https://trailimage.com/photo-tag/throwing</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/snow</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/dancing</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/camp-chair</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/elk-creek</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/dirt-road</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/stars</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/screenshot</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/garage</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/smoking</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/tree</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/memorial</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/creek</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/dirt-path</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/mud</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/sign</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/moon</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/cooking</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/fence</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/horse</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/photographing</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/tool</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/flag</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/middle-fork-of-the-boise</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/north-fork-of-the-boise</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/smoke</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/beer</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/boise-river</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/ktm-500-xc-w</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/bmw-r1200gs-adventure</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/aspen</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/insect</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/drinking</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/jeep</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/ailing</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/gas-station</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/axe</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/bee-hive</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/spider</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/mountain</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/sunrise</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/rain</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/reflection</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/throwing-rocks</loc>
+        <loc>https://trailimage.com/photo-tag/path</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>
@@ -368,85 +110,7 @@
     </url>
     
     <url>
-        <loc>https://trailimage.com/photo-tag/store</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/power-line</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/boise-ridge</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/bar</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/coffee</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/jeep-wrangler</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/restaurant</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/motorcycle</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/path</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/husqvarna-te-450</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/rabbit-creek</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/boise-ridge-road</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/chair</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/gesturing</loc>
+        <loc>https://trailimage.com/photo-tag/tree</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>
@@ -458,61 +122,19 @@
     </url>
     
     <url>
-        <loc>https://trailimage.com/photo-tag/close-up</loc>
+        <loc>https://trailimage.com/photo-tag/axe</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>
     
     <url>
-        <loc>https://trailimage.com/photo-tag/camping</loc>
+        <loc>https://trailimage.com/photo-tag/boise-ridge</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>
     
     <url>
-        <loc>https://trailimage.com/photo-tag/riding</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/outcrop</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/suzuki-dr-z-400s</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/autumn</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/fire</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/waterfall</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/bridge</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.2</priority>
-    </url>
-    
-    <url>
-        <loc>https://trailimage.com/photo-tag/history</loc>
+        <loc>https://trailimage.com/photo-tag/boise-river</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>
@@ -524,7 +146,67 @@
     </url>
     
     <url>
-        <loc>https://trailimage.com/photo-tag/tent</loc>
+        <loc>https://trailimage.com/photo-tag/bee</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/sign</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/jeep-wrangler</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/insect</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/rain</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/throwing-rocks</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/bee-hive</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/middle-fork-of-the-boise</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/suzuki-dr-z-400s</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/memorial</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/autumn</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>
@@ -536,7 +218,31 @@
     </url>
     
     <url>
-        <loc>https://trailimage.com/photo-tag/bee</loc>
+        <loc>https://trailimage.com/photo-tag/snow</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/smoke</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/riding</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/cooking</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/outcrop</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>
@@ -548,13 +254,79 @@
     </url>
     
     <url>
-        <loc>https://trailimage.com/photo-tag/honda-crf-230l</loc>
+        <loc>https://trailimage.com/photo-tag/fence</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>
     
     <url>
-        <loc>https://trailimage.com/photo-tag/moss</loc>
+        <loc>https://trailimage.com/photo-tag/motorcycle</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/horse</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/screenshot</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/close-up</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/dirt-road</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/spider</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/bar</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/mountain</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/elk-creek</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/waterfall</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/restaurant</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/north-fork-of-the-boise</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>
@@ -566,7 +338,187 @@
     </url>
     
     <url>
+        <loc>https://trailimage.com/photo-tag/ailing</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/drinking</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/sunrise</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/camp-chair</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/rabbit-creek</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/stars</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/mud</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/photographing</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/flag</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
         <loc>https://trailimage.com/photo-tag/butterfly</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/tent</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/chair</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/aspen</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/creek</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/history</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/throwing</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/store</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/garage</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/husqvarna-te-450</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/bridge</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/gas-station</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/jeep</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/dirt-path</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/boise-ridge-road</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/beer</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/power-line</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/bmw-r1200gs-adventure</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/smoking</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/moss</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/tool</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/honda-crf-230l</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>
@@ -578,13 +530,61 @@
     </url>
     
     <url>
-        <loc>https://trailimage.com/photo-tag/night</loc>
+        <loc>https://trailimage.com/photo-tag/ktm-500-xc-w</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>
     
     <url>
         <loc>https://trailimage.com/photo-tag/map</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/reflection</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/dancing</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/gesturing</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/moon</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/camping</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/night</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/coffee</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <url>
+        <loc>https://trailimage.com/photo-tag/fire</loc>
         <changefreq>monthly</changefreq>
         <priority>0.2</priority>
     </url>

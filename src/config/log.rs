@@ -33,7 +33,7 @@ pub struct PostLog {
     pub photo_count: usize,
     /// Photo tags keyed by their slug to the photos they were assigned to.
     /// These need to be logged so
-    pub tags: HashMap<String, TagPhotos>,
+    pub tags: HashMap<String, TagPhotos<u8>>,
 }
 
 impl PostLog {
@@ -59,7 +59,7 @@ impl PostLog {
 
 impl Clone for PostLog {
     fn clone(&self) -> Self {
-        let mut tags: HashMap<String, TagPhotos> = HashMap::new();
+        let mut tags: HashMap<String, TagPhotos<u8>> = HashMap::new();
 
         for (slug, tag_photos) in self.tags.iter() {
             tags.insert(slug.to_string(), tag_photos.clone());

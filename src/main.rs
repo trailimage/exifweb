@@ -106,9 +106,6 @@ fn main() {
         }
     }
 
-    // TODO: spawn thread to write log
-    //PostLog::write(path, happened_on, tags, &photos);
-
     print!("\n");
     success_metric(blog.post_count(), "total posts");
 
@@ -138,6 +135,7 @@ fn main() {
         for (_, p) in &blog.posts {
             if p.needs_render {
                 write_post(root, &config, &blog, &p);
+                // TODO: spawn thread to write log
                 PostLog::write(root, p);
             }
         }
@@ -300,7 +298,7 @@ fn create_post(
                 None
             } else {
                 Some(Post {
-                    tags: collate_tags(&post_path, &photos),
+                    tags: collate_tags(&photos),
                     path: post_path,
                     happened_on: earliest_photo_date(&photos),
                     photo_count: photos.len(),

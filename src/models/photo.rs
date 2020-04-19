@@ -106,8 +106,7 @@ impl<'de> de::Visitor<'de> for ExposureModeVisitor {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PhotoPath {
     pub post_path: String,
-    /// Photo file name without extension
-    pub photo_name: String,
+    pub photo_index: u8,
 }
 
 /// Information about the camera used to make the photo.

@@ -183,7 +183,7 @@ pub fn parse_dir(path: &Path, infer_pos: &Regex) -> Vec<Photo> {
             }
 
             let mut photo = Photo {
-                name: mem::replace(&mut i.file_name, String::new()),
+                name: i.file_name.replace(".tif", ""),
                 title: mem::replace(&mut i.title, None),
                 artist: mem::replace(&mut i.artist, None),
                 caption: mem::replace(&mut i.caption, None)
@@ -193,11 +193,7 @@ pub fn parse_dir(path: &Path, infer_pos: &Regex) -> Vec<Photo> {
                 index,
                 width: i.width,
                 height: i.height,
-                date_taken: if i.taken_on.is_some() {
-                    i.taken_on
-                } else {
-                    i.created_on
-                },
+                date_taken: i.taken_on.or(i.created_on),
                 ..Photo::default()
             };
 
