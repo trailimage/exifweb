@@ -142,8 +142,9 @@ fn main() {
                 PostLog::write(root, p);
             }
         }
-        write.sitemap();
+        write.home_page();
         write.about_page();
+        write.sitemap();
         write.category_menu();
         write.mobile_menu();
 

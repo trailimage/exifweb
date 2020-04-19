@@ -56,6 +56,7 @@ impl Blog {
                             let mut copy = c.clone();
                             copy.post_paths.push(p.path.clone());
                             category_list.push(copy);
+                            category_list.sort();
                         }
                     }
                 }

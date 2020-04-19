@@ -3,7 +3,7 @@
 use crate::{
     config::BlogConfig,
     html,
-    models::{Blog, Category, Post},
+    models::{Blog, Category, CategoryKind, Post},
     tools::{config_regex, final_path_name, write_result},
 };
 use chrono::{DateTime, FixedOffset, Local};
@@ -105,6 +105,27 @@ impl<'a> Writer<'a> {
                 feature: Features::default(),
             },
         );
+    }
+
+    pub fn home_page(&self) {
+        // home page is the latest year category
+        if let Some(category) = self
+            .blog
+            .categories
+            .get(&CategoryKind::When)
+            .and_then(|list| list.first())
+        {
+            self.default_page(
+                "",
+                CategoryContext {
+                    category,
+                    blog: &self.blog,
+                    config: &self.config,
+                    html: &self.helpers,
+                    feature: Features::default(),
+                },
+            );
+        }
     }
 
     pub fn about_page(&self) {

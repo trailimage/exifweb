@@ -1,6 +1,9 @@
 use crate::tools::slugify;
-use std::fmt::{Display, Formatter, Result};
-use std::hash::{Hash, Hasher};
+use std::{
+    cmp::Ordering,
+    fmt::{Display, Formatter, Result},
+    hash::{Hash, Hasher},
+};
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum CategoryKind {
@@ -22,12 +25,34 @@ impl Display for CategoryKind {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq)]
 pub struct Category {
     pub path: String,
     pub name: String,
     pub kind: CategoryKind,
     pub post_paths: Vec<String>,
+}
+
+impl PartialEq for Category {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.kind == other.kind
+    }
+}
+
+impl Ord for Category {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.kind {
+            // reverse sort years so newest is first
+            CategoryKind::When => other.name.cmp(&self.name),
+            _ => self.name.cmp(&other.name),
+        }
+    }
+}
+
+impl PartialOrd for Category {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 impl Category {
