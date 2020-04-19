@@ -1,9 +1,11 @@
 //! TOML blog configuration
 
 use super::{env_or_empty, load_config, ReadsEnv};
-use crate::deserialize::regex_string;
-use crate::models::Location;
-use crate::tools::Pairs;
+use crate::{
+    deserialize::regex_string,
+    models::{Location, Post},
+    tools::Pairs,
+};
 use regex::Regex;
 use serde::Deserialize;
 use std::path::Path;
@@ -154,9 +156,19 @@ pub struct SiteConfig {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct FeaturedPost {
+    pub path: String,
+    // title will be retrieved from actual post
+    #[serde(skip)]
+    pub title: String,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct BlogConfig {
     pub author_name: String,
     pub repo_url: String,
+    pub featured_post: Option<FeaturedPost>,
+
     /// Folders known not to contain posts
     pub ignore_folders: Vec<String>,
 

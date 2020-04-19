@@ -4,8 +4,8 @@ pub mod post;
 pub mod series;
 
 pub use blog::{
-    BlogConfig, CategoryConfig, CategoryIcon, ExifConfig, PhotoConfig,
-    SizeConfig,
+    BlogConfig, CategoryConfig, CategoryIcon, ExifConfig, FeaturedPost,
+    PhotoConfig, SizeConfig,
 };
 pub use log::PostLog;
 pub use post::PostConfig;

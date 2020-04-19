@@ -6,12 +6,13 @@ use crate::{
     models::{Blog, Category, CategoryKind, Post},
     tools::{config_regex, final_path_name, write_result},
 };
-use chrono::{DateTime, FixedOffset, Local};
+use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 use regex::Regex;
 use std::{fs, path::Path};
 use yarte::Template;
 
+// TODO: render ruminations page
 // TODO: render category kind page
 // TODO: render photo tag page
 // TODO: render map page
@@ -212,6 +213,7 @@ struct PostContext<'c> {
 
 // TODO: re-use partials/category for post category list
 // TODO: add post count subtitle
+// TODO: render static map with photo locations
 #[derive(Template)]
 #[template(path = "category.hbs")]
 struct CategoryContext<'c> {
@@ -230,7 +232,7 @@ struct AboutContext<'c> {
     pub html: &'c Helpers,
 }
 
-// TODO: render static map with photo locations
+// TODO: sort when, who, what, where
 #[derive(Template)]
 #[template(path = "category_menu.hbs")]
 struct CategoryMenuContext<'c> {

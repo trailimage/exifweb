@@ -1,6 +1,7 @@
 repo_url = "https://github.com/trailimage/"
 author_name = "Jason Abbott"
 capture_series_index = "^(?P<index>\\d+)\\."
+
 # source to target slug
 redirects = [
    ["brother-rider-2013-a-night-in-pierce", "brother-ride-2013"],
@@ -12,17 +13,20 @@ ignore_folders = [
     "about",
     "category-menu",
     "css",
+    "fonts",
     "img",
     "mobile-menu",
     "js",
     "map",
     "photo-tag",
-    "ruminations",
     "who",
     "what",
     "when",
     "where"
 ]
+
+[featured_post]
+path = "ruminations"
 
 [site]
 name = "Trail Image"

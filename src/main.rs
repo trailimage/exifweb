@@ -13,7 +13,8 @@ mod tools;
 
 use colored::*;
 use config::{
-    BlogConfig, PhotoConfig, PostConfig, PostLog, SeriesConfig, CONFIG_FILE,
+    BlogConfig, FeaturedPost, PhotoConfig, PostConfig, PostLog, SeriesConfig,
+    CONFIG_FILE,
 };
 use image::exif_tool;
 use models::{collate_tags, Blog, Photo, Post};
@@ -125,13 +126,22 @@ fn main() {
     success_metric(render_count, "posts need rendered");
 
     if render_count > 0 {
-        blog.correlate_posts();
         blog.collate_tags();
+        blog.sanitize_exif(&config.photo.exif);
+
+        if let Some(p) = config.featured_post.and_then(|f| blog.get(&f.path)) {
+            config.featured_post = Some(FeaturedPost {
+                path: p.path.clone(),
+                title: p.title.clone(),
+            });
+            success_metric(1, "featured post");
+        } else {
+            config.featured_post = None;
+            success_metric(0, "featured posts");
+        }
 
         success_metric(blog.category_count(), "post categories");
         success_metric(blog.tag_count(), "unique photo tags");
-
-        blog.sanitize_exif(&config.photo.exif);
 
         let write = Writer::new(root, &config, &blog);
 
@@ -294,6 +304,7 @@ fn create_post(
             path: post_path,
             happened_on: log.happened_on,
             photo_count: log.photo_count,
+            chronological: post_config.chronological,
             needs_render: false,
             tags: log.tags.clone(),
             history: Some(log),
@@ -309,6 +320,7 @@ fn create_post(
                 Some(Post {
                     tags: collate_tags(&photos),
                     path: post_path,
+                    chronological: post_config.chronological,
                     happened_on: earliest_photo_date(&photos),
                     photo_count: photos.len(),
                     photos,

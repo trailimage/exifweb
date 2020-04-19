@@ -24,6 +24,12 @@ pub struct PostConfig {
     pub cover_photo_index: usize,
     /// YouTube ID used to embed video
     pub youtube_id: Option<String>,
+    #[serde(default = "chronological_default")]
+    pub chronological: bool,
+}
+
+fn chronological_default() -> bool {
+    true
 }
 
 impl PostConfig {

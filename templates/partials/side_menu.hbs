@@ -4,7 +4,9 @@
         <a href="/about" rel="author">About</a>
         {{!> contact_link!}}
         <a href="/photo-tag" rel="search">Photo Tags</a>
-        <a href="/ruminations">Ruminations</a>
+    {{~#if let Some(featured) = &config.featured_post }}
+        <a href="/{{{ featured.path }}}">{{ featured.title }}</a>
+    {{~/if }}
         <a href="/map" rel="home">Map</a>
     </nav>
     {{! when/where/who/what selectors loaded by /js/responsive.js !}}
