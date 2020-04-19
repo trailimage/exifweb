@@ -53,7 +53,9 @@ impl Blog {
                     {
                         Some(cat) => cat.post_paths.push(p.path.clone()),
                         None => {
-                            category_list.push(c.clone());
+                            let mut copy = c.clone();
+                            copy.post_paths.push(p.path.clone());
+                            category_list.push(copy);
                         }
                     }
                 }

@@ -1,4 +1,3 @@
-docs/**/*.png
 docs/**/*.tif
 docs/**/log.toml
 target/*

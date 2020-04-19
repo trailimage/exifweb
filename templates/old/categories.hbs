@@ -1,0 +1,9 @@
+{{#if this}}
+<nav class="tag-wrapper">
+	<ul class="tags">
+   {{#each this}}
+      <li><span>#</span><a href="/{{@key}}" rel="tag">{{this}}</a></li>
+   {{/each}}
+	</ul>
+</nav>
+{{/if}}
