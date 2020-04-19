@@ -21,12 +21,10 @@ pub fn collate_tags(photos: &Vec<Photo>) -> HashMap<String, TagPhotos<u8>> {
         for tag in photo.tags.iter() {
             let tag_slug = slugify(tag);
             match tags.get_mut(&tag_slug) {
-                Some(tag_photos) => {
-                    // add new photo path to existing tag
-                    tag_photos.photos.push(photo.index);
-                }
+                // add new photo path to existing tag
+                Some(tag_photos) => tag_photos.photos.push(photo.index),
+                // create new tag with photo path
                 _ => {
-                    // create new tag with photo path
                     tags.insert(
                         tag_slug,
                         TagPhotos {
