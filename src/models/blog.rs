@@ -12,18 +12,11 @@ struct KeyTime {
     /// Post `happened_on` date
     time: DateTime<FixedOffset>,
 }
-
-pub struct CategoryPosts {
-    pub name: String,
-    pub post_paths: Vec<String>,
-    pub kind: CategoryKind,
-}
-
 #[derive(Default)]
 pub struct Blog {
     /// Posts keyed to their slug
     pub posts: HashMap<String, Post>,
-    pub categories: Vec<CategoryPosts>,
+    pub categories: HashMap<CategoryKind, Vec<Category>>,
     /// Tag slugs mapped to the original tag names and photos with the tag
     pub tags: HashMap<String, TagPhotos<PhotoPath>>,
 }
@@ -33,10 +26,11 @@ impl Blog {
         if self.posts.contains_key(&p.path) {
             panic!("Attempt to insert duplicate post {}", p.path)
         }
-        for c in &p.categories {
-            self.add_category_post(c, &p)
-        }
+        // for c in &p.categories {
+        //     self.add_category_post(c, &p)
+        // }
 
+        self.add_post_categories(&p);
         self.posts.insert(p.path.clone(), p);
     }
 
@@ -49,22 +43,26 @@ impl Blog {
         }
     }
 
-    /// Get matching category or create and return the missing category
-    fn add_category_post(&mut self, c: &Category, p: &Post) {
-        let path = p.path.clone();
-
-        if let Some(category) = self
-            .categories
-            .iter_mut()
-            .find(|cp| cp.name == c.name && cp.kind == c.kind)
-        {
-            category.post_paths.push(path)
-        } else {
-            self.categories.push(CategoryPosts {
-                name: c.name.clone(),
-                kind: c.kind,
-                post_paths: vec![path],
-            });
+    fn add_post_categories(&mut self, p: &Post) {
+        for c in &p.categories {
+            match self.categories.get_mut(&c.kind) {
+                Some(category_list) => {
+                    match category_list
+                        .iter_mut()
+                        .find(|cat: &'_ &mut Category| cat.name == c.name)
+                    {
+                        Some(cat) => cat.post_paths.push(p.path.clone()),
+                        None => {
+                            category_list.push(c.clone());
+                        }
+                    }
+                }
+                None => {
+                    let mut copy = c.clone();
+                    copy.post_paths.push(p.path.clone());
+                    self.categories.insert(c.kind, vec![copy]);
+                }
+            };
         }
     }
 

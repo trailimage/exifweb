@@ -18,12 +18,14 @@
     </url>
     {{/each }}
     {{#each blog.categories }}
+        {{#each this.1 }}
     <url>
-        <loc>{{{ super::config.site.url }}}/{{ this.name }}</loc>
+        <loc>{{{ super::super::config.site.url }}}/{{ this.name }}</loc>
         <changefreq>monthly</changefreq>
         <priority>0.5</priority>
     </url>
-    {{/each}}
+        {{/each }}
+    {{/each }}
     {{#each blog.tags }}
     <url>
         <loc>{{{ super::config.site.url }}}/photo-tag/{{ this.0 }}</loc>

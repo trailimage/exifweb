@@ -27,7 +27,7 @@ pub struct PostConfig {
 }
 
 impl PostConfig {
-    /// Categories from configured category names
+    /// Categories derived from configuration
     pub fn categories(&self) -> Vec<Category> {
         let mut categories: Vec<Category> = vec![
             Category::new(

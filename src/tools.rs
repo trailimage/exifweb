@@ -166,8 +166,7 @@ fn boundary(numbers: &mut [i64], distance: f64) -> Option<Limits> {
 pub fn identify_outliers(photos: &mut Vec<Photo>) {
     let mut times: Vec<i64> = photos
         .iter()
-        .filter(|p| p.date_taken.is_some())
-        .map(|p: &Photo| p.date_taken.unwrap().timestamp())
+        .filter_map(|p: &Photo| p.date_taken.and_then(|d| Some(d.timestamp())))
         .collect();
 
     // TODO: review this fence distance — it is far from the standard values

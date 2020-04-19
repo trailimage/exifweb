@@ -76,6 +76,12 @@ struct AboutContext<'c> {
 }
 
 #[derive(Template)]
+#[template(path = "category-menu.hbs")]
+struct CategoryMenuContext<'c> {
+    pub blog: &'c Blog,
+}
+
+#[derive(Template)]
 #[template(path = "sitemap-xml.hbs")]
 struct SitemapContext<'c> {
     pub blog: &'c Blog,
@@ -95,9 +101,10 @@ pub fn write_post(root: &Path, config: &BlogConfig, blog: &Blog, post: &Post) {
     );
 }
 
-pub fn write_about(root: &Path, config: &BlogConfig) {
-    write_page(
-        &root.join("about").join("index.html"),
+pub fn write_about_page(root: &Path, config: &BlogConfig) {
+    write_default_page(
+        root,
+        "about",
         AboutContext {
             config,
             html: Helpers {},
@@ -106,10 +113,20 @@ pub fn write_about(root: &Path, config: &BlogConfig) {
     );
 }
 
+pub fn write_category_menu(root: &Path, blog: &Blog) {
+    write_default_page(root, "category-menu", CategoryMenuContext { blog });
+}
+
 pub fn write_sitemap(root: &Path, config: &BlogConfig, blog: &Blog) {
     write_page(&root.join("sitemap.xml"), SitemapContext { blog, config });
 }
 
+/// Render template and write content to "index.html" in `folder`
+fn write_default_page(root: &Path, folder: &str, template: impl Template) {
+    write_page(&root.join(folder).join("index.html"), template)
+}
+
+/// Render template write content to `path` file
 fn write_page(path: &Path, template: impl Template) {
     write_result(path, || template.call());
 }

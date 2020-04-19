@@ -24,6 +24,7 @@ trait ReadsEnv {
     fn from_env(&mut self);
 }
 
+// TODO: consider macro https://doc.rust-lang.org/std/macro.option_env.html
 /// Value of environment variable or empty string if not found
 fn env_or_empty(name: &str) -> String {
     env::var(name).unwrap_or("".to_string())

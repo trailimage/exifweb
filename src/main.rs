@@ -19,12 +19,14 @@ use image::exif_tool;
 use models::{collate_tags, Blog, Photo, Post};
 use std::{
     env,
-    fs::{self, DirEntry},
+    fs::{self, DirEntry, ReadDir},
     io,
     path::{Path, PathBuf},
     time::UNIX_EPOCH,
 };
-use template::{write_about, write_post, write_sitemap};
+use template::{
+    write_about_page, write_category_menu, write_post, write_sitemap,
+};
 use tools::{
     earliest_photo_date, final_path_name, identify_outliers, path_slice,
     pos_from_path,
@@ -141,7 +143,8 @@ fn main() {
             }
         }
         write_sitemap(root, &config, &blog);
-        write_about(root, &config);
+        write_about_page(root, &config);
+        write_category_menu(root, &blog);
     }
 }
 
@@ -154,8 +157,8 @@ fn success_metric(count: usize, label: &str) {
 fn load_series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
     let sub_dirs: Vec<PathBuf> = match fs::read_dir(&path) {
         Ok(entries) => entries
-            .map(|e| e.unwrap().path())
-            .filter(|p| p.is_dir())
+            .map(|e: io::Result<DirEntry>| e.unwrap().path())
+            .filter(|p: &'_ PathBuf| p.is_dir())
             .collect(),
         _ => {
             println!(
@@ -176,10 +179,9 @@ fn load_series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
         return Some(
             sub_dirs
                 .iter()
-                .map(|p| load_series_post(p.as_path(), config, &series_config))
-                // ignore None results (already logged to console)
-                .filter(|p| p.is_some())
-                .map(|p| p.unwrap())
+                .filter_map(|p| {
+                    load_series_post(p.as_path(), config, &series_config)
+                })
                 .collect(),
         );
     }

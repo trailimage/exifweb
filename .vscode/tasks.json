@@ -42,7 +42,7 @@
       "label": "Clean",
       "type": "shell",
       "command": "cargo",
-      "args": ["clean"],
+      "args": ["clean", "--package", "static-from-exif"],
       "presentation": {
         "echo": false,
         "clear": true

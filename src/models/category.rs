@@ -1,12 +1,19 @@
 use crate::tools::slugify;
 use std::fmt::{Display, Formatter, Result};
+use std::hash::{Hash, Hasher};
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum CategoryKind {
     Who,
     When,
     Where,
     What,
+}
+
+impl Hash for CategoryKind {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.to_string().hash(state);
+    }
 }
 
 impl Display for CategoryKind {
@@ -20,6 +27,7 @@ pub struct Category {
     pub slug: String,
     pub name: String,
     pub kind: CategoryKind,
+    pub post_paths: Vec<String>,
 }
 
 impl Category {
@@ -28,6 +36,7 @@ impl Category {
             name: name.to_owned(),
             kind,
             slug: format!("{}/{}", slugify(&kind.to_string()), slugify(&name)),
+            post_paths: Vec::new(),
         }
     }
 }

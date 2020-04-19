@@ -7,6 +7,8 @@ use crate::models::{Camera, ExposureMode, Location, Photo, SizeCollection};
 use crate::tools::pos_from_name;
 use chrono::{DateTime, FixedOffset};
 use colored::*;
+use lazy_static::*;
+use regex::Regex;
 use serde::Deserialize;
 use serde_json;
 use std::{mem, path::Path, process::Command};
@@ -163,9 +165,14 @@ impl Eq for ExifToolOutput {}
 /// Execute exif_tool for each image file in given `path` and capture output as
 /// `Photo` structs
 pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
+    lazy_static! {
+        /// Period followed by two or more non-periods at end of text
+        static ref FILE_EXT: Regex = Regex::new(r"\.[^\.]{2,}$").unwrap();
+    }
+
     read_dir(&path)
         .iter_mut()
-        .map(|i: &mut ExifToolOutput| {
+        .filter_map(|i: &mut ExifToolOutput| {
             // Photo index based on its file name pattern
             let index =
                 pos_from_name(&config.capture_index, &i.file_name).unwrap_or(0);
@@ -180,8 +187,7 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
             }
 
             let mut photo = Photo {
-                // TODO: make extension configurable or use regex
-                name: i.file_name.replace(".tif", ""),
+                name: FILE_EXT.replace(&i.file_name, "").to_string(),
                 title: mem::replace(&mut i.title, None),
                 artist: mem::replace(&mut i.artist, None),
                 caption: mem::replace(&mut i.caption, None)
@@ -230,8 +236,6 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
 
             Some(photo)
         })
-        .filter(|p| p.is_some())
-        .map(|p| p.unwrap())
         .collect()
 }
 

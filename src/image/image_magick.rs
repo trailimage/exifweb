@@ -62,7 +62,7 @@ struct ImageMagickInfo {
 pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
     read_dir(&path)
         .iter()
-        .map(|i| {
+        .filter_map(|i| {
             let index =
                 pos_from_name(&config.capture_index, &i.image.file_name)
                     .unwrap_or(0);
@@ -83,8 +83,6 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
                 ..Photo::default()
             })
         })
-        .filter(|p| p.is_some())
-        .map(|p| p.unwrap())
         .collect()
 }
 

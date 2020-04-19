@@ -10,6 +10,7 @@ redirects = [
 ]
 ignore_folders = [
     "about",
+    "category-menu",
     "css",
     "img",
     "js",
