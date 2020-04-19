@@ -13,12 +13,12 @@ pub type Pairs = Vec<(String, String)>;
 
 /// Convert vector of tuples, used in configuration, to hashmap of strings and
 /// regular expressions
-pub fn config_regex(pairs: Option<Pairs>) -> HashMap<String, Regex> {
+pub fn config_regex(pairs: &Option<Pairs>) -> HashMap<String, Regex> {
     let mut h: HashMap<String, Regex> = HashMap::new();
 
     if let Some(pair) = pairs {
         for p in pair {
-            h.insert(p.0, Regex::new(&p.1).unwrap());
+            h.insert(p.0.clone(), Regex::new(&p.1).unwrap());
         }
     }
     h

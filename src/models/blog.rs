@@ -14,7 +14,7 @@ struct KeyTime {
 }
 #[derive(Default)]
 pub struct Blog {
-    /// Posts keyed to their slug
+    /// Posts keyed to their path
     pub posts: HashMap<String, Post>,
     pub categories: HashMap<CategoryKind, Vec<Category>>,
     /// Tag slugs mapped to the original tag names and photos with the tag

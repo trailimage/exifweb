@@ -2,7 +2,7 @@
         <nav class="tag-wrapper">
             <ul class="tags">
                 {{~#each categories.as_slice() }}
-                <li><span>#</span><a href="/{{{ slug }}}" rel="tag">{{ name }}</a></li>
+                <li><span>#</span><a href="/{{{ path }}}" rel="tag">{{ name }}</a></li>
                 {{~/each }}
             </ul>
         </nav>

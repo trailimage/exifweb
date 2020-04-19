@@ -1,17 +1,25 @@
 //! Context and methods for rendering HTML templates
 
-use crate::{config::BlogConfig, html, tools::write_result, Blog, Post};
+use crate::{
+    config::BlogConfig,
+    html,
+    models::{Blog, Category, Post},
+    tools::{config_regex, final_path_name, write_result},
+};
 use chrono::{DateTime, FixedOffset, Local};
-use std::path::Path;
+use hashbrown::HashMap;
+use regex::Regex;
+use std::{fs, path::Path};
 use yarte::Template;
 
-// TODO: render category page
 // TODO: render category kind page
 // TODO: render photo tag page
-// TODO: render mobile menu
+// TODO: render map page
 
 /// Template rendering helpers
-struct Helpers {}
+pub struct Helpers {
+    mode_icons: HashMap<String, Regex>,
+}
 
 impl Helpers {
     pub fn icon(&self, name: &str) -> String {
@@ -22,6 +30,119 @@ impl Helpers {
     }
     pub fn date(&self, d: DateTime<FixedOffset>) -> String {
         html::date_string(d)
+    }
+    pub fn travel_icon(&self, categories: &Vec<Category>) -> String {
+        match html::travel_mode_icon(categories, &self.mode_icons) {
+            Some(icon) => icon,
+            None => String::new(),
+        }
+    }
+}
+
+/// Render template and write content to `path` file
+fn write_page(path: &Path, template: impl Template) {
+    write_result(path, || template.call());
+}
+
+/// Methods to render and write standard web pages with loaded configuration and
+/// models
+pub struct Writer<'a> {
+    config: &'a BlogConfig,
+    blog: &'a Blog,
+    helpers: Helpers,
+    root: &'a Path,
+}
+
+impl<'a> Writer<'a> {
+    pub fn new(root: &'a Path, config: &'a BlogConfig, blog: &'a Blog) -> Self {
+        Writer {
+            root,
+            blog,
+            config,
+            helpers: Helpers {
+                mode_icons: config_regex(&config.category.what_regex),
+            },
+        }
+    }
+
+    /// Render template and write content to "index.html" in `folder`
+    fn default_page(&self, folder: &str, template: impl Template) {
+        let path = self.root.join(folder);
+
+        if !path.is_dir() {
+            println!(
+                "   Attempting to create directory {}",
+                final_path_name(&path)
+            );
+            // ignore error here since it will be caught in the next step
+            fs::create_dir(&path).unwrap_or(());
+        }
+
+        write_page(&path.join("index.html"), template)
+    }
+
+    pub fn post(&self, post: &Post) {
+        self.default_page(
+            &post.path,
+            PostContext {
+                post,
+                blog: &self.blog,
+                config: &self.config,
+                html: &self.helpers,
+                feature: Features::default(),
+            },
+        );
+    }
+
+    pub fn category(&self, category: &Category) {
+        self.default_page(
+            &category.path,
+            CategoryContext {
+                category,
+                blog: &self.blog,
+                config: &self.config,
+                html: &self.helpers,
+                feature: Features::default(),
+            },
+        );
+    }
+
+    pub fn about_page(&self) {
+        self.default_page(
+            "about",
+            AboutContext {
+                config: &self.config,
+                html: &self.helpers,
+                feature: Features::new(true, false),
+            },
+        );
+    }
+
+    pub fn category_menu(&self) {
+        self.default_page(
+            "category-menu",
+            CategoryMenuContext { blog: &self.blog },
+        );
+    }
+
+    pub fn mobile_menu(&self) {
+        self.default_page(
+            "mobile-menu",
+            MobileMenuContext {
+                blog: &self.blog,
+                html: &self.helpers,
+            },
+        );
+    }
+
+    pub fn sitemap(&self) {
+        write_page(
+            &self.root.join("sitemap.xml"),
+            SitemapContext {
+                blog: &self.blog,
+                config: &self.config,
+            },
+        );
     }
 }
 
@@ -63,7 +184,18 @@ impl Features {
 struct PostContext<'c> {
     pub post: &'c Post,
     pub blog: &'c Blog,
-    pub html: Helpers,
+    pub html: &'c Helpers,
+    pub config: &'c BlogConfig,
+    pub feature: Features,
+}
+
+// TODO: re-use partials/category for post category list
+#[derive(Template)]
+#[template(path = "category.hbs")]
+struct CategoryContext<'c> {
+    pub html: &'c Helpers,
+    pub category: &'c Category,
+    pub blog: &'c Blog,
     pub config: &'c BlogConfig,
     pub feature: Features,
 }
@@ -73,79 +205,26 @@ struct PostContext<'c> {
 struct AboutContext<'c> {
     pub config: &'c BlogConfig,
     pub feature: Features,
-    pub html: Helpers,
+    pub html: &'c Helpers,
 }
 
+// TODO: render static map with photo locations
 #[derive(Template)]
-#[template(path = "category-menu.hbs")]
+#[template(path = "category_menu.hbs")]
 struct CategoryMenuContext<'c> {
     pub blog: &'c Blog,
 }
 
 #[derive(Template)]
-#[template(path = "mobile-menu.hbs")]
+#[template(path = "mobile_menu.hbs")]
 struct MobileMenuContext<'c> {
     pub blog: &'c Blog,
-    pub html: Helpers,
+    pub html: &'c Helpers,
 }
 
 #[derive(Template)]
-#[template(path = "sitemap-xml.hbs")]
+#[template(path = "sitemap_xml.hbs")]
 struct SitemapContext<'c> {
     pub blog: &'c Blog,
     pub config: &'c BlogConfig,
-}
-
-pub fn write_post(root: &Path, config: &BlogConfig, blog: &Blog, post: &Post) {
-    write_page(
-        &root.join(&post.path).join("index.html"),
-        PostContext {
-            post,
-            blog,
-            config,
-            html: Helpers {},
-            feature: Features::default(),
-        },
-    );
-}
-
-pub fn write_about_page(root: &Path, config: &BlogConfig) {
-    write_default_page(
-        root,
-        "about",
-        AboutContext {
-            config,
-            html: Helpers {},
-            feature: Features::new(true, false),
-        },
-    );
-}
-
-pub fn write_category_menu(root: &Path, blog: &Blog) {
-    write_default_page(root, "category-menu", CategoryMenuContext { blog });
-}
-
-pub fn write_mobile_menu(root: &Path, blog: &Blog) {
-    write_default_page(
-        root,
-        "mobile-menu",
-        MobileMenuContext {
-            blog,
-            html: Helpers {},
-        },
-    );
-}
-
-pub fn write_sitemap(root: &Path, config: &BlogConfig, blog: &Blog) {
-    write_page(&root.join("sitemap.xml"), SitemapContext { blog, config });
-}
-
-/// Render template and write content to "index.html" in `folder`
-fn write_default_page(root: &Path, folder: &str, template: impl Template) {
-    write_page(&root.join(folder).join("index.html"), template)
-}
-
-/// Render template write content to `path` file
-fn write_page(path: &Path, template: impl Template) {
-    write_result(path, || template.call());
 }

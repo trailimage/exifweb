@@ -1,4 +1,8 @@
-use crate::{config::CategoryConfig, tools::slugify};
+use crate::{
+    config::CategoryConfig,
+    models::{Category, CategoryKind},
+    tools::slugify,
+};
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 use lazy_static::*;
@@ -36,15 +40,20 @@ pub fn category_icon(kind: &str, config: &CategoryConfig) -> String {
 
 /// HTML tag for mode of travel category icon
 pub fn travel_mode_icon(
-    what_name: &str,
-    mode_icons: HashMap<String, Regex>,
+    categories: &Vec<Category>,
+    mode_icons: &HashMap<String, Regex>,
 ) -> Option<String> {
-    for (k, v) in mode_icons.iter() {
-        if v.is_match(&what_name) {
-            return Some(k.to_owned());
-        }
-    }
-    None
+    categories
+        .iter()
+        .find(|c: &'_ &Category| c.kind == CategoryKind::What)
+        .and_then(|c: &Category| {
+            for (icon_name, re) in mode_icons.iter() {
+                if re.is_match(&c.name) {
+                    return Some(icon_name.to_owned());
+                }
+            }
+            None
+        })
 }
 
 pub fn fraction(f: &str) -> String {
@@ -303,7 +312,10 @@ fn format_poem(text: &str) -> String {
 mod tests {
     use super::*;
     use crate::config::{CategoryConfig, CategoryIcon};
-    use crate::tools::config_regex;
+    use crate::{
+        models::{Category, CategoryKind},
+        tools::config_regex,
+    };
 
     const NEW_LINE: &str = "\r\n";
     const LIPSUM: &str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
@@ -387,8 +399,11 @@ mod tests {
             ]),
         };
 
+        let categories: Vec<Category> =
+            vec![Category::new("KTM", CategoryKind::What)];
+
         assert_eq!(
-            travel_mode_icon(&"KTM", config_regex(config.what_regex)),
+            travel_mode_icon(&categories, &config_regex(&config.what_regex)),
             Some("motorcycle".to_owned())
         );
     }

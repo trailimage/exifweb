@@ -19,15 +19,12 @@ use image::exif_tool;
 use models::{collate_tags, Blog, Photo, Post};
 use std::{
     env,
-    fs::{self, DirEntry, ReadDir},
+    fs::{self, DirEntry},
     io,
     path::{Path, PathBuf},
     time::UNIX_EPOCH,
 };
-use template::{
-    write_about_page, write_category_menu, write_mobile_menu, write_post,
-    write_sitemap,
-};
+use template::Writer;
 use tools::{
     earliest_photo_date, final_path_name, identify_outliers, path_slice,
     pos_from_path,
@@ -136,17 +133,25 @@ fn main() {
 
         blog.sanitize_exif(&config.photo.exif);
 
+        let write = Writer::new(root, &config, &blog);
+
         for (_, p) in &blog.posts {
             if p.needs_render {
-                write_post(root, &config, &blog, &p);
+                write.post(&p);
                 // TODO: spawn thread to write log
                 PostLog::write(root, p);
             }
         }
-        write_sitemap(root, &config, &blog);
-        write_about_page(root, &config);
-        write_category_menu(root, &blog);
-        write_mobile_menu(root, &blog);
+        write.sitemap();
+        write.about_page();
+        write.category_menu();
+        write.mobile_menu();
+
+        for (_, list) in &blog.categories {
+            for c in list {
+                write.category(&c);
+            }
+        }
     }
 }
 

@@ -17,7 +17,11 @@ ignore_folders = [
     "js",
     "map",
     "photo-tag",
-    "ruminations"
+    "ruminations",
+    "who",
+    "what",
+    "when",
+    "where"
 ]
 
 [site]

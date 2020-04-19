@@ -24,7 +24,7 @@ impl Display for CategoryKind {
 
 #[derive(Debug, Clone)]
 pub struct Category {
-    pub slug: String,
+    pub path: String,
     pub name: String,
     pub kind: CategoryKind,
     pub post_paths: Vec<String>,
@@ -35,7 +35,7 @@ impl Category {
         Category {
             name: name.to_owned(),
             kind,
-            slug: format!("{}/{}", slugify(&kind.to_string()), slugify(&name)),
+            path: format!("{}/{}", slugify(&kind.to_string()), slugify(&name)),
             post_paths: Vec::new(),
         }
     }

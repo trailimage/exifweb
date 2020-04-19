@@ -27,11 +27,9 @@
 
     {{> side_menu }}
 
-    {{~#if !post.summary.is_empty() }}
     <div class="synopsis content">
         <p>{{ post.summary }}</p>
     </div>
-    {{~/if}}
 
     <div class="post content">
     {{~#unless post.featured }}
