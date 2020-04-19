@@ -1,6 +1,8 @@
-use crate::models::{Category, Photo};
-use chrono::{DateTime, FixedOffset};
+use crate::config::PostLog;
+use crate::models::{Category, Photo, TagPhotos};
+use chrono::{DateTime, FixedOffset, Local};
 use core::cmp::Ordering;
+use hashbrown::HashMap;
 
 #[derive(Debug)]
 pub struct Post {
@@ -26,17 +28,23 @@ pub struct Post {
     /// Title of the post. For series, this will be the series title and the
     /// configured post title will become the `sub_title`.
     pub title: String,
+
     /// Subtitle of the post. For series, this will be the title the post was
     /// configured with while the post's `title` will be series title.
     pub sub_title: String,
+
     //pub original_title: String,
     pub summary: String,
 
     /// Whether post pictures occurred sequentially in a specific time range as
     /// opposed to, for example, a themed set of images from various times
     pub chronological: bool,
+
     /// Whether post is featured in main navigation (implies not chronological)
     pub featured: bool,
+
+    /// Photos found for the post. If post data were loaded from a previous
+    /// render log then this will be empty.
     pub photos: Vec<Photo>,
 
     /// Next chronological post path (newer)
@@ -63,14 +71,26 @@ pub struct Post {
 
     pub photo_count: usize,
 
-    /// Whether post photos or configuration has changed, requiring re-render
-    pub changed: bool,
+    /// If post photos or configuration have changed, or an adjacent post has
+    /// changed, then the post should be re-rendered.
+    ///
+    /// Posts that haven't changed don't re-parse their photos so `photos` is
+    /// an empty vector.
+    pub needs_render: bool,
+
+    /// Zero-based index of cover photo within vector of photos
+    pub cover_photo_index: usize,
+
+    pub tags: HashMap<String, TagPhotos>,
+
+    /// Information about previous post photos and configuration
+    pub history: Option<PostLog>,
 }
 
 impl Post {
     /// First photo flagged as `primary`
     pub fn cover_photo(&self) -> Option<&Photo> {
-        self.photos.iter().find(|p| p.primary)
+        self.photos.get(self.cover_photo_index)
     }
 }
 
@@ -107,8 +127,11 @@ impl Default for Post {
             categories: Vec::new(),
 
             photo_count: 0,
-            // mark as changed to cause render
-            changed: true,
+            cover_photo_index: 0,
+            needs_render: true,
+
+            tags: HashMap::new(),
+            history: None,
         }
     }
 }

@@ -8,7 +8,7 @@ edition = "2018"
 colored = "1.9"
 encoding = "0.2"
 kamadak-exif = "0.5"
-hashbrown = "0.7"
+hashbrown = { version = "0.7", features = ["serde"] }
 lazy_static = "1"
 chrono = { version = "0.4", features = ["serde"] }
 toml = "0.5"

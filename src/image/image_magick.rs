@@ -1,13 +1,11 @@
 use crate::models::Photo;
-use crate::tools::{path_name, pos_from_name};
+use crate::tools::{final_path_name, pos_from_name};
 use colored::*;
-use encoding::all::*;
-use encoding::{DecoderTrap, Encoding};
+use encoding::{all::*, DecoderTrap, Encoding};
 use regex::Regex;
 use serde::Deserialize;
 use serde_json;
-use std::path::Path;
-use std::process::Command;
+use std::{path::Path, process::Command};
 
 // https://www.awaresystems.be/imaging/tiff/tifftags/private.html
 #[derive(Deserialize, Debug)]
@@ -84,7 +82,6 @@ pub fn parse_dir(
             Some(Photo {
                 name: i.image.file_name.to_owned(),
                 index,
-                primary: index == cover_index,
                 ..Photo::default()
             })
         })
@@ -109,7 +106,7 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
             println!(
                 "{:>3} {}",
                 "Failed to generate EXIF for".red(),
-                path_name(&path).magenta(),
+                final_path_name(&path).magenta(),
             );
             return Vec::new();
         }
@@ -122,7 +119,7 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
             println!(
                 "{:>3} {}",
                 "Failed to convert EXIF output to UTF-8 for".red(),
-                path_name(&path).magenta(),
+                final_path_name(&path).magenta(),
             );
             return Vec::new();
         }
@@ -132,7 +129,7 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
         println!(
             "{} {}",
             "EXIF JSON is empty for".red(),
-            path_name(&path).magenta()
+            final_path_name(&path).magenta()
         );
         return Vec::new();
     }
@@ -143,7 +140,7 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
             println!(
                 "{:>3} {}",
                 "Unable to parse EXIF JSON for".red(),
-                path_name(&path).magenta(),
+                final_path_name(&path).magenta(),
             );
             println!("{}", text);
             println!("{:?}", e);

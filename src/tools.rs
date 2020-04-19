@@ -3,7 +3,10 @@ use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 use lazy_static::*;
 use regex::Regex;
-use std::path::{Path, PathBuf};
+use std::{
+    error, fs,
+    path::{Path, PathBuf},
+};
 
 /// Hash represented as vector of string tuples
 pub type Pairs = Vec<(String, String)>;
@@ -23,14 +26,20 @@ pub fn config_regex(pairs: Option<Pairs>) -> HashMap<String, Regex> {
 
 /// Whether path ends with an extension
 pub fn has_ext(p: &PathBuf, ext: &str) -> bool {
-    path_name(p).ends_with(ext)
+    final_path_name(p).ends_with(ext)
 }
 
-/// Convert path name to printable string (ignores errors)
-pub fn path_name(path: &Path) -> &str {
+/// Convert path end name to printable string (ignores errors)
+pub fn final_path_name(path: &Path) -> &str {
     path.file_name().unwrap().to_str().unwrap()
 }
 
+/// End portion of path with given depth
+///
+/// *Examples*
+/// - `path_slice("some/long/path", 1)` => "path"
+/// - `path_slice("some/long/path", 2)` => "long/path"
+///
 pub fn path_slice(path: &Path, depth: usize) -> String {
     lazy_static! {
         static ref SLASH: Regex = Regex::new(r"[/\\]+").unwrap();
@@ -41,12 +50,13 @@ pub fn path_slice(path: &Path, depth: usize) -> String {
     parts[(end - depth)..end].join("/")
 }
 
+// TODO: create deserializer to turn sanitize-pairs into regex
 /// Update text by replacing source with target values from a `Pairs` hash
 pub fn replace_pairs(text: String, pairs: &[(String, String)]) -> String {
     let mut clean = text;
-    for (x, y) in pairs {
-        if clean.starts_with(x) {
-            clean = clean.replace(x, y);
+    for (pattern, replacement) in pairs {
+        if clean.starts_with(pattern) {
+            clean = clean.replace(pattern, replacement);
         }
     }
     clean
@@ -54,7 +64,7 @@ pub fn replace_pairs(text: String, pairs: &[(String, String)]) -> String {
 
 /// Use regex to capture position value from path (ignores errors)
 pub fn pos_from_path(re: &Regex, path: &Path) -> Option<u8> {
-    pos_from_name(re, path_name(&path))
+    pos_from_name(re, final_path_name(&path))
 }
 
 /// Use regex to capture position value from file name (ignores errors)
@@ -145,8 +155,11 @@ fn boundary(numbers: &mut [i64], distance: f64) -> Option<Limits> {
     })
 }
 
+// TODO: outlier formula seems overly complicated — maybe just discard any
+// photo with a gap of more than a day from the rest
+
 /// Simplistic outlier calculation identifies photos that are likely not part of
-/// the main sequence because of a large date deviation
+/// the main sequence because of a large `date_taken` deviation
 ///
 /// - https://en.wikipedia.org/wiki/Outlier
 /// - http://www.wikihow.com/Calculate-Outliers
@@ -157,12 +170,14 @@ pub fn identify_outliers(photos: &mut Vec<Photo>) {
         .map(|p: &Photo| p.date_taken.unwrap().timestamp())
         .collect();
 
+    // TODO: review this fence distance — it is far from the standard values
     if let Some(fence) = boundary(&mut times[..], 0.05) {
         for mut p in photos {
             if p.date_taken.is_none() {
                 continue;
             }
             let d = p.date_taken.unwrap().timestamp() as f64;
+
             if d > fence.max || d < fence.min {
                 p.outlier_date = true;
             }
@@ -170,7 +185,8 @@ pub fn identify_outliers(photos: &mut Vec<Photo>) {
     }
 }
 
-/// Earliest pertinent (not an outlier) date in a list of photos
+/// Earliest pertinent (not an outlier) date in a list of photos. This assumes
+/// `identify_outliers()` has already processed the `photos`.
 pub fn earliest_photo_date(
     photos: &Vec<Photo>,
 ) -> Option<DateTime<FixedOffset>> {
@@ -189,11 +205,33 @@ pub fn earliest_photo_date(
     }
 }
 
+/// Write result of `to_string()` closure, printing but otherwise swallowing
+/// any errors that occur
+pub fn write_result<E: error::Error, F: FnOnce() -> Result<String, E>>(
+    path: &Path,
+    to_string: F,
+) {
+    match to_string() {
+        Ok(text) => {
+            match fs::write(path, &text) {
+                Ok(_) => (),
+                Err(e) => {
+                    eprintln!("Error writing {} {:?}", final_path_name(path), e)
+                }
+            };
+            return;
+        }
+        Err(e) => {
+            eprintln!("Error serializing {} {:?}", final_path_name(path), e)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        boundary, earliest_photo_date, identify_outliers, median, path_name,
-        path_slice, slugify, Limits,
+        boundary, earliest_photo_date, final_path_name, identify_outliers,
+        median, path_slice, slugify, Limits,
     };
     use crate::Photo;
     use chrono::DateTime;
@@ -221,9 +259,9 @@ mod tests {
     }
 
     #[test]
-    fn path_name_test() {
+    fn path_end_name_test() {
         let path = Path::new("./docs/something/else");
-        assert_eq!(path_name(path), "else");
+        assert_eq!(final_path_name(path), "else");
     }
 
     #[test]

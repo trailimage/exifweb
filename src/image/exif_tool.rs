@@ -160,12 +160,13 @@ impl PartialEq for ExifToolOutput {
 
 impl Eq for ExifToolOutput {}
 
-/// Execute exif_tool for each image file in given `path` and capture output
-pub fn parse_dir(
-    path: &Path,
-    cover_index: u8,
-    infer_pos: &Regex,
-) -> Vec<Photo> {
+/// Execute exif_tool for each image file in given `path` and capture output as
+/// `Photo` structs
+///
+/// - `infer_pos`: capture pattern to retrieve one-based photo index from file
+///    name, used to sort the photos
+///
+pub fn parse_dir(path: &Path, infer_pos: &Regex) -> Vec<Photo> {
     read_dir(&path)
         .iter_mut()
         .map(|i: &mut ExifToolOutput| {
@@ -190,7 +191,6 @@ pub fn parse_dir(
                 software: mem::replace(&mut i.software, String::new()),
                 tags: mem::replace(&mut i.tags, Vec::new()),
                 index,
-                primary: index == cover_index,
                 width: i.width,
                 height: i.height,
                 date_taken: if i.taken_on.is_some() {

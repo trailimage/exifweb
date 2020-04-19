@@ -3,7 +3,8 @@ use crate::num_traits::FromPrimitive;
 use crate::tools::replace_pairs;
 use chrono::{DateTime, FixedOffset};
 use core::cmp::Ordering;
-use serde::{de, Deserialize, Deserializer};
+use fmt::Display;
+use serde::{de, Deserialize, Deserializer, Serialize};
 use std::{fmt, marker::Copy};
 
 /// Latitude and longitude in degrees
@@ -67,6 +68,23 @@ impl<'de> Deserialize<'de> for ExposureMode {
     }
 }
 
+impl Display for ExposureMode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            ExposureMode::Undefined => f.write_str("Unknown"),
+            ExposureMode::Manual => f.write_str("Manual"),
+            ExposureMode::ProgramAE => f.write_str("Program AE"),
+            ExposureMode::AperturePriority => f.write_str("Aperture Priority"),
+            ExposureMode::ShutterPriority => f.write_str("Shutter Priority"),
+            ExposureMode::Creative => f.write_str("Creative Mode"),
+            ExposureMode::Action => f.write_str("Action Mode"),
+            ExposureMode::Portrait => f.write_str("Portrait Mode"),
+            ExposureMode::Landscape => f.write_str("Landscape Mode"),
+            ExposureMode::Bulb => f.write_str("Bulb Flash"),
+        }
+    }
+}
+
 struct ExposureModeVisitor;
 
 impl<'de> de::Visitor<'de> for ExposureModeVisitor {
@@ -82,6 +100,14 @@ impl<'de> de::Visitor<'de> for ExposureModeVisitor {
     {
         Ok(ExposureMode::from_u64(value).unwrap())
     }
+}
+
+/// Unique path to any blog photo
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PhotoPath {
+    pub post_path: String,
+    /// Photo file name without extension
+    pub photo_name: String,
 }
 
 /// Information about the camera used to make the photo.
@@ -120,17 +146,14 @@ pub struct Photo {
     pub index: u8,
     /// Tags applied to the photo
     pub tags: Vec<String>,
-    /// Whether this is the post's main photo
-    pub primary: bool,
     /// When the photograph was taken per camera EXIF
     pub date_taken: Option<DateTime<FixedOffset>>,
 
-    /// Whether taken date is an outlier compared to other photos in the same
-    /// post. Outliers may be removed from mini-maps so the maps aren't overly
-    /// zoomed-out to accomodate contextual photos taken days before or after
-    /// the main post.
+    /// Whether taken date is an outlier (such an historic photo) compared to
+    /// other photos in the same post. Outliers may be removed from mini-maps so
+    /// the maps aren't overly zoomed-out.
     ///
-    /// See http://www.wikihow.com/Calculate-Outliers
+    /// http://www.wikihow.com/Calculate-Outliers
     pub outlier_date: bool,
 
     /// Whether values have been formatted based on configuration
@@ -158,6 +181,7 @@ impl Photo {
 
         if let Some(l) = &self.location {
             if !l.is_valid() {
+                // remove invalid location
                 self.location = None;
             }
         }
@@ -168,13 +192,13 @@ impl Photo {
 
 impl PartialOrd for Photo {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.name.partial_cmp(&other.name)
+        self.index.partial_cmp(&other.index)
     }
 }
 
 impl Ord for Photo {
     fn cmp(&self, other: &Photo) -> Ordering {
-        self.name.cmp(&other.name)
+        self.index.cmp(&other.index)
     }
 }
 
@@ -198,7 +222,6 @@ impl Default for Photo {
             location: None,
             index: 0,
             tags: Vec::new(),
-            primary: false,
             date_taken: None,
             outlier_date: false,
             sanitized: false,

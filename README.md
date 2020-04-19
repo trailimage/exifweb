@@ -2,11 +2,6 @@
 
 Create static photo blog pages by reading photo EXIF and TOML configuration files.
 
-## TODO
-
-- Read gpx file to generate track information
-- Pre-generate mini-maps
-
 ## Goals
 
 - Rich photo blog pages

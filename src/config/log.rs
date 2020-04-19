@@ -1,70 +1,77 @@
 //! TOML photo log
 
 use super::load_toml;
-use crate::models::Photo;
+use crate::models::{Post, TagPhotos};
+use crate::tools::write_result;
 use chrono::{DateTime, FixedOffset, Local};
+use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
-use std::{fs, path::Path};
+use std::path::Path;
 
-/// File the stores photo tag information and last process time
+/// File that stores photo tag information and last process time
 static LOG_FILE: &str = "log.toml";
 
 /// Log processed photo information per post folder to determine when
-/// re-processing is necessary
-// TODO: log all values needed to render navigation for before/after posts
+/// re-processing is necessary. Re-rendering is triggered when
+///
+/// - the configuration file or a photo has a modified date newer than
+///   the `processed` time
+/// - the number of photos has changed
+/// - adjacent post paths have changed
+///
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PostLog {
+    pub next_path: String,
+    pub prev_path: String,
+
     /// Date of first relevant (not an outlier) photo in folder
-    pub when: Option<DateTime<FixedOffset>>,
-    /// When folder was last processed
-    pub processed: DateTime<Local>,
+    pub happened_on: Option<DateTime<FixedOffset>>,
+    /// When post data were last loaded
+    pub as_of: DateTime<Local>,
     /// Number of photos in the post. If this changes then the post needs to be
     /// re-rendered.
     pub photo_count: usize,
-    /// Photo tags
-    /// // TODO: I think these need to be tags that map to photos
-    pub tags: Vec<String>,
+    /// Photo tags keyed by their slug to the photos they were assigned to.
+    /// These need to be logged so
+    pub tags: HashMap<String, TagPhotos>,
 }
 
 impl PostLog {
     /// Save information about loaded photos to avoid unecessary re-processing
-    pub fn write(
-        path: &Path,
-        earliest_date: Option<DateTime<FixedOffset>>,
-        photos: &Vec<Photo>,
-    ) {
-        let mut tags: Vec<String> = Vec::new();
-
-        for p in photos.iter() {
-            for t in p.tags.iter() {
-                if !tags.contains(&t) {
-                    tags.push(t.clone())
-                }
-            }
-        }
-
-        tags.sort();
-
+    pub fn write(root: &Path, post: &Post) {
         let log = PostLog {
-            when: earliest_date,
-            tags,
-            photo_count: photos.len(),
-            processed: Local::now(),
+            prev_path: post.prev_path.clone(),
+            next_path: post.next_path.clone(),
+            happened_on: post.happened_on,
+            photo_count: post.photo_count,
+            as_of: Local::now(),
+            tags: post.tags.clone(),
         };
+        let path = root.join(&post.path).join(LOG_FILE);
 
-        match toml::to_string(&log) {
-            Ok(content) => {
-                match fs::write(path.join(LOG_FILE), &content) {
-                    Ok(_) => (),
-                    Err(e) => eprintln!("Error writing {:?}", e),
-                };
-                return;
-            }
-            Err(e) => eprintln!("Error serializaing {:?}", e),
-        }
+        write_result(&path, || toml::to_string(&log));
     }
 
     pub fn load(path: &Path) -> Option<Self> {
-        load_toml(path, LOG_FILE)
+        load_toml(path, LOG_FILE, false)
+    }
+}
+
+impl Clone for PostLog {
+    fn clone(&self) -> Self {
+        let mut tags: HashMap<String, TagPhotos> = HashMap::new();
+
+        for (slug, tag_photos) in self.tags.iter() {
+            tags.insert(slug.to_string(), tag_photos.clone());
+        }
+
+        PostLog {
+            next_path: self.next_path.clone(),
+            prev_path: self.prev_path.clone(),
+            happened_on: self.happened_on,
+            as_of: self.as_of,
+            photo_count: self.photo_count,
+            tags,
+        }
     }
 }

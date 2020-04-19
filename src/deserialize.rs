@@ -145,7 +145,7 @@ mod tests {
     use super::{
         date_time_string, regex_string, string_number, string_sequence,
     };
-    use chrono::{DateTime, FixedOffset, Local};
+    use chrono::{DateTime, FixedOffset};
     use regex::Regex;
     use serde::Deserialize;
     use serde_json::from_str;

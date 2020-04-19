@@ -21,7 +21,7 @@
             </div>
         {{~/if }}
         {{~#if let Some(d) = post.happened_on }}
-            <div id="post-date">{{ d.to_rfc3339() }}</div>
+            <div id="post-date">{{ html.date(d) }}</div>
         {{~/if }}
     {{~/header }}
 

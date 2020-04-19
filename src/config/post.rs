@@ -21,7 +21,7 @@ pub struct PostConfig {
     #[serde(rename = "categories")]
     pub category_list: PostCategories,
     /// One-based index of cover photo
-    pub cover_photo_index: u8,
+    pub cover_photo_index: usize,
     /// YouTube ID used to embed video
     pub youtube_id: Option<String>,
 }

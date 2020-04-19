@@ -1,4 +1,5 @@
 use crate::{config::CategoryConfig, tools::slugify};
+use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 use lazy_static::*;
 use regex::{Captures, NoExpand, Regex};
@@ -14,6 +15,11 @@ lazy_static! {
 /// https://material.io/icons/
 pub fn icon_tag(name: &str) -> String {
     format!("<i class=\"material-icons {}\">{}</i>", name, name)
+}
+
+/// Month Day, Year (March 15, 1973)
+pub fn date_string(d: DateTime<FixedOffset>) -> String {
+    d.format("%B %e, %Y").to_string()
 }
 
 /// HTML tag for post category icon

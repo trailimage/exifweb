@@ -1,6 +1,7 @@
-use crate::config::ExifConfig;
-use crate::tools::slugify;
-use crate::{Category, CategoryKind, Post};
+use crate::config::{ExifConfig, PostLog};
+use crate::models::{
+    Category, CategoryKind, Photo, PhotoPath, Post, TagPhotos,
+};
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 
@@ -10,20 +11,6 @@ struct KeyTime {
     path: String,
     /// Post `happened_on` date
     time: DateTime<FixedOffset>,
-}
-
-/// Unique path to any blog photo
-pub struct PhotoPath {
-    pub post_path: String,
-    /// Photo file name without extension
-    pub photo_name: String,
-}
-
-pub struct TagPhotos {
-    /// Original tag name (not slugified)
-    pub name: String,
-    /// Photos that have the tag applied
-    pub photos: Vec<PhotoPath>,
 }
 
 pub struct CategoryPosts {
@@ -53,6 +40,15 @@ impl Blog {
         self.posts.insert(p.path.clone(), p);
     }
 
+    pub fn add_post_photos(&mut self, path: &String, photos: &mut Vec<Photo>) {
+        if photos.is_empty() {
+            return;
+        }
+        if let Some(post) = self.posts.get_mut(path) {
+            post.photos.append(photos);
+        }
+    }
+
     /// Get matching category or create and return the missing category
     fn add_category_post(&mut self, c: &Category, p: &Post) {
         let path = p.path.clone();
@@ -72,18 +68,18 @@ impl Blog {
         }
     }
 
-    /// Number of changed posts
-    pub fn changed_count(&self) -> usize {
+    /// Number of posts needing to be rendered
+    pub fn needs_render_count(&self) -> usize {
         let mut total: usize = 0;
         for (_, p) in &self.posts {
-            if p.changed {
+            if p.needs_render {
                 total += 1;
             }
         }
         total
     }
 
-    /// Post with path
+    /// Retrieve post with path
     pub fn get(&self, path: &str) -> Option<&Post> {
         if path.is_empty() {
             None
@@ -110,7 +106,12 @@ impl Blog {
     }
 
     /// Update post `prev_key` and `next_key` based on chronological ordering
-    pub fn correlate_posts(&mut self) {
+    /// and return paths to all posts that
+    ///
+    /// - had different values the last time they were loaded
+    /// - and are not already flagged to be rendered
+    ///
+    pub fn correlate_posts(&mut self) -> Vec<String> {
         let mut ordered: Vec<KeyTime> = Vec::new();
 
         for kt in self
@@ -143,6 +144,27 @@ impl Blog {
                 eprintln!("Post {} is not chronological", k);
             }
         }
+
+        self.sequence_changed_posts()
+    }
+
+    /// Return paths to all posts that have a different `prev_path` or
+    /// `next_path` than the last time they were loaded
+    fn sequence_changed_posts(&mut self) -> Vec<String> {
+        let mut paths: Vec<String> = Vec::new();
+
+        for (path, p) in self.posts.iter_mut() {
+            if p.needs_render || p.history.is_none() {
+                continue;
+            }
+            let log: &PostLog = Option::as_ref(&p.history).unwrap();
+
+            if log.prev_path != p.prev_path || log.next_path != p.next_path {
+                p.needs_render = true;
+                paths.push(path.clone());
+            }
+        }
+        paths
     }
 
     /// Sanitize camera informaton in all post photos
@@ -160,28 +182,27 @@ impl Blog {
         let mut tags: HashMap<String, TagPhotos> = HashMap::new();
 
         for (_, p) in self.posts.iter() {
-            for photo in p.photos.iter() {
-                for tag in photo.tags.iter() {
-                    let tag_slug = slugify(tag);
-                    let photo_path = PhotoPath {
-                        post_path: p.path.clone(),
-                        photo_name: photo.name.clone(),
-                    };
-                    match tags.get_mut(&tag_slug) {
-                        Some(tag_photos) => {
-                            // add new photo path to existing tag
-                            tag_photos.photos.push(photo_path);
-                        }
-                        _ => {
-                            // create new tag with photo path
-                            tags.insert(
-                                tag_slug,
-                                TagPhotos {
-                                    name: tag.clone(),
-                                    photos: vec![photo_path],
-                                },
-                            );
-                        }
+            for (slug, post_tag) in p.tags.iter() {
+                let mut photo_paths: Vec<PhotoPath> = post_tag
+                    .photos
+                    .iter()
+                    .map(|p: &PhotoPath| p.clone())
+                    .collect();
+
+                match tags.get_mut(slug) {
+                    Some(tag_photos) => {
+                        // add post photo paths to existing tag
+                        tag_photos.photos.append(photo_paths.as_mut());
+                    }
+                    _ => {
+                        // create new tag with photo path
+                        tags.insert(
+                            slug.clone(),
+                            TagPhotos {
+                                name: post_tag.name.clone(),
+                                photos: photo_paths,
+                            },
+                        );
                     }
                 }
             }

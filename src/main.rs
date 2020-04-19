@@ -12,11 +12,10 @@ mod template;
 mod tools;
 
 use ::regex::Regex;
-use chrono::{DateTime, FixedOffset};
 use colored::*;
 use config::{BlogConfig, PostConfig, PostLog, SeriesConfig, CONFIG_FILE};
 use image::exif_tool;
-use models::{Blog, Category, CategoryKind, Photo, Post};
+use models::{collate_tags, Blog, Photo, Post};
 use std::{
     env,
     fs::{self, DirEntry},
@@ -26,9 +25,12 @@ use std::{
 };
 use template::{write_about, write_post, write_sitemap};
 use tools::{
-    earliest_photo_date, identify_outliers, path_name, path_slice,
+    earliest_photo_date, final_path_name, identify_outliers, path_slice,
     pos_from_path,
 };
+
+// TODO: generate mini maps
+// TODO: read and process GPX files
 
 fn main() {
     // GitHub pages feature requires root at / or /docs
@@ -47,7 +49,7 @@ fn main() {
             println!(
                 "{} {}",
                 "Failed to open root directory".red(),
-                path_name(root).red()
+                final_path_name(root).red()
             );
             return;
         }
@@ -68,12 +70,12 @@ fn main() {
     // iterate over every file or subdirectory within root
     for entry in entries {
         let path: PathBuf = entry.unwrap().path();
-        let dir_name: &str = path_name(&path);
+        let dir_name: &str = final_path_name(&path);
 
         if !path.is_dir()
             || config.ignore_folders.contains(&dir_name.to_string())
         {
-            // ignore root files and configured folders
+            // ignore root files and specified folders
             continue;
         }
 
@@ -104,13 +106,27 @@ fn main() {
         }
     }
 
-    let changed_count = blog.changed_count();
+    // TODO: spawn thread to write log
+    //PostLog::write(path, happened_on, tags, &photos);
 
     print!("\n");
     success_metric(blog.post_count(), "total posts");
-    success_metric(changed_count, "changed posts");
 
-    if !blog.is_empty() && changed_count > 0 {
+    if blog.is_empty() {
+        return;
+    }
+
+    let sequence_changed = blog.correlate_posts();
+
+    // Previously loaded posts that haven't changed but have different previous
+    // or next posts need to be re-rendered to update navigation HTML
+    load_post_photos(root, &config, &mut blog, &sequence_changed);
+
+    let render_count = blog.needs_render_count();
+
+    success_metric(render_count, "posts need rendered");
+
+    if render_count > 0 {
         blog.correlate_posts();
         blog.collate_tags();
 
@@ -120,8 +136,9 @@ fn main() {
         blog.sanitize_exif(&config.photo.exif);
 
         for (_, p) in &blog.posts {
-            if p.changed {
-                write_post(root, &config, &blog, &p)
+            if p.needs_render {
+                write_post(root, &config, &blog, &p);
+                PostLog::write(root, p);
             }
         }
         write_sitemap(root, &config, &blog);
@@ -145,7 +162,7 @@ fn load_series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
             println!(
                 "   {} {}",
                 "Failed to open subdirectory".red(),
-                path_name(&path).red().bold()
+                final_path_name(&path).red().bold()
             );
             return None;
         }
@@ -186,10 +203,9 @@ fn load_series_post(
     }
 
     PostConfig::load(&path).and_then(|post_config| {
-        post_from_log_or_photos(path, config, &post_config).and_then(|p| {
+        create_post(path, true, config, &post_config).and_then(|p| {
             Some(Post {
                 categories: post_config.categories(),
-                path: path_slice(path, 1),
                 part,
                 total_parts: series_config.parts,
                 is_partial: true,
@@ -207,10 +223,9 @@ fn load_series_post(
 /// Create post that is not part of a series
 fn load_post(path: &Path, config: &BlogConfig) -> Option<Post> {
     PostConfig::load(&path).and_then(|post_config| {
-        post_from_log_or_photos(path, config, &post_config).and_then(|p| {
+        create_post(path, false, config, &post_config).and_then(|p| {
             Some(Post {
                 categories: post_config.categories(),
-                path: path_slice(path, 1),
                 title: post_config.title,
                 summary: post_config.summary,
                 ..p
@@ -219,54 +234,75 @@ fn load_post(path: &Path, config: &BlogConfig) -> Option<Post> {
     })
 }
 
-/// Load information about each post photo
-fn load_photos(
-    path: &Path,
-    re: &Regex,
-    cover_photo_index: u8,
-) -> (Vec<Photo>, Option<DateTime<FixedOffset>>) {
-    let mut photos: Vec<Photo> =
-        exif_tool::parse_dir(&path, cover_photo_index, &re);
+/// Load photos for all posts with given `paths`. This may be used to populate
+/// posts initially created from a log file but then found to have changed
+/// sequence (different next or previous post), requiring a re-render which
+/// needs complete photo information.
+fn load_post_photos(
+    root: &Path,
+    config: &BlogConfig,
+    blog: &mut Blog,
+    paths: &Vec<String>,
+) {
+    for path in paths.iter() {
+        println!(" Attempting to add photos to {}", path);
 
-    if photos.is_empty() {
-        println!("   {}", "found no photos".red());
+        let mut photos =
+            load_photos(&root.join(path), &config.photo.capture_index);
 
-        (photos, None)
-    } else {
-        identify_outliers(&mut photos);
-        let happened_on = earliest_photo_date(&photos);
-
-        PostLog::write(path, happened_on, &photos);
-
-        (photos, happened_on)
+        blog.add_post_photos(path, &mut photos)
     }
 }
 
-/// Load basic post from previous render log or by reading photo files
-fn post_from_log_or_photos(
+/// Load information about each photo in `path`
+///
+/// - `capture_photo_index` Photos will be sorted with the index captured with
+///    this pattern
+///
+fn load_photos(path: &Path, capture_photo_index: &Regex) -> Vec<Photo> {
+    let mut photos: Vec<Photo> =
+        exif_tool::parse_dir(&path, &capture_photo_index);
+
+    if photos.is_empty() {
+        println!("   {}", "found no photos".red());
+    } else {
+        identify_outliers(&mut photos);
+        photos.sort();
+    }
+    photos
+}
+
+/// Load basic post data from previous render log or by reading photo files
+fn create_post(
     path: &Path,
+    is_series: bool,
     config: &BlogConfig,
     post_config: &PostConfig,
 ) -> Option<Post> {
+    // path to series post includes parent
+    let post_path = path_slice(path, if is_series { 2 } else { 1 });
+
     match load_post_log(path) {
         Some(log) => Some(Post {
-            happened_on: log.when,
+            path: post_path,
+            happened_on: log.happened_on,
             photo_count: log.photo_count,
-            changed: false, // unchanged if log is valid
+            needs_render: false,
+            tags: log.tags.clone(),
+            history: Some(log),
+            cover_photo_index: post_config.cover_photo_index,
             ..Post::default()
         }),
         _ => {
-            let (photos, happened_on) = load_photos(
-                path,
-                &config.photo.capture_index,
-                post_config.cover_photo_index,
-            );
+            let photos = load_photos(path, &config.photo.capture_index);
 
             if photos.is_empty() {
                 None
             } else {
                 Some(Post {
-                    happened_on,
+                    tags: collate_tags(&post_path, &photos),
+                    path: post_path,
+                    happened_on: earliest_photo_date(&photos),
                     photo_count: photos.len(),
                     photos,
                     ..Post::default()
@@ -282,7 +318,7 @@ fn load_post_log(path: &Path) -> Option<PostLog> {
     PostLog::load(path).and_then(|log| {
         match is_modified(
             path,
-            log.processed.timestamp(),
+            log.as_of.timestamp(),
             log.photo_count + 1, // photos plus configuration file
             |name: &str| name.ends_with(".tif") || name == CONFIG_FILE,
         ) {
@@ -295,8 +331,8 @@ fn load_post_log(path: &Path) -> Option<PostLog> {
             }
             Err(e) => {
                 println!(
-                    "Failed to check {} for change {:?}",
-                    path_name(path),
+                    "   Failed to check {} for change {:?}",
+                    final_path_name(path),
                     e
                 );
                 None
@@ -321,9 +357,9 @@ fn is_modified(
     for entry in fs::read_dir(path)? {
         let entry: DirEntry = entry?;
         let os_name = entry.file_name();
-        let name: &str = os_name.to_str().unwrap();
+        let name = os_name.to_str();
 
-        if !allow_name(name) {
+        if name.is_none() || !allow_name(name.unwrap()) {
             continue;
         }
         count += 1;
@@ -346,6 +382,6 @@ fn is_modified(
         }
     }
 
-    // path is modified if it has a different file count
+    // consider path modified if it has a different file count
     Ok(file_count != count)
 }

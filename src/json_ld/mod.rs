@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_json;
 
+// TODO: create JSON-LD models
+
 struct CreateWork {
     author: Option<String>,
 

@@ -1,10 +1,13 @@
 //! Context and methods for rendering HTML templates
 
-use crate::tools::path_name;
-use crate::{config::BlogConfig, html, Blog, Post};
-use chrono::Local;
-use std::{fs, path::Path};
+use crate::{config::BlogConfig, html, tools::write_result, Blog, Post};
+use chrono::{DateTime, FixedOffset, Local};
+use std::path::Path;
 use yarte::Template;
+
+// TODO: render category page
+// TODO: render category kind page
+// TODO: render photo tag page
 
 /// Template rendering helpers
 struct Helpers {}
@@ -15,6 +18,9 @@ impl Helpers {
     }
     pub fn tag_list(&self, list: &Vec<String>) -> String {
         html::photo_tag_list(list)
+    }
+    pub fn date(&self, d: DateTime<FixedOffset>) -> String {
+        html::date_string(d)
     }
 }
 
@@ -104,11 +110,5 @@ pub fn write_sitemap(root: &Path, config: &BlogConfig, blog: &Blog) {
 }
 
 fn write_page(path: &Path, template: impl Template) {
-    match template.call() {
-        Ok(content) => match fs::write(path, &content) {
-            Ok(_) => (),
-            Err(e) => eprintln!("Error writing {} {:?}", path_name(path), e),
-        },
-        Err(e) => eprintln!("Error rendering {} {:?}", path_name(path), e),
-    }
+    write_result(path, || template.call());
 }
