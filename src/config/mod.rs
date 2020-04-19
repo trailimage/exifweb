@@ -3,7 +3,10 @@ pub mod log;
 pub mod post;
 pub mod series;
 
-pub use blog::{BlogConfig, CategoryConfig, ExifConfig};
+pub use blog::{
+    BlogConfig, CategoryConfig, CategoryIcon, ExifConfig, PhotoConfig,
+    SizeConfig,
+};
 pub use log::PostLog;
 pub use post::PostConfig;
 pub use series::SeriesConfig;

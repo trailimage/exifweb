@@ -70,10 +70,10 @@ pub struct ExifConfig {
 /// Photo sizes to generate from original
 #[derive(Deserialize, Debug)]
 pub struct SizeConfig {
-    large: u16,
-    regular: u16,
-    small: u16,
-    thumb: u16,
+    pub large: u16,
+    pub regular: u16,
+    pub small: u16,
+    pub thumb: u16,
 }
 
 #[derive(Deserialize, Debug)]

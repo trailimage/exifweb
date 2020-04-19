@@ -10,9 +10,11 @@ pub struct Post {
     ///
     /// *example* `brother-ride/2.trying-to-survive`
     pub path: String,
+
     /// Portion of path that is common among series members. For example, with
     /// `brother-ride/2.trying-to-survive` the `series_path` is `brother-ride`.
     pub series_path: String,
+
     /// Portion of path that is unique among series members. For example, with
     /// `brother-ride/2.trying-to-survive` the `parth_path` is
     /// `2.trying-to-survive`.

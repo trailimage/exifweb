@@ -301,11 +301,7 @@ fn format_poem(text: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        caption, category_icon, format_block_quote, format_footnotes,
-        format_line_breaks, format_poem, fraction, icon_tag, link_urls,
-        photo_tag_list, travel_mode_icon, unformat_block_quote,
-    };
+    use super::*;
     use crate::config::{CategoryConfig, CategoryIcon};
     use crate::tools::config_regex;
 

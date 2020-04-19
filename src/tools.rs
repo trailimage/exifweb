@@ -229,10 +229,7 @@ pub fn write_result<E: error::Error, F: FnOnce() -> Result<String, E>>(
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        boundary, earliest_photo_date, final_path_name, identify_outliers,
-        median, path_slice, slugify, Limits,
-    };
+    use super::*;
     use crate::Photo;
     use chrono::DateTime;
     use hashbrown::HashMap;

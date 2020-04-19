@@ -1,4 +1,4 @@
-use super::{Camera, Location};
+use super::{Camera, Location, SizeCollection};
 use crate::config::ExifConfig;
 use crate::tools::replace_pairs;
 use chrono::{DateTime, FixedOffset};
@@ -10,12 +10,6 @@ use serde::{Deserialize, Serialize};
 pub struct PhotoPath {
     pub post_path: String,
     pub photo_index: u8,
-}
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct Size {
-    width: u16,
-    height: u16,
 }
 
 #[derive(Debug)]
@@ -49,8 +43,7 @@ pub struct Photo {
     /// Whether values have been formatted based on configuration
     pub sanitized: bool,
 
-    pub width: u16,
-    pub height: u16,
+    pub size: SizeCollection,
 }
 
 impl Photo {
@@ -115,8 +108,7 @@ impl Default for Photo {
             date_taken: None,
             outlier_date: false,
             sanitized: false,
-            width: 0,
-            height: 0,
+            size: SizeCollection::default(),
         }
     }
 }

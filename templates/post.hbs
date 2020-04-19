@@ -47,12 +47,13 @@
     {{~#each post.photos.as_slice() }}
 
     <figure itemscope title="Click to enlarge image {{ name }}" data-exif="/exif/{{ name }}"
-        style="width: {{!size.normal.width!}}px; height: {{!size.normal.height!}}px;">
+        style="width: {{ size.regular.width }}px; height: {{ size.regular.height }}px;">
         <a name="{{ name }}"></a>
         {{! data-src attribute supports lazyload !}}
-        <img src="{{!size.preview.url!}}" alt="{{! title !}}"
-            style="width: {{!size.normal.width!}}px; height: {{!size.normal.height!}}px;" data-src="{{!size.normal.url!}}"
-            data-big="{{!size.big.url!}}" data-big-width="{{!size.big.width!}}" data-big-height="{{!size.big.height!}}" />
+        <img src="{{! size.preview.url !}}"
+            {{~#if let Some(text) = &title }} alt="{{ text }}" {{/if ~}}
+            style="width: {{ size.regular.width }}px; height: {{ size.regular.height }}px;" data-src="{{! size.regular.url !}}"
+            data-big="{{!size.big.url!}}" data-big-width="{{ size.large.width }}" data-big-height="{{ size.large.height }}" />
         <div class="info-button">{{{ super::html.icon("photo_camera") }}}
             <p>Camera Settings</p>
         </div>

@@ -1,8 +1,8 @@
+use crate::config::PhotoConfig;
 use crate::models::Photo;
 use crate::tools::{final_path_name, pos_from_name};
 use colored::*;
 use encoding::{all::*, DecoderTrap, Encoding};
-use regex::Regex;
 use serde::Deserialize;
 use serde_json;
 use std::{path::Path, process::Command};
@@ -59,16 +59,13 @@ struct ImageMagickInfo {
     pub image: ImageFields,
 }
 
-pub fn parse_dir(
-    path: &Path,
-    cover_index: u8,
-    infer_pos: &Regex,
-) -> Vec<Photo> {
+pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
     read_dir(&path)
         .iter()
         .map(|i| {
             let index =
-                pos_from_name(&infer_pos, &i.image.file_name).unwrap_or(0);
+                pos_from_name(&config.capture_index, &i.image.file_name)
+                    .unwrap_or(0);
 
             if index == 0 {
                 println!(
@@ -81,6 +78,7 @@ pub fn parse_dir(
 
             Some(Photo {
                 name: i.image.file_name.to_owned(),
+                //sizes: SizeCollection::from(i.width, i.height, &config.size),
                 index,
                 ..Photo::default()
             })

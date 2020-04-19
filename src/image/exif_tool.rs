@@ -1,12 +1,12 @@
 //! Use ExifTool to extract photo metadata
 
+use crate::config::PhotoConfig;
 use crate::deserialize::{date_time_string, string_number, string_sequence};
 use crate::html;
-use crate::models::{Camera, ExposureMode, Location, Photo};
+use crate::models::{Camera, ExposureMode, Location, Photo, SizeCollection};
 use crate::tools::pos_from_name;
 use chrono::{DateTime, FixedOffset};
 use colored::*;
-use regex::Regex;
 use serde::Deserialize;
 use serde_json;
 use std::{mem, path::Path, process::Command};
@@ -162,16 +162,13 @@ impl Eq for ExifToolOutput {}
 
 /// Execute exif_tool for each image file in given `path` and capture output as
 /// `Photo` structs
-///
-/// - `infer_pos`: capture pattern to retrieve one-based photo index from file
-///    name, used to sort the photos
-///
-pub fn parse_dir(path: &Path, infer_pos: &Regex) -> Vec<Photo> {
+pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
     read_dir(&path)
         .iter_mut()
         .map(|i: &mut ExifToolOutput| {
             // Photo index based on its file name pattern
-            let index = pos_from_name(&infer_pos, &i.file_name).unwrap_or(0);
+            let index =
+                pos_from_name(&config.capture_index, &i.file_name).unwrap_or(0);
 
             if index == 0 {
                 println!(
@@ -183,6 +180,7 @@ pub fn parse_dir(path: &Path, infer_pos: &Regex) -> Vec<Photo> {
             }
 
             let mut photo = Photo {
+                // TODO: make extension configurable or use regex
                 name: i.file_name.replace(".tif", ""),
                 title: mem::replace(&mut i.title, None),
                 artist: mem::replace(&mut i.artist, None),
@@ -191,8 +189,7 @@ pub fn parse_dir(path: &Path, infer_pos: &Regex) -> Vec<Photo> {
                 software: mem::replace(&mut i.software, String::new()),
                 tags: mem::replace(&mut i.tags, Vec::new()),
                 index,
-                width: i.width,
-                height: i.height,
+                size: SizeCollection::from(i.width, i.height, &config.size),
                 date_taken: i.taken_on.or(i.created_on),
                 ..Photo::default()
             };

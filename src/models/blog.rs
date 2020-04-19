@@ -149,7 +149,8 @@ impl Blog {
     }
 
     /// Return paths to all posts that have a different `prev_path` or
-    /// `next_path` than the last time they were loaded
+    /// `next_path` than the last time they were loaded. These are posts that
+    /// may need to be re-rendered to show updated navigation HTML.
     fn sequence_changed_posts(&mut self) -> Vec<String> {
         let mut paths: Vec<String> = Vec::new();
 
@@ -167,7 +168,9 @@ impl Blog {
         paths
     }
 
-    /// Sanitize camera informaton in all post photos
+    /// Sanitize camera informaton in all post photos. This will only affect
+    /// posts that need to be rendered since unchanged posts will have an empty
+    /// photo list.
     pub fn sanitize_exif(&mut self, config: &ExifConfig) {
         for (_, p) in self.posts.iter_mut() {
             for photo in p.photos.iter_mut() {

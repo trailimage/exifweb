@@ -8,7 +8,8 @@ use serde::{Deserialize, Serialize};
 pub struct TagPhotos<T> {
     /// Original tag name (not slug)
     pub name: String,
-    /// Photos that have the tag applied
+    /// Photos that have the tag applied, identified by `index` or by
+    /// `post_path` and `index` (`PhotoPath`)
     pub photos: Vec<T>,
 }
 

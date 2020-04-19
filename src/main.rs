@@ -11,9 +11,10 @@ mod models;
 mod template;
 mod tools;
 
-use ::regex::Regex;
 use colored::*;
-use config::{BlogConfig, PostConfig, PostLog, SeriesConfig, CONFIG_FILE};
+use config::{
+    BlogConfig, PhotoConfig, PostConfig, PostLog, SeriesConfig, CONFIG_FILE,
+};
 use image::exif_tool;
 use models::{collate_tags, Blog, Photo, Post};
 use std::{
@@ -176,7 +177,7 @@ fn load_series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
             sub_dirs
                 .iter()
                 .map(|p| load_series_post(p.as_path(), config, &series_config))
-                // ignore None results already logged to console
+                // ignore None results (already logged to console)
                 .filter(|p| p.is_some())
                 .map(|p| p.unwrap())
                 .collect(),
@@ -245,8 +246,7 @@ fn load_post_photos(
     for path in paths.iter() {
         println!(" Attempting to add photos to {}", path);
 
-        let mut photos =
-            load_photos(&root.join(path), &config.photo.capture_index);
+        let mut photos = load_photos(&root.join(path), &config.photo);
 
         blog.add_post_photos(path, &mut photos)
     }
@@ -257,9 +257,8 @@ fn load_post_photos(
 /// - `capture_photo_index` Photos will be sorted with the index captured with
 ///    this pattern
 ///
-fn load_photos(path: &Path, capture_photo_index: &Regex) -> Vec<Photo> {
-    let mut photos: Vec<Photo> =
-        exif_tool::parse_dir(&path, &capture_photo_index);
+fn load_photos(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
+    let mut photos: Vec<Photo> = exif_tool::parse_dir(&path, config);
 
     if photos.is_empty() {
         println!("   {}", "found no photos".red());
@@ -280,7 +279,7 @@ fn create_post(
     // path to series post includes parent
     let post_path = path_slice(path, if is_series { 2 } else { 1 });
 
-    match load_post_log(path) {
+    match load_post_log(path, config) {
         Some(log) => Some(Post {
             path: post_path,
             happened_on: log.happened_on,
@@ -292,7 +291,7 @@ fn create_post(
             ..Post::default()
         }),
         _ => {
-            let photos = load_photos(path, &config.photo.capture_index);
+            let photos = load_photos(path, &config.photo);
 
             if photos.is_empty() {
                 None
@@ -312,7 +311,11 @@ fn create_post(
 
 /// Load post log if source files are still valid (no additions or deletions and
 /// unchanged)
-fn load_post_log(path: &Path) -> Option<PostLog> {
+fn load_post_log(path: &Path, config: &BlogConfig) -> Option<PostLog> {
+    if config.force_rerender {
+        return None;
+    }
+
     PostLog::load(path).and_then(|log| {
         match is_modified(
             path,
@@ -338,6 +341,9 @@ fn load_post_log(path: &Path) -> Option<PostLog> {
         }
     })
 }
+
+// TODO: retrieve per-photo modified date to know they need to have their sizes
+// regenerated (independent of re-rendering post)
 
 /// Whether `path` contains any `allow_name` files modified after `threshold`
 /// timestamp

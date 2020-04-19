@@ -56,6 +56,7 @@ impl Features {
     }
 }
 
+// TODO: render EXIF data
 #[derive(Template)]
 #[template(path = "post.hbs")]
 struct PostContext<'c> {

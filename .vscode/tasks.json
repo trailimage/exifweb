@@ -27,6 +27,18 @@
       "problemMatcher": []
     },
     {
+      "label": "Run (force re-render)",
+      "type": "shell",
+      "command": "cargo",
+      "args": ["run", "force"],
+      "presentation": {
+        "echo": false,
+        "clear": true
+      },
+      "dependsOn": ["Clean"],
+      "problemMatcher": []
+    },
+    {
       "label": "Clean",
       "type": "shell",
       "command": "cargo",

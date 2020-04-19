@@ -5,6 +5,7 @@ mod exposure_mode;
 mod location;
 mod photo;
 mod post;
+mod size;
 mod tag;
 
 pub use blog::Blog;
@@ -14,4 +15,5 @@ pub use exposure_mode::ExposureMode;
 pub use location::Location;
 pub use photo::{Photo, PhotoPath};
 pub use post::Post;
+pub use size::{Size, SizeCollection};
 pub use tag::{collate_tags, TagPhotos};
