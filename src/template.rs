@@ -176,7 +176,7 @@ struct Features {
     pub use_facebook: bool,
     /// Timestamp appended to URLs when loading JSON resources to break browser
     /// cache
-    pub timestamp: i64, // TODO: re-validate for static gen
+    pub timestamp: u8, // TODO: remove from JavaScript
 }
 
 impl Default for Features {
@@ -184,7 +184,7 @@ impl Default for Features {
         Features {
             scroll_nav: false,
             use_facebook: true,
-            timestamp: Local::now().timestamp(),
+            timestamp: 0,
         }
     }
 }
@@ -211,6 +211,7 @@ struct PostContext<'c> {
 }
 
 // TODO: re-use partials/category for post category list
+// TODO: add post count subtitle
 #[derive(Template)]
 #[template(path = "category.hbs")]
 struct CategoryContext<'c> {
