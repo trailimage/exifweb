@@ -30,8 +30,9 @@ path = "ruminations"
 
 [site]
 name = "Trail Image"
-description = "Stories and images of small adventure trips in and around the state of Idaho"
+description = "Stories, images and videos of small adventure trips in and around the state of Idaho"
 url = "https://trailimage.com"
+post_alias = "Adventure"
 
 [style]
 # Maximum pixel height of static maps displayed with post summaries

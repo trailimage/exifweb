@@ -56,6 +56,38 @@ pub fn travel_mode_icon(
         })
 }
 
+pub fn say_number(n: usize) -> String {
+    let word = String::from(match n {
+        0 => "Zero",
+        1 => "One",
+        2 => "Two",
+        3 => "Three",
+        4 => "Four",
+        5 => "Five",
+        6 => "Six",
+        7 => "Seven",
+        8 => "Eight",
+        9 => "Nine",
+        10 => "Ten",
+        11 => "Eleven",
+        12 => "Twelve",
+        20 => "Twenty",
+        30 => "Thirty",
+        40 => "Forty",
+        50 => "Fifty",
+        60 => "Sixty",
+        70 => "Seventy",
+        80 => "Eighty",
+        90 => "Ninety",
+        _ => "",
+    });
+    if word.is_empty() {
+        n.to_string()
+    } else {
+        word
+    }
+}
+
 pub fn fraction(f: &str) -> String {
     lazy_static! {
         // two numbers separated by a forward slash
@@ -279,6 +311,7 @@ fn format_line_breaks(text: &str) -> String {
     format!("<p>{}</p>", text)
 }
 
+// FIX: leading and trailing hyphens aren't removed
 fn format_poem(text: &str) -> String {
     lazy_static! {
         // exactly three lines

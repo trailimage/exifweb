@@ -1,6 +1,5 @@
 use super::{Camera, Location, SizeCollection};
-use crate::config::ExifConfig;
-use crate::tools::replace_pairs;
+use crate::{tools::replace_pairs, config::ExifConfig};
 use chrono::{DateTime, FixedOffset};
 use core::cmp::Ordering;
 use serde::{Deserialize, Serialize};

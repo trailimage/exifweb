@@ -47,6 +47,9 @@ impl<'a> Helpers<'a> {
             "s"
         }
     }
+    pub fn fraction(&self, number: &str) -> String {
+        html::fraction(number)
+    }
 }
 
 /// Render template and write content to `path` file
@@ -119,20 +122,28 @@ impl<'a> Writer<'a> {
         for (kind, list) in &self.blog.categories {
             self.category_kind(kind, list);
             for c in list {
-                self.category(&c);
+                self.category(&c, &c.path);
             }
         }
     }
 
-    fn category(&self, category: &Category) {
+    fn category(&self, category: &Category, path: &str) {
+        let post_count = category.post_paths.len();
+
         self.default_page(
-            &category.path,
+            path,
             CategoryContext {
                 category,
                 blog: &self.blog,
                 config: &self.config,
                 html: &self.helpers,
                 enable: Enable::default(),
+                sub_title: format!(
+                    "{} {}{}",
+                    html::say_number(post_count),
+                    self.config.site.post_alias,
+                    self.helpers.plural(post_count)
+                ),
             },
         );
     }
@@ -162,16 +173,7 @@ impl<'a> Writer<'a> {
             .get(&CategoryKind::When)
             .and_then(|list| list.first())
         {
-            self.default_page(
-                "",
-                CategoryContext {
-                    category,
-                    blog: &self.blog,
-                    config: &self.config,
-                    html: &self.helpers,
-                    enable: Enable::default(),
-                },
-            );
+            self.category(category, "");
         }
     }
 
@@ -264,6 +266,7 @@ struct CategoryContext<'c> {
     pub blog: &'c Blog,
     pub config: &'c BlogConfig,
     pub enable: Enable,
+    pub sub_title: String,
 }
 
 #[derive(Template)]

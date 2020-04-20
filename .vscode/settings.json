@@ -24,5 +24,8 @@
   },
   "rust-analyzer.inlayHints.chainingHints": false,
   "rust-analyzer.highlighting.semanticTokens": true,
-  "html.format.enable": false
+  "html.format.enable": false,
+  "liveServer.settings.donotShowInfoMsg": true,
+  "liveServer.settings.donotVerifyTags": true,
+  "liveServer.settings.root": "/docs"
 }

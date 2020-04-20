@@ -149,6 +149,10 @@ pub struct SiteConfig {
     pub url: String,
     pub name: String,
     pub description: String,
+    /// Generic name for a post (usually just "post") that can be used in a
+    /// category page subtitle, e.g. "27 posts" and pluralized with just an `s`
+    #[serde(default = "default_post_alias")]
+    pub post_alias: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -163,6 +167,7 @@ pub struct FeaturedPost {
 pub struct BlogConfig {
     pub author_name: String,
     pub repo_url: String,
+
     pub featured_post: Option<FeaturedPost>,
 
     /// Folders known not to contain posts
@@ -197,4 +202,8 @@ impl BlogConfig {
     pub fn load(path: &Path) -> Option<Self> {
         load_config::<Self>(path)
     }
+}
+
+fn default_post_alias() -> String {
+    String::from("Post")
 }
