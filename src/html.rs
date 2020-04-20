@@ -88,6 +88,10 @@ pub fn say_number(n: usize) -> String {
     }
 }
 
+pub fn list_label<T>(word: &str, list: &Vec<T>) -> String {
+    format!("{} {}", say_number(list.len()), plural(word, list.len()))
+}
+
 /// Format English word to plural form if count != 1
 pub fn plural(word: &str, count: usize) -> String {
     if count == 1 {

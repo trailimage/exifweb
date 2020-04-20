@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+    {{~#> html_head title=name, description=ctx.site_description }}
+    {{~/html_head ~}}
+<body>
+    {{#> header title=name, sub_title=sub_title }}
+        <aside class="site-description">{{ ctx.site_description }}</aside>
+    {{~/header }}
+
+    <ul>
+    {{~#each photos }}
+        <li><a href="/{{{ this.url() }}}">{{ this.post_path }}</a></li>
+    {{~/each }}
+    </ul>
+
+    {{> footer }}
+</body>
+</html>

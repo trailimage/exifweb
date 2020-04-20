@@ -3,8 +3,8 @@
 use crate::{
     config::{BlogConfig, CategoryIcon, FacebookConfig, FeaturedPost, PostLog},
     html,
-    models::{Blog, Category, CategoryKind, Post},
-    tools::{config_regex, folder_name, write_result},
+    models::{Blog, Category, CategoryKind, PhotoPath, Post},
+    tools::{config_regex, path_slice, write_result},
 };
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
@@ -65,6 +65,9 @@ impl<'a> CommonContext<'a> {
     pub fn say_number(&self, number: usize) -> String {
         html::say_number(number)
     }
+    pub fn list_label<T>(&self, word: &str, list: &Vec<T>) -> String {
+        html::list_label(word, list)
+    }
 }
 
 /// Methods to render and write standard web pages with loaded configuration and
@@ -118,7 +121,7 @@ impl<'a> Writer<'a> {
         if !path.is_dir() {
             println!(
                 "   Attempting to create directory {}",
-                folder_name(&path)
+                path_slice(&path, 2)
             );
             // ignore error here since it will be caught in the next step
             fs::create_dir(&path).unwrap_or(());
@@ -166,10 +169,9 @@ impl<'a> Writer<'a> {
                 ctx: &self.context,
                 category,
                 enable: Enable::none(),
-                sub_title: format!(
-                    "{} {}",
-                    html::say_number(post_count),
-                    html::plural(self.context.post_alias, post_count)
+                sub_title: html::list_label(
+                    self.context.post_alias,
+                    &category.post_paths,
                 ),
             },
         );
@@ -187,15 +189,7 @@ impl<'a> Writer<'a> {
                 kind: category_kind,
                 categories,
                 enable: Enable::none(),
-                sub_title: format!(
-                    "{} {}",
-                    html::say_number(categories.len()),
-                    if categories.len() == 1 {
-                        "Category"
-                    } else {
-                        "Categories"
-                    }
-                ),
+                sub_title: html::list_label("Category", &categories),
             },
         );
     }
@@ -235,6 +229,22 @@ impl<'a> Writer<'a> {
             "mobile-menu",
             MobileMenuContext { ctx: &self.context },
         );
+    }
+
+    pub fn photo_tags(&self) {
+        for (slug, tag_photos) in self.context.blog.tags.iter() {
+            self.default_page(
+                &format!("photo-tag/{}", slug),
+                PhotoTagContext {
+                    ctx: &self.context,
+                    enable: Enable::none(),
+                    slug,
+                    name: &tag_photos.name,
+                    photos: &tag_photos.photos,
+                    sub_title: html::list_label("Photo", &tag_photos.photos),
+                },
+            );
+        }
     }
 
     pub fn sitemap(&self) {
@@ -283,6 +293,17 @@ struct PostContext<'c> {
     pub ctx: &'c CommonContext<'c>,
     pub post: &'c Post,
     pub enable: Enable,
+}
+
+#[derive(Template)]
+#[template(path = "photo_tag.hbs")]
+struct PhotoTagContext<'c> {
+    pub ctx: &'c CommonContext<'c>,
+    pub enable: Enable,
+    pub slug: &'c str,
+    pub name: &'c str,
+    pub photos: &'c Vec<PhotoPath>,
+    pub sub_title: String,
 }
 
 // TODO: re-use partials/category for post category list

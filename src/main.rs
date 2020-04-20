@@ -154,6 +154,7 @@ fn main() {
         write.sitemap();
         write.category_menu();
         write.mobile_menu();
+        write.photo_tags();
         write.categories();
     }
 }
