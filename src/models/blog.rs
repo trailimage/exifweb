@@ -26,10 +26,6 @@ impl Blog {
         if self.posts.contains_key(&p.path) {
             panic!("Attempt to insert duplicate post {}", p.path)
         }
-        // for c in &p.categories {
-        //     self.add_category_post(c, &p)
-        // }
-
         self.add_post_categories(&p);
         self.posts.insert(p.path.clone(), p);
     }
@@ -67,6 +63,25 @@ impl Blog {
                 }
             };
         }
+    }
+
+    pub fn sorted_categories(&self) -> Vec<(CategoryKind, &Vec<Category>)> {
+        let list = vec![
+            self.category_kind(CategoryKind::When),
+            self.category_kind(CategoryKind::Who),
+            self.category_kind(CategoryKind::What),
+            self.category_kind(CategoryKind::Where),
+        ];
+        list.iter()
+            .filter_map(|(kind, cats)| cats.and_then(|c| Some((*kind, c))))
+            .collect()
+    }
+
+    pub fn category_kind(
+        &self,
+        kind: CategoryKind,
+    ) -> (CategoryKind, Option<&Vec<Category>>) {
+        (kind, self.categories.get(&kind))
     }
 
     /// Number of posts that need to be rendered

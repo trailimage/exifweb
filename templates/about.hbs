@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-    {{#> html_head title=config.site.name, description=config.site.description }}{{/html_head }}
+    {{#> html_head title=ctx.site_name, description=ctx.site_description }}{{/html_head }}
 <body>
-    {{#> header title=config.site.name, sub_title="About" }}{{/header }}
+    {{#> header title=ctx.site_name, sub_title="About" }}{{/header }}
 
     <div class="about content">
         <a class="main-image" href="/hat-point-above-hells-canyon#68"><img src="/img/about.jpg" width="400"
@@ -18,7 +18,7 @@
             come to hand while developing images to match, I hope, what you would have seen had you stood by when I took
             them.</p>
 
-        <div class="by-line">{{ config.author_name }}</div>
+        <div class="by-line">{{ ctx.author_name }}</div>
         <div class="clear"></div>
     </div>
 

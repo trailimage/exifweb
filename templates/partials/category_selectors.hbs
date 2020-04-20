@@ -1,4 +1,4 @@
-{{~#each blog.categories }}
+{{~#each ctx.blog.categories }}
 <select class="category-selector">
     <option class="label">{{ this.0.to_string() }}</option>
     {{~#each this.1 }}

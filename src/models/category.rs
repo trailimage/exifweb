@@ -8,9 +8,22 @@ use std::{
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum CategoryKind {
     Who,
+    What,
     When,
     Where,
-    What,
+}
+
+impl CategoryKind {
+    /// Category kind that matches name
+    pub fn from_str(name: &str) -> Option<Self> {
+        match name {
+            "who" => Some(CategoryKind::Who),
+            "what" => Some(CategoryKind::What),
+            "when" => Some(CategoryKind::When),
+            "where" => Some(CategoryKind::Where),
+            _ => None,
+        }
+    }
 }
 
 impl Hash for CategoryKind {

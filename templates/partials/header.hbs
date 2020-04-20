@@ -8,7 +8,7 @@
         {{~#if !sub_title.is_empty() }}
             <h4>{{ sub_title }}</h4>
         {{~/if }}
-            <div id="mobile-menu-button">{{{ html.icon("menu") }}}</div>
+            <div id="mobile-menu-button">{{{ ctx.icon("menu") }}}</div>
             {{~> @partial-block }}
         </div>
     </header>

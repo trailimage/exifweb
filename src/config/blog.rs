@@ -94,6 +94,8 @@ pub struct CategoryConfig {
     /// match an icon
     pub what_regex: Option<Pairs>,
     pub icon: CategoryIcon,
+    /// Which category kinds to display and in what order
+    pub display: Vec<String>,
 }
 
 #[derive(Deserialize, Debug)]

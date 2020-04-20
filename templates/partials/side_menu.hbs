@@ -4,7 +4,7 @@
         <a href="/about" rel="author">About</a>
         {{!> contact_link!}}
         <a href="/photo-tag" rel="search">Photo Tags</a>
-    {{~#if let Some(featured) = &config.featured_post }}
+    {{~#if let Some(featured) = &ctx.featured_post }}
         <a href="/{{{ featured.path }}}">{{ featured.title }}</a>
     {{~/if }}
         <a href="/map" rel="home">Map</a>

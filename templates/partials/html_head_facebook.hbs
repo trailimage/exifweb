@@ -1,16 +1,16 @@
 {{! head elements to support rich Facebook embedding !}}
     {{! https://developers.facebook.com/docs/reference/opengraph/object-type/article/ !}}
     {{! https://developers.facebook.com/tools/debug/og/ !}}
-    <meta property="og:site_name" content="{{ config.site.name }}" />
+    <meta property="og:site_name" content="{{ ctx.site_name }}" />
     <meta property="og:title" content="{{ post.title }}" />
-    <meta property="fb:app_id" content="{{ config.facebook.app_id }}" />
-    <meta property="fb:admins" content="{{ config.facebook.admin_id }}" />
-    <meta property="og:url" content="{{{ config.site.url }}}/{{{ post.path }}}/" />
+    <meta property="fb:app_id" content="{{ ctx.facebook.app_id }}" />
+    <meta property="fb:admins" content="{{ ctx.facebook.admin_id }}" />
+    <meta property="og:url" content="{{{ ctx.site_url }}}/{{{ post.path }}}/" />
     <meta property="og:image" content="{{! post.bigThumbURL !}}" />
     <meta property="og:type" content="article" />
     <meta property="article:published_time" content="{{! formatISO8601 post.createdOn !}}" />
     <meta property="article:modified_time" content="{{! formatISO8601 post.updatedOn !}}" />
-    <meta property="article:author" content="{{{ config.facebook.author_url }}}" />
+    <meta property="article:author" content="{{{ ctx.facebook.author_url }}}" />
 {{#if false }}
     <meta property="og:video" content="http://youtu.be/{{! post.video.id !}}" />
 {{/if ~}}

@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-    {{~#> html_head title=kind.to_string(), description=config.site.description }}
+    {{~#> html_head title=kind.to_string(), description=ctx.site_description }}
     {{~/html_head ~}}
 <body>
     {{#> header title=kind.to_string(), sub_title=sub_title }}
-        <aside class="site-description">{{ config.site.description }}</aside>
+        <aside class="site-description">{{ ctx.site_description }}</aside>
     {{~/header }}
 
     <div class="root-category content">
-        {{{ html.category_icon(kind) }}}
+        {{{ ctx.category_icon(kind) }}}
         <ul>
             {{~#each categories }}
-            <li><a href="/{{{ path }}}" rel="tag">{{ name }}</a>({{ post_paths.len() }} post{{ super::html.plural(post_paths.len()) }})</li>
+            <li><a href="/{{{ path }}}" rel="tag">{{ name }}</a>({{ post_paths.len() }} post{{ super::ctx.plural(post_paths.len()) }})</li>
             {{~/each~}}
         </ul>
     </div>

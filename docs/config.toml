@@ -50,6 +50,9 @@ what_regex = [
     ["jeep", "jeep"]
 ]
 
+# Which category kinds to display and in what order
+display = ["when", "who", "what", "where"]
+
     [category.icon]
     # Map category kind to material icon
     # https://material.io/icons/

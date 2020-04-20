@@ -21,7 +21,7 @@
             </div>
         {{~/if }}
         {{~#if let Some(d) = post.happened_on }}
-            <div id="post-date">{{ html.date(d) }}</div>
+            <div id="post-date">{{ ctx.date(d) }}</div>
         {{~/if }}
     {{~/header }}
 
@@ -50,21 +50,21 @@
             {{~#if let Some(text) = &title }} alt="{{ text }}" {{/if ~}}
             style="width: {{ size.regular.width }}px; height: {{ size.regular.height }}px;" data-src="{{! size.regular.url !}}"
             data-big="{{!size.big.url!}}" data-big-width="{{ size.large.width }}" data-big-height="{{ size.large.height }}" />
-        <div class="info-button">{{{ super::html.icon("photo_camera") }}}
+        <div class="info-button">{{{ super::ctx.icon("photo_camera") }}}
             <p>Camera Settings</p>
         </div>
 
         {{~#if !tags.is_empty() }}
         <nav class="tags">
-            {{{ super::html.icon("local_offer") }}}
+            {{{ super::ctx.icon("local_offer") }}}
             <h4>More photos like this</h4>
-            {{{ super::html.tag_list(&tags) }}}
+            {{{ super::ctx.tag_list(&tags) }}}
         </nav>
         {{~/if }}
 
         {{~#if location.is_some() }}
         <a class="map" title="View on map" href="/{{ super::post.path }}/map/{{ name }}"
-            rel="nofollow"><span>map</span>{{{ super::html.icon("map") }}}</a>
+            rel="nofollow"><span>map</span>{{{ super::ctx.icon("map") }}}</a>
         {{~/if }}
 
         {{~#if let Some(text) = &title }}
@@ -83,7 +83,7 @@
     </nav>
 
     <div class="by-line content{{#if post.featured }} feature{{/if }}">
-        <p rel="author">by {{ config.author_name }}</p>
+        <p rel="author">by {{ ctx.author_name }}</p>
     </div>
 
     {{#unless post.featured ~}}
@@ -91,7 +91,7 @@
     {{/unless }}
 
     <footer class="post content">
-        <div class="fb-comments" data-href="{{{ config.site.url }}}/{{{ post.path }}}/" data-width="648" data-num-posts="20"></div>
+        <div class="fb-comments" data-href="{{{ ctx.site_url }}}/{{{ post.path }}}/" data-width="648" data-num-posts="20"></div>
     </footer>
 
     {{> footer }}

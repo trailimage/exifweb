@@ -1,7 +1,7 @@
 //! Context and methods for rendering HTML templates
 
 use crate::{
-    config::{BlogConfig, CategoryIcon, PostLog},
+    config::{BlogConfig, CategoryIcon, FacebookConfig, FeaturedPost, PostLog},
     html,
     models::{Blog, Category, CategoryKind, Post},
     tools::{config_regex, folder_name, write_result},
@@ -15,13 +15,29 @@ use yarte::Template;
 // TODO: render photo tag page
 // TODO: render map page
 
-/// Template rendering helpers
-pub struct Helpers<'a> {
+/// Render template and write content to `path` file
+fn write_page(path: &Path, template: impl Template) {
+    write_result(path, || template.call());
+}
+
+/// Context available to each render template
+struct CommonContext<'a> {
+    pub blog: &'a Blog,
+    pub categories: Vec<(CategoryKind, &'a Vec<Category>)>,
+    pub site_url: &'a str,
+    pub site_name: &'a str,
+    pub site_description: &'a str,
+    pub repo_url: &'a str,
+    pub author_name: &'a str,
+    pub featured_post: &'a Option<FeaturedPost>,
+    pub post_alias: &'a str,
+    pub facebook: &'a FacebookConfig,
+
     mode_icons: HashMap<String, Regex>,
     category_icons: &'a CategoryIcon,
 }
 
-impl<'a> Helpers<'a> {
+impl<'a> CommonContext<'a> {
     pub fn icon(&self, name: &str) -> String {
         html::icon_tag(name)
     }
@@ -52,27 +68,43 @@ impl<'a> Helpers<'a> {
     }
 }
 
-/// Render template and write content to `path` file
-fn write_page(path: &Path, template: impl Template) {
-    write_result(path, || template.call());
-}
-
 /// Methods to render and write standard web pages with loaded configuration and
 /// models
 pub struct Writer<'a> {
-    config: &'a BlogConfig,
-    blog: &'a Blog,
-    helpers: Helpers<'a>,
     root: &'a Path,
+    context: CommonContext<'a>,
+    config: &'a BlogConfig,
 }
 
 impl<'a> Writer<'a> {
     pub fn new(root: &'a Path, config: &'a BlogConfig, blog: &'a Blog) -> Self {
+        // sort category kinds to match config.category.display
+        let categories: Vec<(CategoryKind, &'a Vec<Category>)> = config
+            .category
+            .display
+            .iter()
+            // get enum for name
+            .filter_map(|name| CategoryKind::from_str(name))
+            // get list of categories for kind
+            .map(|kind| (kind, blog.categories.get(&kind)))
+            // filter out category kinds that have no categories
+            .filter_map(|(kind, cats)| cats.and_then(|c| Some((kind, c))))
+            .collect();
+
         Writer {
             root,
-            blog,
-            config,
-            helpers: Helpers {
+            config: &config,
+            context: CommonContext {
+                blog,
+                site_url: &config.site.url,
+                site_name: &config.site.name,
+                repo_url: &config.repo_url,
+                author_name: &config.author_name,
+                site_description: &config.site.description,
+                featured_post: &config.featured_post,
+                post_alias: &config.site.post_alias,
+                facebook: &config.facebook,
+                categories,
                 mode_icons: config_regex(&config.category.what_regex),
                 category_icons: &config.category.icon,
             },
@@ -96,7 +128,7 @@ impl<'a> Writer<'a> {
     }
 
     pub fn posts(&self) {
-        for (_, p) in &self.blog.posts {
+        for (_, p) in &self.context.blog.posts {
             if p.needs_render {
                 self.post(&p);
                 // TODO: spawn thread to write log
@@ -110,16 +142,14 @@ impl<'a> Writer<'a> {
             &post.path,
             PostContext {
                 post,
-                blog: &self.blog,
-                config: &self.config,
-                html: &self.helpers,
                 enable: Enable::default(),
+                ctx: &self.context,
             },
         );
     }
 
     pub fn categories(&self) {
-        for (kind, list) in &self.blog.categories {
+        for (kind, list) in &self.context.blog.categories {
             self.category_kind(kind, list);
             for c in list {
                 self.category(&c, &c.path);
@@ -133,16 +163,14 @@ impl<'a> Writer<'a> {
         self.default_page(
             path,
             CategoryContext {
+                ctx: &self.context,
                 category,
-                blog: &self.blog,
-                config: &self.config,
-                html: &self.helpers,
                 enable: Enable::none(),
                 sub_title: format!(
                     "{} {}{}",
                     html::say_number(post_count),
-                    self.config.site.post_alias,
-                    self.helpers.plural(post_count)
+                    self.context.post_alias,
+                    self.context.plural(post_count)
                 ),
             },
         );
@@ -156,10 +184,9 @@ impl<'a> Writer<'a> {
         self.default_page(
             category_kind.to_string().to_lowercase().as_str(),
             CategoryKindContext {
+                ctx: &self.context,
                 kind: category_kind,
                 categories,
-                config: &self.config,
-                html: &self.helpers,
                 enable: Enable::none(),
                 sub_title: format!(
                     "{} {}",
@@ -177,6 +204,7 @@ impl<'a> Writer<'a> {
     pub fn home_page(&self) {
         // home page is the latest year category
         if let Some(category) = self
+            .context
             .blog
             .categories
             .get(&CategoryKind::When)
@@ -190,8 +218,7 @@ impl<'a> Writer<'a> {
         self.default_page(
             "about",
             AboutContext {
-                config: &self.config,
-                html: &self.helpers,
+                ctx: &self.context,
                 enable: Enable::new(true, false),
             },
         );
@@ -200,27 +227,21 @@ impl<'a> Writer<'a> {
     pub fn category_menu(&self) {
         self.default_page(
             "category-menu",
-            CategoryMenuContext { blog: &self.blog },
+            CategoryMenuContext { ctx: &self.context },
         );
     }
 
     pub fn mobile_menu(&self) {
         self.default_page(
             "mobile-menu",
-            MobileMenuContext {
-                blog: &self.blog,
-                html: &self.helpers,
-            },
+            MobileMenuContext { ctx: &self.context },
         );
     }
 
     pub fn sitemap(&self) {
         write_page(
             &self.root.join("sitemap.xml"),
-            SitemapContext {
-                blog: &self.blog,
-                config: &self.config,
-            },
+            SitemapContext { ctx: &self.context },
         );
     }
 }
@@ -260,10 +281,8 @@ impl Enable {
 #[derive(Template)]
 #[template(path = "post.hbs")]
 struct PostContext<'c> {
+    pub ctx: &'c CommonContext<'c>,
     pub post: &'c Post,
-    pub blog: &'c Blog,
-    pub html: &'c Helpers<'c>,
-    pub config: &'c BlogConfig,
     pub enable: Enable,
 }
 
@@ -272,10 +291,8 @@ struct PostContext<'c> {
 #[derive(Template)]
 #[template(path = "category.hbs")]
 struct CategoryContext<'c> {
-    pub html: &'c Helpers<'c>,
+    pub ctx: &'c CommonContext<'c>,
     pub category: &'c Category,
-    pub blog: &'c Blog,
-    pub config: &'c BlogConfig,
     pub enable: Enable,
     pub sub_title: String,
 }
@@ -283,8 +300,7 @@ struct CategoryContext<'c> {
 #[derive(Template)]
 #[template(path = "category_kind.hbs")]
 struct CategoryKindContext<'c> {
-    pub html: &'c Helpers<'c>,
-    pub config: &'c BlogConfig,
+    pub ctx: &'c CommonContext<'c>,
     pub categories: &'c Vec<Category>,
     pub enable: Enable,
     pub kind: &'c CategoryKind,
@@ -294,28 +310,24 @@ struct CategoryKindContext<'c> {
 #[derive(Template)]
 #[template(path = "about.hbs")]
 struct AboutContext<'c> {
-    pub config: &'c BlogConfig,
+    pub ctx: &'c CommonContext<'c>,
     pub enable: Enable,
-    pub html: &'c Helpers<'c>,
 }
 
-// TODO: sort when, who, what, where
 #[derive(Template)]
 #[template(path = "category_menu.hbs")]
 struct CategoryMenuContext<'c> {
-    pub blog: &'c Blog,
+    pub ctx: &'c CommonContext<'c>,
 }
 
 #[derive(Template)]
 #[template(path = "mobile_menu.hbs")]
 struct MobileMenuContext<'c> {
-    pub blog: &'c Blog,
-    pub html: &'c Helpers<'c>,
+    pub ctx: &'c CommonContext<'c>,
 }
 
 #[derive(Template)]
 #[template(path = "sitemap_xml.hbs")]
 struct SitemapContext<'c> {
-    pub blog: &'c Blog,
-    pub config: &'c BlogConfig,
+    pub ctx: &'c CommonContext<'c>,
 }
