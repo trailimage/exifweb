@@ -16,7 +16,7 @@
     {{! other scripts are loaded dynamically by responsive.js !}}
     <script src="/js/responsive.js" type="text/javascript" defer></script>
     {{~> @partial-block }}
-    {{#unless feature.scroll_nav }}
+    {{#unless enable.scroll_nav }}
     <style type="text/css">
         #bug, #links, #category-menu { position: fixed; }
     </style>
@@ -24,8 +24,8 @@
     {{! features determine which scripts to load !}}
     <script type="text/javascript">
         var pageFeatures = {
-            facebook: {{#if feature.use_facebook }}true{{else}}false{{/if }},
-            timestamp: {{ feature.timestamp }}
+            facebook: {{#if enable.facebook }}true{{else}}false{{/if }},
+            timestamp: 0
         };
     </script>
 </head>

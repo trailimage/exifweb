@@ -1,6 +1,6 @@
 use crate::config::PhotoConfig;
 use crate::models::Photo;
-use crate::tools::{final_path_name, pos_from_name};
+use crate::tools::{folder_name, pos_from_name};
 use colored::*;
 use encoding::{all::*, DecoderTrap, Encoding};
 use serde::Deserialize;
@@ -102,7 +102,7 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
             println!(
                 "{:>3} {}",
                 "Failed to generate EXIF for".red(),
-                final_path_name(&path).magenta(),
+                folder_name(&path).magenta(),
             );
             return Vec::new();
         }
@@ -115,7 +115,7 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
             println!(
                 "{:>3} {}",
                 "Failed to convert EXIF output to UTF-8 for".red(),
-                final_path_name(&path).magenta(),
+                folder_name(&path).magenta(),
             );
             return Vec::new();
         }
@@ -125,7 +125,7 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
         println!(
             "{} {}",
             "EXIF JSON is empty for".red(),
-            final_path_name(&path).magenta()
+            folder_name(&path).magenta()
         );
         return Vec::new();
     }
@@ -136,7 +136,7 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
             println!(
                 "{:>3} {}",
                 "Unable to parse EXIF JSON for".red(),
-                final_path_name(&path).magenta(),
+                folder_name(&path).magenta(),
             );
             println!("{}", text);
             println!("{:?}", e);

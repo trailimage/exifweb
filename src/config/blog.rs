@@ -1,11 +1,7 @@
 //! TOML blog configuration
 
 use super::{env_or_empty, load_config, ReadsEnv};
-use crate::{
-    deserialize::regex_string,
-    models::{Location, Post},
-    tools::Pairs,
-};
+use crate::{deserialize::regex_string, models::Location, tools::Pairs};
 use regex::Regex;
 use serde::Deserialize;
 use std::path::Path;

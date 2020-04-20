@@ -1,10 +1,10 @@
 //! Context and methods for rendering HTML templates
 
 use crate::{
-    config::BlogConfig,
+    config::{BlogConfig, CategoryIcon, PostLog},
     html,
     models::{Blog, Category, CategoryKind, Post},
-    tools::{config_regex, final_path_name, write_result},
+    tools::{config_regex, folder_name, write_result},
 };
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
@@ -12,17 +12,16 @@ use regex::Regex;
 use std::{fs, path::Path};
 use yarte::Template;
 
-// TODO: render ruminations page
-// TODO: render category kind page
 // TODO: render photo tag page
 // TODO: render map page
 
 /// Template rendering helpers
-pub struct Helpers {
+pub struct Helpers<'a> {
     mode_icons: HashMap<String, Regex>,
+    category_icons: &'a CategoryIcon,
 }
 
-impl Helpers {
+impl<'a> Helpers<'a> {
     pub fn icon(&self, name: &str) -> String {
         html::icon_tag(name)
     }
@@ -38,6 +37,16 @@ impl Helpers {
             None => String::new(),
         }
     }
+    pub fn category_icon(&self, kind: &CategoryKind) -> String {
+        html::category_icon(kind, &self.category_icons)
+    }
+    pub fn plural(&self, count: usize) -> &str {
+        if count == 1 {
+            ""
+        } else {
+            "s"
+        }
+    }
 }
 
 /// Render template and write content to `path` file
@@ -50,7 +59,7 @@ fn write_page(path: &Path, template: impl Template) {
 pub struct Writer<'a> {
     config: &'a BlogConfig,
     blog: &'a Blog,
-    helpers: Helpers,
+    helpers: Helpers<'a>,
     root: &'a Path,
 }
 
@@ -62,6 +71,7 @@ impl<'a> Writer<'a> {
             config,
             helpers: Helpers {
                 mode_icons: config_regex(&config.category.what_regex),
+                category_icons: &config.category.icon,
             },
         }
     }
@@ -73,7 +83,7 @@ impl<'a> Writer<'a> {
         if !path.is_dir() {
             println!(
                 "   Attempting to create directory {}",
-                final_path_name(&path)
+                folder_name(&path)
             );
             // ignore error here since it will be caught in the next step
             fs::create_dir(&path).unwrap_or(());
@@ -82,7 +92,17 @@ impl<'a> Writer<'a> {
         write_page(&path.join("index.html"), template)
     }
 
-    pub fn post(&self, post: &Post) {
+    pub fn posts(&self) {
+        for (_, p) in &self.blog.posts {
+            if p.needs_render {
+                self.post(&p);
+                // TODO: spawn thread to write log
+                PostLog::write(self.root, &p);
+            }
+        }
+    }
+
+    fn post(&self, post: &Post) {
         self.default_page(
             &post.path,
             PostContext {
@@ -90,12 +110,21 @@ impl<'a> Writer<'a> {
                 blog: &self.blog,
                 config: &self.config,
                 html: &self.helpers,
-                feature: Features::default(),
+                enable: Enable::default(),
             },
         );
     }
 
-    pub fn category(&self, category: &Category) {
+    pub fn categories(&self) {
+        for (kind, list) in &self.blog.categories {
+            self.category_kind(kind, list);
+            for c in list {
+                self.category(&c);
+            }
+        }
+    }
+
+    fn category(&self, category: &Category) {
         self.default_page(
             &category.path,
             CategoryContext {
@@ -103,7 +132,24 @@ impl<'a> Writer<'a> {
                 blog: &self.blog,
                 config: &self.config,
                 html: &self.helpers,
-                feature: Features::default(),
+                enable: Enable::default(),
+            },
+        );
+    }
+
+    fn category_kind(
+        &self,
+        category_kind: &CategoryKind,
+        categories: &Vec<Category>,
+    ) {
+        self.default_page(
+            category_kind.to_string().to_lowercase().as_str(),
+            CategoryKindContext {
+                kind: category_kind,
+                categories,
+                config: &self.config,
+                html: &self.helpers,
+                enable: Enable::default(),
             },
         );
     }
@@ -123,7 +169,7 @@ impl<'a> Writer<'a> {
                     blog: &self.blog,
                     config: &self.config,
                     html: &self.helpers,
-                    feature: Features::default(),
+                    enable: Enable::default(),
                 },
             );
         }
@@ -135,7 +181,7 @@ impl<'a> Writer<'a> {
             AboutContext {
                 config: &self.config,
                 html: &self.helpers,
-                feature: Features::new(true, false),
+                enable: Enable::new(true, false),
             },
         );
     }
@@ -169,33 +215,29 @@ impl<'a> Writer<'a> {
 }
 
 /// Page features
-struct Features {
+struct Enable {
     /// If `true` then main navigation elements will scroll with the page,
     /// otherwise they remain fixed in place while the page scrolls
     pub scroll_nav: bool,
     /// Whether to load Facebook scripts
-    pub use_facebook: bool,
-    /// Timestamp appended to URLs when loading JSON resources to break browser
-    /// cache
-    pub timestamp: u8, // TODO: remove from JavaScript
+    pub facebook: bool,
 }
 
-impl Default for Features {
+impl Default for Enable {
     fn default() -> Self {
-        Features {
+        Enable {
             scroll_nav: false,
-            use_facebook: true,
-            timestamp: 0,
+            facebook: true,
         }
     }
 }
 
-impl Features {
-    fn new(scroll_nav: bool, use_facebook: bool) -> Self {
-        Features {
+impl Enable {
+    fn new(scroll_nav: bool, facebook: bool) -> Self {
+        Enable {
             scroll_nav,
-            use_facebook,
-            ..Features::default()
+            facebook,
+            ..Enable::default()
         }
     }
 }
@@ -206,9 +248,9 @@ impl Features {
 struct PostContext<'c> {
     pub post: &'c Post,
     pub blog: &'c Blog,
-    pub html: &'c Helpers,
+    pub html: &'c Helpers<'c>,
     pub config: &'c BlogConfig,
-    pub feature: Features,
+    pub enable: Enable,
 }
 
 // TODO: re-use partials/category for post category list
@@ -217,19 +259,29 @@ struct PostContext<'c> {
 #[derive(Template)]
 #[template(path = "category.hbs")]
 struct CategoryContext<'c> {
-    pub html: &'c Helpers,
+    pub html: &'c Helpers<'c>,
     pub category: &'c Category,
     pub blog: &'c Blog,
     pub config: &'c BlogConfig,
-    pub feature: Features,
+    pub enable: Enable,
+}
+
+#[derive(Template)]
+#[template(path = "category_kind.hbs")]
+struct CategoryKindContext<'c> {
+    pub html: &'c Helpers<'c>,
+    pub config: &'c BlogConfig,
+    pub categories: &'c Vec<Category>,
+    pub enable: Enable,
+    pub kind: &'c CategoryKind,
 }
 
 #[derive(Template)]
 #[template(path = "about.hbs")]
 struct AboutContext<'c> {
     pub config: &'c BlogConfig,
-    pub feature: Features,
-    pub html: &'c Helpers,
+    pub enable: Enable,
+    pub html: &'c Helpers<'c>,
 }
 
 // TODO: sort when, who, what, where
@@ -243,7 +295,7 @@ struct CategoryMenuContext<'c> {
 #[template(path = "mobile_menu.hbs")]
 struct MobileMenuContext<'c> {
     pub blog: &'c Blog,
-    pub html: &'c Helpers,
+    pub html: &'c Helpers<'c>,
 }
 
 #[derive(Template)]

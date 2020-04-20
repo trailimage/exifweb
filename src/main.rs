@@ -27,7 +27,7 @@ use std::{
 };
 use template::Writer;
 use tools::{
-    earliest_photo_date, final_path_name, identify_outliers, path_slice,
+    earliest_photo_date, folder_name, identify_outliers, path_slice,
     pos_from_path,
 };
 
@@ -51,7 +51,7 @@ fn main() {
             println!(
                 "{} {}",
                 "Failed to open root directory".red(),
-                final_path_name(root).red()
+                folder_name(root).red()
             );
             return;
         }
@@ -72,7 +72,7 @@ fn main() {
     // iterate over every file or subdirectory within root
     for entry in entries {
         let path: PathBuf = entry.unwrap().path();
-        let dir_name: &str = final_path_name(&path);
+        let dir_name: &str = folder_name(&path);
 
         if !path.is_dir()
             || config.ignore_folders.contains(&dir_name.to_string())
@@ -148,24 +148,13 @@ fn main() {
 
         let write = Writer::new(root, &config, &blog);
 
-        for (_, p) in &blog.posts {
-            if p.needs_render {
-                write.post(&p);
-                // TODO: spawn thread to write log
-                PostLog::write(root, p);
-            }
-        }
+        write.posts();
         write.home_page();
         write.about_page();
         write.sitemap();
         write.category_menu();
         write.mobile_menu();
-
-        for (_, list) in &blog.categories {
-            for c in list {
-                write.category(&c);
-            }
-        }
+        write.categories();
     }
 }
 
@@ -185,7 +174,7 @@ fn load_series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
             println!(
                 "   {} {}",
                 "Failed to open subdirectory".red(),
-                final_path_name(&path).red().bold()
+                folder_name(&path).red().bold()
             );
             return None;
         }
@@ -362,7 +351,7 @@ fn load_post_log(path: &Path, config: &BlogConfig) -> Option<PostLog> {
             Err(e) => {
                 println!(
                     "   Failed to check {} for change {:?}",
-                    final_path_name(path),
+                    folder_name(path),
                     e
                 );
                 None

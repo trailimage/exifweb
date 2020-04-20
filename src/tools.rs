@@ -26,11 +26,11 @@ pub fn config_regex(pairs: &Option<Pairs>) -> HashMap<String, Regex> {
 
 /// Whether path ends with an extension
 pub fn has_ext(p: &PathBuf, ext: &str) -> bool {
-    final_path_name(p).ends_with(ext)
+    folder_name(p).ends_with(ext)
 }
 
 /// Convert path end name to printable string (ignores errors)
-pub fn final_path_name(path: &Path) -> &str {
+pub fn folder_name(path: &Path) -> &str {
     path.file_name().unwrap().to_str().unwrap()
 }
 
@@ -64,7 +64,7 @@ pub fn replace_pairs(text: String, pairs: &[(String, String)]) -> String {
 
 /// Use regex to capture position value from path (ignores errors)
 pub fn pos_from_path(re: &Regex, path: &Path) -> Option<u8> {
-    pos_from_name(re, final_path_name(&path))
+    pos_from_name(re, folder_name(&path))
 }
 
 /// Use regex to capture position value from file name (ignores errors)
@@ -215,13 +215,13 @@ pub fn write_result<E: error::Error, F: FnOnce() -> Result<String, E>>(
             match fs::write(path, &text) {
                 Ok(_) => (),
                 Err(e) => {
-                    eprintln!("Error writing {} {:?}", final_path_name(path), e)
+                    eprintln!("Error writing {} {:?}", folder_name(path), e)
                 }
             };
             return;
         }
         Err(e) => {
-            eprintln!("Error serializing {} {:?}", final_path_name(path), e)
+            eprintln!("Error serializing {} {:?}", folder_name(path), e)
         }
     }
 }
@@ -257,7 +257,7 @@ mod tests {
     #[test]
     fn path_end_name_test() {
         let path = Path::new("./docs/something/else");
-        assert_eq!(final_path_name(path), "else");
+        assert_eq!(folder_name(path), "else");
     }
 
     #[test]

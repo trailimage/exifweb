@@ -1,5 +1,5 @@
 use crate::{
-    config::CategoryConfig,
+    config::CategoryIcon,
     models::{Category, CategoryKind},
     tools::slugify,
 };
@@ -27,13 +27,13 @@ pub fn date_string(d: DateTime<FixedOffset>) -> String {
 }
 
 /// HTML tag for post category icon
-pub fn category_icon(kind: &str, config: &CategoryConfig) -> String {
-    let icon = match kind.to_lowercase().as_str() {
-        "who" => &config.icon.who,
-        "what" => &config.icon.what,
-        "when" => &config.icon.when,
-        "where" => &config.icon.r#where,
-        _ => &config.icon.default,
+pub fn category_icon(kind: &CategoryKind, config: &CategoryIcon) -> String {
+    let icon = match kind.to_string().to_lowercase().as_str() {
+        "who" => &config.who,
+        "what" => &config.what,
+        "when" => &config.when,
+        "where" => &config.r#where,
+        _ => &config.default,
     };
     icon_tag(icon)
 }
@@ -367,20 +367,23 @@ mod tests {
 
     #[test]
     fn category_icon_tag() {
-        let config = CategoryConfig {
-            icon: CategoryIcon {
-                who: "person".to_owned(),
-                what: "directions".to_owned(),
-                when: "date_range".to_owned(),
-                r#where: "map".to_owned(),
-                default: "local_offer".to_owned(),
-            },
-            what_regex: None,
+        let config = CategoryIcon {
+            who: "person".to_owned(),
+            what: "directions".to_owned(),
+            when: "date_range".to_owned(),
+            r#where: "map".to_owned(),
+            default: "local_offer".to_owned(),
         };
 
-        assert_eq!(category_icon(&"who", &config), icon_tag("person"));
-        assert_eq!(category_icon(&"what", &config), icon_tag("directions"));
-        assert_eq!(category_icon(&"nope", &config), icon_tag("local_offer"));
+        assert_eq!(
+            category_icon(&CategoryKind::Who, &config),
+            icon_tag("person")
+        );
+        assert_eq!(
+            category_icon(&CategoryKind::What, &config),
+            icon_tag("directions")
+        );
+        //assert_eq!(category_icon(&"nope", &config), icon_tag("local_offer"));
     }
 
     #[test]

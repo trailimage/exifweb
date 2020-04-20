@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+    {{~#> html_head title=kind.to_string(), description=config.site.description }}
+    {{~/html_head ~}}
+<body>
+    {{#> header title=kind.to_string(), sub_title="" }}
+    {{~/header }}
+
+    <div class="root-category content">
+        {{{ html.category_icon(kind) }}}
+        <ul>
+            {{~#each categories }}
+            <li><a href="/{{{ path }}}" rel="tag">{{ name }}</a>({{ post_paths.len() }} post{{ super::html.plural(post_paths.len()) }})</li>
+            {{~/each~}}
+        </ul>
+    </div>
+   {{> footer }}
+</body>
+</html>
