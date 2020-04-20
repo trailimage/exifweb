@@ -3,6 +3,8 @@ use crate::tools::slugify;
 use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
 
+// FIX: tag "mccallidaho" in Ruminations photo 8 is wrong
+
 /// Photos to which a tag has been applied
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TagPhotos<T> {

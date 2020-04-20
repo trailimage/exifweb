@@ -21,8 +21,10 @@ static LOG_FILE: &str = "log.toml";
 ///
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PostLog {
-    pub next_path: String,
-    pub prev_path: String,
+    #[serde(default)]
+    pub next_path: Option<String>,
+    #[serde(default)]
+    pub prev_path: Option<String>,
 
     /// Date of first relevant (not an outlier) photo in folder
     pub happened_on: Option<DateTime<FixedOffset>>,

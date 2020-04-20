@@ -3,10 +3,10 @@
     {{~#> html_head title=post.title, description=post.summary }}
         {{~#unless post.featured }}
             {{~#if post.prev_is_part }}
-        <link rel="prev" href="/{{{ post.prev_path }}}" />
+        <link rel="prev" href="/{{{ post.prev_path.as_ref().unwrap() }}}" />
             {{~/if }}
             {{~#if post.next_is_part }}
-        <link rel="prev" href="/{{{ post.next_path }}}" />
+        <link rel="prev" href="/{{{ post.next_path.as_ref().unwrap() }}}" />
             {{~/if }}
         {{~/unless }}
         {{~> html_head_facebook }}

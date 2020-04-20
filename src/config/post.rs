@@ -6,11 +6,15 @@ use std::path::Path;
 /// Categories to which the post has been assigned
 #[derive(Deserialize, Debug)]
 pub struct PostCategories {
-    pub who: String,
+    #[serde(default)]
+    pub who: Option<String>,
     /// year
-    pub when: u16,
+    #[serde(default)]
+    pub when: Option<u16>,
+    #[serde(default)]
     pub r#where: Vec<String>,
-    pub what: String,
+    #[serde(default)]
+    pub what: Option<String>,
 }
 /// Configuration within each post folder
 #[derive(Deserialize, Debug)]
@@ -18,9 +22,10 @@ pub struct PostConfig {
     pub title: String,
     pub summary: String,
     /// Categories to which the post has been assigned
-    #[serde(rename = "categories")]
-    pub category_list: PostCategories,
+    #[serde(default, rename = "categories")]
+    pub category_list: Option<PostCategories>,
     /// One-based index of cover photo
+    #[serde(default)]
     pub cover_photo_index: usize,
     /// YouTube ID used to embed video
     pub youtube_id: Option<String>,
@@ -35,18 +40,29 @@ fn chronological_default() -> bool {
 impl PostConfig {
     /// Categories derived from configuration
     pub fn categories(&self) -> Vec<Category> {
-        let mut categories: Vec<Category> = vec![
-            Category::new(
-                &self.category_list.when.to_string(),
-                CategoryKind::When,
-            ),
-            Category::new(&self.category_list.what, CategoryKind::What),
-            Category::new(&self.category_list.who, CategoryKind::Who),
-        ];
+        let mut categories: Vec<Category> = Vec::new();
 
-        for w in self.category_list.r#where.iter() {
-            categories.push(Category::new(w, CategoryKind::Where))
+        if let Some(list) = &self.category_list {
+            if let Some(who) = &list.who {
+                categories
+                    .push(Category::new(&who.to_string(), CategoryKind::Who))
+            }
+
+            if let Some(when) = &list.when {
+                categories
+                    .push(Category::new(&when.to_string(), CategoryKind::When))
+            }
+
+            if let Some(what) = &list.what {
+                categories
+                    .push(Category::new(&what.to_string(), CategoryKind::What))
+            }
+
+            for w in list.r#where.iter() {
+                categories.push(Category::new(w, CategoryKind::Where))
+            }
         }
+
         categories
     }
 

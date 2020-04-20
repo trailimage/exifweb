@@ -129,7 +129,10 @@ fn main() {
         blog.collate_tags();
         blog.sanitize_exif(&config.photo.exif);
 
-        if let Some(p) = config.featured_post.and_then(|f| blog.get(&f.path)) {
+        if let Some(p) = config
+            .featured_post
+            .and_then(|f| blog.get_featured(&f.path))
+        {
             config.featured_post = Some(FeaturedPost {
                 path: p.path.clone(),
                 title: p.title.clone(),
@@ -321,7 +324,11 @@ fn create_post(
                     tags: collate_tags(&photos),
                     path: post_path,
                     chronological: post_config.chronological,
-                    happened_on: earliest_photo_date(&photos),
+                    happened_on: if post_config.chronological {
+                        earliest_photo_date(&photos)
+                    } else {
+                        None
+                    },
                     photo_count: photos.len(),
                     photos,
                     ..Post::default()

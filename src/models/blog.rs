@@ -89,6 +89,23 @@ impl Blog {
         }
     }
 
+    pub fn get_featured(&mut self, path: &str) -> Option<&Post> {
+        if let Some(post) = self.posts.get_mut(path) {
+            post.featured = true;
+            Some(post)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_next(&self, post: &Post) -> Option<&Post> {
+        post.next_path.as_ref().and_then(|p| self.get(&p))
+    }
+
+    pub fn get_prev(&self, post: &Post) -> Option<&Post> {
+        post.prev_path.as_ref().and_then(|p| self.get(&p))
+    }
+
     /// Whether blog has any posts
     pub fn is_empty(&self) -> bool {
         self.posts.is_empty()
@@ -136,10 +153,14 @@ impl Blog {
             // sorted position of post
             if let Some(i) = ordered.iter().position(|kt| kt.path == *k) {
                 if i > 0 {
-                    p.prev_path = ordered.get(i - 1).unwrap().path.clone()
+                    p.prev_path = ordered
+                        .get(i - 1)
+                        .and_then(|kt: &KeyTime| Some(kt.path.clone()));
                 }
                 if i < len - 1 {
-                    p.next_path = ordered.get(i + 1).unwrap().path.clone();
+                    p.next_path = ordered
+                        .get(i + 1)
+                        .and_then(|kt: &KeyTime| Some(kt.path.clone()));
                 }
             } else {
                 eprintln!("Post {} is not chronological", k);
@@ -159,6 +180,7 @@ impl Blog {
             if p.needs_render || p.history.is_none() {
                 continue;
             }
+
             let log: &PostLog = Option::as_ref(&p.history).unwrap();
 
             if log.prev_path != p.prev_path || log.next_path != p.next_path {

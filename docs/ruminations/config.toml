@@ -3,11 +3,4 @@ summary = """Photography’s highest form is sometimes likened to poetry, \
 capturing experiences that defy denotation. Both are diminished to the extent \
 they require explanation, some say, so hopefully coercing them to explain each \
 other is a right born of two wrongs."""
-cover_photo_index = 0
 chronological = false
-
-[categories]
-who = "Family"
-when = 2013
-where = ["Boise National Forest"]
-what = "Jeep"

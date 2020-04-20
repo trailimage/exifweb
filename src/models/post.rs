@@ -50,9 +50,9 @@ pub struct Post {
     pub photos: Vec<Photo>,
 
     /// Next chronological post path (newer)
-    pub next_path: String,
+    pub next_path: Option<String>,
     /// Previous chronological post path (older)
-    pub prev_path: String,
+    pub prev_path: Option<String>,
 
     /// One-based position of this post in a series or 0 if it's not in a series
     pub part: u8,
@@ -115,8 +115,8 @@ impl Default for Post {
             featured: false,
             photos: Vec::new(),
 
-            next_path: String::new(),
-            prev_path: String::new(),
+            next_path: None,
+            prev_path: None,
 
             part: 0,
             total_parts: 0,
