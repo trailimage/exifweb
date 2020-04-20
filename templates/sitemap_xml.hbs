@@ -17,7 +17,7 @@
         <priority>0.8</priority>
     </url>
     {{/each }}
-    {{#each ctx.blog.categories }}
+    {{#each ctx.categories }}
         {{#each this.1 }}
     <url>
         <loc>{{{ super::super::ctx.site_url }}}/{{ this.name }}</loc>
