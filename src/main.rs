@@ -7,6 +7,7 @@ mod config;
 mod deserialize;
 mod html;
 mod image;
+mod json_ld;
 mod models;
 mod template;
 mod tools;

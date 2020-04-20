@@ -1,11 +1,19 @@
-use serde::{Deserialize, Serialize};
-use serde_json;
+mod action;
+mod agent;
+mod creative_work;
+mod location;
+
+use serde::Serialize;
+
+pub use agent::{Agent, Organization, Person};
+pub use creative_work::{Blog, BlogPosting};
+pub use location::{Location, Place};
 
 // TODO: create JSON-LD models
 
-struct CreateWork {
-    author: Option<String>,
-
+pub enum Value {
+    Property(PropertyValue),
+    Text(String),
 }
 
 #[derive(Serialize, Debug)]
@@ -21,8 +29,13 @@ struct Thing {
 
     name: Option<String>,
     description: Option<String>,
-    same_as: Option<URL>,
-    url: Option<URL>,
+    same_as: Option<String>,
+    url: Option<String>,
 }
-#[derive(Deserialize, Debug)]
-struct URL(Thing);
+
+#[derive(Serialize, Debug)]
+pub struct PropertyValue {
+    max_value: Option<usize>,
+    min_value: Option<usize>,
+    property_id: Option<String>,
+}
