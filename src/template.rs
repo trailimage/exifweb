@@ -137,7 +137,7 @@ impl<'a> Writer<'a> {
                 blog: &self.blog,
                 config: &self.config,
                 html: &self.helpers,
-                enable: Enable::default(),
+                enable: Enable::none(),
                 sub_title: format!(
                     "{} {}{}",
                     html::say_number(post_count),
@@ -160,7 +160,16 @@ impl<'a> Writer<'a> {
                 categories,
                 config: &self.config,
                 html: &self.helpers,
-                enable: Enable::default(),
+                enable: Enable::none(),
+                sub_title: format!(
+                    "{} {}",
+                    html::say_number(categories.len()),
+                    if categories.len() == 1 {
+                        "Category"
+                    } else {
+                        "Categories"
+                    }
+                ),
             },
         );
     }
@@ -239,8 +248,11 @@ impl Enable {
         Enable {
             scroll_nav,
             facebook,
-            ..Enable::default()
         }
+    }
+
+    fn none() -> Self {
+        Enable::new(false, false)
     }
 }
 
@@ -256,7 +268,6 @@ struct PostContext<'c> {
 }
 
 // TODO: re-use partials/category for post category list
-// TODO: add post count subtitle
 // TODO: render static map with photo locations
 #[derive(Template)]
 #[template(path = "category.hbs")]
@@ -277,6 +288,7 @@ struct CategoryKindContext<'c> {
     pub categories: &'c Vec<Category>,
     pub enable: Enable,
     pub kind: &'c CategoryKind,
+    pub sub_title: String,
 }
 
 #[derive(Template)]

@@ -3,7 +3,8 @@
     {{~#> html_head title=kind.to_string(), description=config.site.description }}
     {{~/html_head ~}}
 <body>
-    {{#> header title=kind.to_string(), sub_title="" }}
+    {{#> header title=kind.to_string(), sub_title=sub_title }}
+        <aside class="site-description">{{ config.site.description }}</aside>
     {{~/header }}
 
     <div class="root-category content">
