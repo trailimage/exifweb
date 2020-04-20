@@ -1,0 +1,34 @@
+{{#contentFor "html-head"}}
+<meta name="robots" content="noindex">
+<script type='text/javascript'>
+    {{! expose routed tag to script }}
+    var selectedTag = '{{selected}}';
+    var siteName = '{{config.site.title}}';
+</script>
+<script src="/js/photo-tag.js" defer></script>
+{{/contentFor}}
+
+{{#contentFor "header"}}
+<a id="flickr-logo" rel="nofollow" href="http://www.flickr.com/photos/trailimage/tags" title="Powered by Flickr">Powered
+    by<br /><img src="https://s.yimg.com/pw/images/goodies/white-flickr.png" width="56" height="26" alt=""></a>
+{{/contentFor}}
+
+<ul id="letters" class="content">
+    {{#alphabet}}
+    <li data-for="item-{{this}}">{{this}}</li>
+    {{/alphabet}}
+</ul>
+
+<div id="selectors" class="content">
+    {{#each tags}}
+    <select id="item-{{@key}}">
+        <option value="-">Select “{{@key}}” tag to see matches:</option>
+        {{#each this}}
+        <option value="{{encode @key}}">{{this}}</a>
+            {{/each}}
+    </select>
+    {{/each}}
+    <div id="status"></div>
+</div>
+
+<div id="thumbs" class="content"></div>

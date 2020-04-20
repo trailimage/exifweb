@@ -56,15 +56,14 @@ impl<'a> CommonContext<'a> {
     pub fn category_icon(&self, kind: &CategoryKind) -> String {
         html::category_icon(kind, &self.category_icons)
     }
-    pub fn plural(&self, count: usize) -> &str {
-        if count == 1 {
-            ""
-        } else {
-            "s"
-        }
-    }
     pub fn fraction(&self, number: &str) -> String {
         html::fraction(number)
+    }
+    pub fn plural(&self, word: &str, count: usize) -> String {
+        html::plural(word, count)
+    }
+    pub fn say_number(&self, number: usize) -> String {
+        html::say_number(number)
     }
 }
 
@@ -73,12 +72,13 @@ impl<'a> CommonContext<'a> {
 pub struct Writer<'a> {
     root: &'a Path,
     context: CommonContext<'a>,
-    config: &'a BlogConfig,
+    //config: &'a BlogConfig,
 }
 
 impl<'a> Writer<'a> {
     pub fn new(root: &'a Path, config: &'a BlogConfig, blog: &'a Blog) -> Self {
         // sort category kinds to match config.category.display
+        // TODO: sort category vector within kind
         let categories: Vec<(CategoryKind, &'a Vec<Category>)> = config
             .category
             .display
@@ -93,7 +93,7 @@ impl<'a> Writer<'a> {
 
         Writer {
             root,
-            config: &config,
+            //   config: &config,
             context: CommonContext {
                 blog,
                 site_url: &config.site.url,
@@ -167,10 +167,9 @@ impl<'a> Writer<'a> {
                 category,
                 enable: Enable::none(),
                 sub_title: format!(
-                    "{} {}{}",
+                    "{} {}",
                     html::say_number(post_count),
-                    self.context.post_alias,
-                    self.context.plural(post_count)
+                    html::plural(self.context.post_alias, post_count)
                 ),
             },
         );

@@ -88,6 +88,17 @@ pub fn say_number(n: usize) -> String {
     }
 }
 
+/// Format English word to plural form if count != 1
+pub fn plural(word: &str, count: usize) -> String {
+    if count == 1 {
+        word.to_owned()
+    } else if word.ends_with("y") {
+        format!("{}ies", word.trim_end_matches('y'))
+    } else {
+        format!("{}s", word)
+    }
+}
+
 pub fn fraction(f: &str) -> String {
     lazy_static! {
         // two numbers separated by a forward slash
@@ -433,6 +444,7 @@ mod tests {
                 ("motorcycle".to_owned(), "(KTM|BMW|Honda)".to_owned()),
                 ("bicycle".to_owned(), "bicycle".to_owned()),
             ]),
+            display: Vec::new(),
         };
 
         let categories: Vec<Category> =
@@ -449,6 +461,14 @@ mod tests {
         let source = format!("{}²", LIPSUM);
         let target = format!("<p>{}<sup>²</sup></p>", LIPSUM);
         assert_eq!(caption(&source), target);
+    }
+
+    #[test]
+    fn plural_test() {
+        assert_eq!(plural("theory", 1), "theory");
+        assert_eq!(plural("theory", 0), "theories");
+        assert_eq!(plural("count", 1), "count");
+        assert_eq!(plural("count", 20), "counts");
     }
 
     #[test]

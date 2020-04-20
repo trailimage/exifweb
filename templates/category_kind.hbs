@@ -11,7 +11,7 @@
         {{{ ctx.category_icon(kind) }}}
         <ul>
             {{~#each categories }}
-            <li><a href="/{{{ path }}}" rel="tag">{{ name }}</a>({{ post_paths.len() }} post{{ super::ctx.plural(post_paths.len()) }})</li>
+            <li><a href="/{{{ path }}}" rel="tag">{{ name }}</a>({{ super::ctx.say_number(post_paths.len()).to_lowercase() }} {{ super::ctx.plural("post", post_paths.len()) }})</li>
             {{~/each~}}
         </ul>
     </div>
