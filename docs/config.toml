@@ -29,10 +29,34 @@ ignore_folders = [
 path = "ruminations"
 
 [site]
-name = "Trail Image"
+title = "Trail Image"
+subtitle = "Adventure Photography by Jason Abbott"
 description = "Stories, images and videos of small adventure trips in and around the state of Idaho"
 url = "https://trailimage.com"
 post_alias = "Adventure"
+
+    [site.logo]
+    url = "img/logo_large"
+    width = 200
+    height = 200
+
+    [site.company_logo]
+    url = "img/logo_title.png"
+    width = 308
+    height = 60
+
+[owner]
+name = "Jason Abbott"
+urls = [
+    "https://www.facebook.com/jason.e.abbott",
+    "http://www.flickr.com/photos/boise",
+    "https://www.youtube.com/user/trailimage",
+    "https://twitter.com/trailimage"
+]
+    [owner.image]
+    url = "/img/face4_300px.jpg"
+    width = 300
+    height = 300
 
 [style]
 # Maximum pixel height of static maps displayed with post summaries

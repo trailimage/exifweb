@@ -6,6 +6,10 @@
       "type": "shell",
       "command": "cargo",
       "args": ["build"],
+      "presentation": {
+        "echo": false,
+        "clear": true
+      },
       "problemMatcher": []
     },
     {

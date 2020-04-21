@@ -147,14 +147,33 @@ pub struct StyleConfig {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct ImageConfig {
+    pub url: String,
+    pub width: u16,
+    pub height: u16,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct SiteConfig {
     pub url: String,
-    pub name: String,
+    pub title: String,
+    pub subtitle: String,
     pub description: String,
+    pub logo: ImageConfig,
+    pub company_logo: Option<ImageConfig>,
+
     /// Generic name for a post (usually just "post") that can be used in a
     /// category page subtitle, e.g. "27 posts" and pluralized with just an `s`
     #[serde(default = "default_post_alias")]
     pub post_alias: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct OwnerConfig {
+    pub name: String,
+    pub email: Option<String>,
+    pub urls: Option<Vec<String>>,
+    pub image: Option<ImageConfig>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -189,9 +208,11 @@ pub struct BlogConfig {
     #[serde(deserialize_with = "regex_string")]
     pub capture_series_index: Regex,
 
+    // TODO: update URLs to absolute path with domain
     /// Redirect source slug to target
     pub redirects: Option<Pairs>,
     pub site: SiteConfig,
+    pub owner: OwnerConfig,
     pub style: StyleConfig,
     pub category: CategoryConfig,
     pub photo: PhotoConfig,

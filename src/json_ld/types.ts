@@ -1216,7 +1216,7 @@ export declare namespace JsonLD {
       lastReviewed?: Date
       mainContentOfPage?: WebPageElement
       primaryImageOfPage?: ImageObject
-      relatedLink?: URL[]
+    relatedLink?: URL[]
       reviewedBy?: Person | Organization
       significantLink?: URL
       specialty?: Specialty

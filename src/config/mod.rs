@@ -5,7 +5,7 @@ pub mod series;
 
 pub use blog::{
     BlogConfig, CategoryConfig, CategoryIcon, ExifConfig, FacebookConfig,
-    FeaturedPost, PhotoConfig, SizeConfig,
+    FeaturedPost, ImageConfig, OwnerConfig, PhotoConfig, SizeConfig,
 };
 pub use log::PostLog;
 pub use post::PostConfig;

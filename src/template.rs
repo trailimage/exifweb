@@ -25,7 +25,7 @@ struct CommonContext<'a> {
     pub blog: &'a Blog,
     pub categories: Vec<(CategoryKind, &'a Vec<Category>)>,
     pub site_url: &'a str,
-    pub site_name: &'a str,
+    pub site_title: &'a str,
     pub site_description: &'a str,
     pub repo_url: &'a str,
     pub author_name: &'a str,
@@ -100,7 +100,7 @@ impl<'a> Writer<'a> {
             context: CommonContext {
                 blog,
                 site_url: &config.site.url,
-                site_name: &config.site.name,
+                site_title: &config.site.title,
                 repo_url: &config.repo_url,
                 author_name: &config.author_name,
                 site_description: &config.site.description,
