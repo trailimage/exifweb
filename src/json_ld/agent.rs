@@ -26,8 +26,8 @@ pub struct Person<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     email: Option<&'a str>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    same_as: Option<Vec<&'a str>>,
+    #[serde(rename = "sameAs", skip_serializing_if = "Option::is_none")]
+    same_as: Option<&'a [String]>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     address: Option<&'a Location<'a>>,
@@ -38,29 +38,25 @@ pub struct Person<'a> {
     //children: Option<Vec<&'a Person<'a>>>,
     //job_title: Option<&'a str>,
     //works_for: Option<&'a Organization<'a>>,
+    #[serde(skip)]
+    web_page: WebPage<'a>,
 }
 impl<'a> Person<'a> {
     pub fn from_config(owner: &'a OwnerConfig) -> Self {
-        let mut thing = Thing::extend("Person", None);
-
-        // thing.main_entity_of_page =
-        //     Some(ObjectOrURL::Object(WebPage::new("about")));
-
-        // let mut email: Option<&'a str>;
-
-        // if owner.email.is_some() {
-
-        // }
-
-        Person {
-            thing,
+        let mut p = Person {
+            thing: Thing::extend("Person", None),
             name: &owner.name,
             url: None,
             email: owner.email.as_deref(),
-            same_as: None, //config.owner.urls,.
+            same_as: owner.urls.as_deref(),
+            web_page: WebPage::<'a>::new("about"),
             address: None,
             image: None,
-        }
+        };
+
+        p.thing.main_entity_of_page = Some(ObjectOrURL::Object(&p.web_page));
+
+        p
     }
 }
 
@@ -131,17 +127,22 @@ mod tests {
         let config = OwnerConfig {
             name: String::from("Test Person"),
             email: Some(String::from("user@email.io")),
-            urls: None,
+            urls: Some(vec![
+                "http://first.url".to_owned(),
+                "http://second.url".to_owned(),
+            ]),
             image: None,
         };
         let schema = Person::from_config(&config);
 
         let target = "{\
-            \"@type\":\"Person\",\
-            \"@context\":\"http://schema.org\",\
-            \"name\":\"Test Person\",\
-            \"email\":\"user@email.io\"\
-        }";
+            '@type':'Person',\
+            '@context':'http://schema.org',\
+            'name':'Test Person',\
+            'email':'user@email.io',\
+            'sameAs':['http://first.url','http://second.url']\
+        }"
+        .replace("'", "\"");
 
         assert_eq!(
             serde_json::to_string(&schema).unwrap(),
