@@ -1,9 +1,10 @@
 use super::{
-    creative_work::{CreativeWork, ImageObject, WebPage},
+    action::Action,
+    creative_work::{ImageObject, WebPage},
     location::Location,
     ObjectOrURL, Thing,
 };
-use crate::config::OwnerConfig;
+use crate::config::{OwnerConfig, SiteConfig};
 use serde::Serialize;
 
 #[derive(Serialize, Debug)]
@@ -16,47 +17,59 @@ pub enum Agent<'a> {
 #[derive(Serialize, Debug)]
 pub struct Person<'a> {
     #[serde(flatten)]
-    thing: Thing<'a, WebPage<'a>>,
+    pub thing: Thing<'a>,
 
-    name: &'a str,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    url: Option<&'a str>,
+    pub name: &'a str,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    email: Option<&'a str>,
+    pub url: Option<&'a str>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email: Option<&'a str>,
+
+    #[serde(rename = "alternateName", skip_serializing_if = "Option::is_none")]
+    pub alternate_name: Option<&'a str>,
 
     #[serde(rename = "sameAs", skip_serializing_if = "Option::is_none")]
-    same_as: Option<&'a [String]>,
+    pub same_as: Option<&'a [String]>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    address: Option<&'a Location<'a>>,
+    pub address: Option<&'a Location<'a>>,
+
+    #[serde(
+        rename = "potentialAction",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub potential_action: Option<&'a Action<'a>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    image: Option<ObjectOrURL<'a, ImageObject<'a>>>,
+    pub image: Option<ObjectOrURL<'a, ImageObject<'a>>>,
+
     //knows: Option<Vec<&'a Person<'a>>>,
     //children: Option<Vec<&'a Person<'a>>>,
     //job_title: Option<&'a str>,
     //works_for: Option<&'a Organization<'a>>,
     #[serde(skip)]
-    web_page: WebPage<'a>,
+    pub web_page: WebPage<'a>,
 }
 impl<'a> Person<'a> {
-    pub fn from_config(owner: &'a OwnerConfig) -> Self {
-        let mut p = Person {
-            thing: Thing::extend("Person", None),
+    pub fn from_config(owner: &'a OwnerConfig, is_root: bool) -> Self {
+        Person {
+            thing: Thing::extend("Person".to_string(), None, is_root),
             name: &owner.name,
+            alternate_name: None,
             url: None,
             email: owner.email.as_deref(),
             same_as: owner.urls.as_deref(),
-            web_page: WebPage::<'a>::new("about"),
+            web_page: WebPage::<'a>::new("about".to_string(), false),
             address: None,
             image: None,
-        };
+            potential_action: None,
+        }
 
-        p.thing.main_entity_of_page = Some(ObjectOrURL::Object(&p.web_page));
+        // p.thing.main_entity_of_page = Some(ObjectOrURL::Object(&p.web_page));
 
-        p
+        // p
     }
 }
 
@@ -64,19 +77,31 @@ impl<'a> Person<'a> {
 #[derive(Serialize, Debug)]
 pub struct Organization<'a> {
     #[serde(flatten)]
-    thing: Thing<'a, CreativeWork<'a>>,
+    pub thing: Thing<'a>,
 
-    email: Option<&'a str>,
-    address: Option<Location<'a>>,
-    logo: Option<ObjectOrURL<'a, ImageObject<'a>>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
 
-    member_of: Option<Agent<'a>>,
-    employee: Option<Vec<&'a Person<'a>>>, // spec also allows single
-    founder: Option<&'a Person<'a>>,       // spec also allows array
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub address: Option<Location<'a>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub logo: Option<ObjectOrURL<'a, ImageObject<'a>>>,
+
+    #[serde(rename = "memberOf", skip_serializing_if = "Option::is_none")]
+    pub member_of: Option<Agent<'a>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub employee: Option<Vec<&'a Person<'a>>>, // spec also allows single
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub founder: Option<&'a Person<'a>>, // spec also allows array
 }
 impl<'a> Organization<'a> {
-    fn new(name: &'a str, logo_url: &'a str) -> Self {
-        let mut thing = Thing::extend("Organization", None);
+    pub fn new(name: String, logo_url: String, is_root: bool) -> Self {
+        let mut thing =
+            Thing::extend("Organization".to_string(), None, is_root);
+
         thing.name = Some(name);
 
         Organization {
@@ -89,29 +114,58 @@ impl<'a> Organization<'a> {
             founder: None,
         }
     }
+
+    pub fn from_config(config: &'a SiteConfig, is_root: bool) -> Self {
+        Self::new(config.title.to_string(), config.url.to_string(), is_root)
+    }
 }
 
 /// http://schema.org/SoftwareApplication
 #[derive(Serialize, Debug)]
 pub struct SoftwareApplication<'a> {
     #[serde(flatten)]
-    thing: Thing<'a, CreativeWork<'a>>,
+    pub thing: Thing<'a>,
 
-    application_category: Option<&'a str>,
-    application_suite: Option<&'a str>,
-    download_url: Option<&'a str>,
-    operating_system: Option<&'a str>,
-    software_version: Option<&'a str>,
+    #[serde(
+        rename = "applicationCategory",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub category: Option<&'a str>,
+
+    #[serde(
+        rename = "applicationSuite",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub suite: Option<&'a str>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub download_url: Option<&'a str>,
+
+    #[serde(
+        rename = "operatingSystem",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub operating_system: Option<&'a str>,
+
+    #[serde(
+        rename = "softwareVersion",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub version: Option<&'a str>,
 }
 impl<'a> SoftwareApplication<'a> {
-    fn new() -> Self {
+    fn new(is_root: bool) -> Self {
         SoftwareApplication {
-            thing: Thing::extend("SoftwareApplication", None),
-            application_category: None,
-            application_suite: None,
+            thing: Thing::extend(
+                "SoftwareApplication".to_string(),
+                None,
+                is_root,
+            ),
+            category: None,
+            suite: None,
             download_url: None,
             operating_system: None,
-            software_version: None,
+            version: None,
         }
     }
 }
@@ -133,20 +187,17 @@ mod tests {
             ]),
             image: None,
         };
-        let schema = Person::from_config(&config);
+        let schema = Person::from_config(&config, true);
 
         let target = "{\
-            '@type':'Person',\
             '@context':'http://schema.org',\
+            '@type':'Person',\
             'name':'Test Person',\
             'email':'user@email.io',\
             'sameAs':['http://first.url','http://second.url']\
         }"
         .replace("'", "\"");
 
-        assert_eq!(
-            serde_json::to_string(&schema).unwrap(),
-            String::from(target)
-        );
+        assert_eq!(serde_json::to_string(&schema).unwrap(), target.to_string());
     }
 }

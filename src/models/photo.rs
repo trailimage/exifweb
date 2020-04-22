@@ -76,6 +76,10 @@ impl Photo {
 
         self.sanitized = true;
     }
+
+    fn json_ld(&self) -> String {
+        todo!()
+    }
 }
 
 impl PartialOrd for Photo {

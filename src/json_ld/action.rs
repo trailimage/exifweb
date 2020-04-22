@@ -1,6 +1,5 @@
 use super::{
     agent::{Agent, SoftwareApplication},
-    creative_work::CreativeWork,
     location::Location,
     ObjectOrURL, Thing,
 };
@@ -11,18 +10,27 @@ use serde::Serialize;
 #[derive(Serialize, Debug)]
 pub struct EntryPoint<'a> {
     #[serde(flatten)]
-    thing: Thing<'a, CreativeWork<'a>>,
+    pub thing: Thing<'a>,
 
     /// An application that can complete the request
-    action_application: Option<&'a SoftwareApplication<'a>>,
-    content_type: Option<&'a str>,
-    encoding_type: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub action_application: Option<&'a SoftwareApplication<'a>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content_type: Option<&'a str>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub encoding_type: Option<&'a str>,
+
     /// An HTTP method that specifies the appropriate HTTP method for a request
     /// to an HTTP EntryPoint. Values are capitalized strings as used in HTTP.
-    http_method: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub http_method: Option<&'a str>,
+
     /// An url template (RFC6570) that will be used to construct the target of
     /// the execution of the action
-    url_emplate: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url_emplate: Option<&'a str>,
 }
 
 /// An action performed by a direct agent and indirect participants upon a
@@ -36,19 +44,27 @@ pub struct EntryPoint<'a> {
 #[derive(Serialize, Debug)]
 pub struct Action<'a> {
     #[serde(flatten)]
-    thing: Thing<'a, CreativeWork<'a>>,
+    pub thing: Thing<'a>,
 
-    agent: Option<Agent<'a>>,
-    participant: Option<Agent<'a>>,
-    error: Option<Thing<'a, CreativeWork<'a>>>,
-    location: Option<Location<'a>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub agent: Option<Agent<'a>>,
 
-    target: Option<ObjectOrURL<'a, EntryPoint<'a>>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub participant: Option<Agent<'a>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<Thing<'a>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub location: Option<Location<'a>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target: Option<ObjectOrURL<'a, EntryPoint<'a>>>,
 }
 impl<'a> Action<'a> {
-    pub fn extend(_type: &'a str) -> Self {
+    pub fn extend(type_name: String, is_root: bool) -> Self {
         Action {
-            thing: Thing::extend(_type, None),
+            thing: Thing::extend(type_name, None, is_root),
             agent: None,
             participant: None,
             error: None,
@@ -62,12 +78,12 @@ impl<'a> Action<'a> {
 #[derive(Serialize, Debug)]
 pub struct SearchAction<'a> {
     #[serde(flatten)]
-    action: Action<'a>,
+    pub action: Action<'a>,
 }
 impl<'a> SearchAction<'a> {
-    pub fn new(url: &'a str) -> Self {
+    pub fn new(url: &'a str, is_root: bool) -> Self {
         SearchAction {
-            action: Action::extend("SearchAction"),
+            action: Action::extend("SearchAction".to_string(), is_root),
         }
     }
 }
@@ -78,8 +94,8 @@ pub struct DiscoverAction<'a> {
     action: Action<'a>,
 }
 impl<'a> DiscoverAction<'a> {
-    pub fn new(url: &'a str) -> Self {
-        let mut action = Action::extend("DiscoverAction");
+    pub fn new(url: String, is_root: bool) -> Self {
+        let mut action = Action::extend("DiscoverAction".to_string(), is_root);
 
         action.target = Some(ObjectOrURL::URL(url));
 

@@ -2,7 +2,7 @@
 
 use crate::{
     config::{BlogConfig, CategoryIcon, FacebookConfig, FeaturedPost, PostLog},
-    html,
+    html, json_ld,
     models::{Blog, Category, CategoryKind, PhotoPath, Post},
     tools::{config_regex, path_slice, write_result},
 };
@@ -75,7 +75,10 @@ impl<'a> CommonContext<'a> {
 pub struct Writer<'a> {
     root: &'a Path,
     context: CommonContext<'a>,
-    //config: &'a BlogConfig,
+    org: json_ld::Organization<'a>,
+    owner: json_ld::Person<'a>,
+    about_page: json_ld::WebPage<'a>,
+    home_page: json_ld::WebPage<'a>,
 }
 
 impl<'a> Writer<'a> {
@@ -111,6 +114,16 @@ impl<'a> Writer<'a> {
                 mode_icons: config_regex(&config.category.what_regex),
                 category_icons: &config.category.icon,
             },
+            org: json_ld::Organization::from_config(&config.site, false),
+            owner: json_ld::Person::from_config(&config.owner, false),
+            home_page: json_ld::WebPage::new(
+                config.site.url.to_string(),
+                false,
+            ),
+            about_page: json_ld::WebPage::new(
+                format!("{}/about", &config.site.url),
+                false,
+            ),
         }
     }
 
@@ -155,13 +168,66 @@ impl<'a> Writer<'a> {
         for (kind, list) in &self.context.blog.categories {
             self.category_kind(kind, list);
             for c in list {
-                self.category(&c, &c.path);
+                self.category(&c, &c.path, false);
             }
         }
     }
 
-    fn category(&self, category: &Category, path: &str) {
-        let post_count = category.post_paths.len();
+    fn category(&self, category: &Category, path: &str, home_page: bool) {
+        let publisher = Some(json_ld::Agent::Organization(&self.org));
+
+        let link_data: serde_json::Result<String> = if home_page {
+            let mut blog = json_ld::Blog::new(true);
+
+            blog.creative_work.publisher = publisher;
+            blog.creative_work.thing.url =
+                Some(self.context.site_url.to_string());
+            blog.creative_work.thing.name =
+                Some(self.context.site_title.to_string());
+            blog.creative_work.thing.description =
+                Some(self.context.site_description.to_string());
+            blog.creative_work.thing.main_entity_of_page =
+                Some(json_ld::ObjectOrURL::Object(&self.home_page));
+
+            serde_json::to_string(&blog)
+        } else {
+            let mut web_page = json_ld::WebPage::new(
+                format!("{}/{}", &self.context.site_url, &category.path),
+                true,
+            );
+            let mut position: usize = 1;
+
+            web_page.creative_work.thing.name =
+                Some(self.context.site_title.to_string());
+            web_page.creative_work.publisher = publisher;
+            web_page.add_breadcrumb(
+                self.context.site_url.to_string(),
+                "Home".to_string(),
+                position,
+            );
+
+            // TODO: add remaining breadcrumbs
+            // if (category.key.includes("/")) {
+            //     // implies category is a subscategory
+            //     const rootKey = category.key.split("/")[0];
+            //     const rootCategory = blog.categoryWithKey(rootKey);
+
+            //     if (rootCategory !== undefined) {
+            //       schema.breadcrumb.push(
+            //         breadcrumb(
+            //           config.site.url + "/" + rootCategory.key,
+            //           rootCategory.title,
+            //           position++
+            //         )
+            //       );
+            //     }
+            //   }
+            //   schema.breadcrumb.push(
+            //     breadcrumb(config.site.url + "/" + category.key, category.title, position)
+            //   );
+
+            serde_json::to_string(&web_page)
+        };
 
         self.default_page(
             path,
@@ -173,6 +239,7 @@ impl<'a> Writer<'a> {
                     self.context.post_alias,
                     &category.post_paths,
                 ),
+                json_ld: link_data.ok(),
             },
         );
     }
@@ -190,6 +257,8 @@ impl<'a> Writer<'a> {
                 categories,
                 enable: Enable::none(),
                 sub_title: html::list_label("Category", &categories),
+                // TODO: render JSON-LD for category kind
+                json_ld: None,
             },
         );
     }
@@ -203,7 +272,7 @@ impl<'a> Writer<'a> {
             .get(&CategoryKind::When)
             .and_then(|list| list.first())
         {
-            self.category(category, "");
+            self.category(category, "", true);
         }
     }
 
@@ -213,6 +282,8 @@ impl<'a> Writer<'a> {
             AboutContext {
                 ctx: &self.context,
                 enable: Enable::new(true, false),
+                // TODO: render JSON-LD for category kind
+                json_ld: None,
             },
         );
     }
@@ -315,6 +386,7 @@ struct CategoryContext<'c> {
     pub category: &'c Category,
     pub enable: Enable,
     pub sub_title: String,
+    pub json_ld: Option<String>,
 }
 
 #[derive(Template)]
@@ -325,6 +397,7 @@ struct CategoryKindContext<'c> {
     pub enable: Enable,
     pub kind: &'c CategoryKind,
     pub sub_title: String,
+    pub json_ld: Option<String>,
 }
 
 #[derive(Template)]
@@ -332,6 +405,7 @@ struct CategoryKindContext<'c> {
 struct AboutContext<'c> {
     pub ctx: &'c CommonContext<'c>,
     pub enable: Enable,
+    pub json_ld: Option<String>,
 }
 
 #[derive(Template)]

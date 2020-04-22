@@ -1,7 +1,12 @@
-use crate::tools::slugify;
+use crate::{
+    config::BlogConfig,
+    json_ld::{Agent, Blog, Organization, WebPage},
+    tools::slugify,
+};
+use serde_json;
 use std::{
     cmp::Ordering,
-    fmt::{Display, Formatter, Result},
+    fmt::{self, Display, Formatter},
     hash::{Hash, Hasher},
 };
 
@@ -33,7 +38,7 @@ impl Hash for CategoryKind {
 }
 
 impl Display for CategoryKind {
-    fn fmt(&self, f: &mut Formatter) -> Result {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }
