@@ -1,8 +1,12 @@
-use crate::config::PostLog;
-use crate::models::{Category, Photo, TagPhotos};
+use crate::{
+    config::{BlogConfig, PostLog},
+    json_ld,
+    models::{Category, Photo, TagPhotos},
+};
 use chrono::{DateTime, FixedOffset};
 use core::cmp::Ordering;
 use hashbrown::HashMap;
+use serde_json;
 
 #[derive(Debug)]
 pub struct Post {
@@ -135,6 +139,32 @@ impl Default for Post {
             tags: HashMap::new(),
             history: None,
         }
+    }
+}
+
+impl Post {
+    pub fn json_ld(&self, config: &BlogConfig) -> serde_json::Value {
+        let image = self.cover_photo().and_then(|p| Some(p.json_ld()));
+        let categories: Vec<String> = self
+            .categories
+            .iter()
+            .map(|c: &Category| c.name.clone())
+            .collect();
+
+        serde_json::json!({
+            "@type": "BlogPosting",
+            "@context": json_ld::CONTEXT,
+            "author": json_ld::owner(config),
+            "name": &self.title,
+            "headline": &self.title,
+            "description": &self.summary,
+            "image": image,
+            "publisher": json_ld::organization(config),
+            "mainEntityOfPage": json_ld::web_page(config, "about"),
+            "datePublished": "",
+            "dateModified": "",
+            "articleSection": categories.join(",")
+        })
     }
 }
 

@@ -77,8 +77,15 @@ impl Photo {
         self.sanitized = true;
     }
 
-    fn json_ld(&self) -> String {
-        todo!()
+    pub fn json_ld(&self) -> serde_json::Value {
+        let size = &self.size.regular;
+
+        serde_json::json!({
+            "@type": "ImageObject",
+            "url": size.url,
+            "width": size.width,
+            "height": size.height
+        })
     }
 }
 

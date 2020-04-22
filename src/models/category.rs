@@ -1,8 +1,4 @@
-use crate::{
-    config::BlogConfig,
-    json_ld::{Agent, Blog, Organization, WebPage},
-    tools::slugify,
-};
+use crate::{config::BlogConfig, json_ld, tools::slugify};
 use serde_json;
 use std::{
     cmp::Ordering,
@@ -28,6 +24,26 @@ impl CategoryKind {
             "where" => Some(CategoryKind::Where),
             _ => None,
         }
+    }
+}
+
+impl CategoryKind {
+    pub fn json_ld(&self, config: &BlogConfig) -> serde_json::Value {
+        let name = self.to_string();
+        let path = slugify(&name);
+        let breadcrumbs: Vec<serde_json::Value> = vec![
+            json_ld::breadcrumb(config, "", "Home", 1),
+            json_ld::breadcrumb(config, &path, &name, 2),
+        ];
+
+        serde_json::json!({
+            "@type": "WebPage",
+            "@context": json_ld::CONTEXT,
+            "url": json_ld::full_url(config, &path),
+            "name": name,
+            "publisher": json_ld::organization(config),
+            "breadcrumb": breadcrumbs
+        })
     }
 }
 
@@ -80,6 +96,46 @@ impl Category {
             kind,
             path: format!("{}/{}", slugify(&kind.to_string()), slugify(&name)),
             post_paths: Vec::new(),
+        }
+    }
+    pub fn json_ld(
+        &self,
+        config: &BlogConfig,
+        home_page: bool,
+    ) -> serde_json::Value {
+        let site = &config.site;
+
+        if home_page {
+            serde_json::json!({
+                "@type": "Blog",
+                "@context": json_ld::CONTEXT,
+                "url": site.url,
+                "name": site.title,
+                "author": json_ld::owner(config),
+                "description": site.description,
+                "mainEntityOfPage": json_ld::web_page(config, ""),
+                "publisher": json_ld::organization(config)
+            })
+        } else {
+            let breadcrumbs: Vec<serde_json::Value> = vec![
+                json_ld::breadcrumb(config, "", "Home", 1),
+                json_ld::breadcrumb(
+                    config,
+                    &slugify(&self.kind.to_string()),
+                    &self.kind.to_string(),
+                    2,
+                ),
+                json_ld::breadcrumb(config, &self.path, &self.name, 3),
+            ];
+
+            serde_json::json!({
+                "@type": "WebPage",
+                "@context": json_ld::CONTEXT,
+                "url": json_ld::full_url(config, &self.path),
+                "name": self.name,
+                "publisher": json_ld::organization(config),
+                "breadcrumb": breadcrumbs
+            })
         }
     }
 }

@@ -36,12 +36,12 @@ url = "https://trailimage.com"
 post_alias = "Adventure"
 
     [site.logo]
-    url = "img/logo_large"
+    url = "img/logo-large.png"
     width = 200
     height = 200
 
     [site.company_logo]
-    url = "img/logo_title.png"
+    url = "img/logo-title.png"
     width = 308
     height = 60
 
@@ -54,7 +54,7 @@ urls = [
     "https://twitter.com/trailimage"
 ]
     [owner.image]
-    url = "/img/face4_300px.jpg"
+    url = "img/face5_full.jpg"
     width = 300
     height = 300
 
