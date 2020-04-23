@@ -1,4 +1,4 @@
 docs/**/*.tif
 docs/**/???.jpg
-docs/**/log.toml
+docs/**/log.ron
 target/*
