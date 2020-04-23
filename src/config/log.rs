@@ -36,8 +36,8 @@ pub struct PostLog {
     /// Date of first relevant (not an outlier) photo in folder
     pub happened_on: Option<DateTime<FixedOffset>>,
 
-    /// When post data were last loaded
-    pub as_of: DateTime<Local>,
+    /// Timestamp when post data were last loaded
+    pub as_of: i64,
 
     /// Number of photos in the post. If this changes then the post needs to be
     /// re-rendered.
@@ -46,6 +46,10 @@ pub struct PostLog {
     /// Photo tags keyed by their slug to the photos they were assigned to.
     /// These are logged so that photo tag pages can be regenerated.
     pub tags: HashMap<String, TagPhotos<u8>>,
+
+    /// Whether post source files have changed since they were last read
+    #[serde(skip)]
+    pub files_have_changed: bool,
 }
 
 impl PostLog {
@@ -56,8 +60,9 @@ impl PostLog {
             next_path: post.next_path.clone(),
             happened_on: post.happened_on,
             photo_count: post.photo_count,
-            as_of: Local::now(),
+            as_of: Local::now().timestamp(),
             tags: post.tags.clone(),
+            files_have_changed: false,
         };
         let path = root.join(&post.path).join(LOG_FILE);
         let pretty = PrettyConfig {
@@ -71,6 +76,18 @@ impl PostLog {
     /// Load log file from path
     pub fn load(path: &Path) -> Option<Self> {
         load_ron(path, LOG_FILE, false)
+    }
+
+    pub fn empty() -> PostLog {
+        PostLog {
+            next_path: None,
+            prev_path: None,
+            happened_on: None,
+            as_of: 0,
+            photo_count: 0,
+            tags: HashMap::new(),
+            files_have_changed: true,
+        }
     }
 }
 
@@ -89,6 +106,7 @@ impl Clone for PostLog {
             as_of: self.as_of,
             photo_count: self.photo_count,
             tags,
+            files_have_changed: self.files_have_changed,
         }
     }
 }

@@ -3,7 +3,9 @@
 use crate::config::PhotoConfig;
 use crate::deserialize::{date_time_string, string_number, string_sequence};
 use crate::html;
-use crate::models::{Camera, ExposureMode, Location, Photo, SizeCollection};
+use crate::models::{
+    Camera, ExposureMode, Location, Photo, PhotoFile, SizeCollection,
+};
 use crate::tools::pos_from_name;
 use chrono::{DateTime, FixedOffset};
 use colored::*;
@@ -95,12 +97,21 @@ pub struct ExifToolOutput {
     // or DateTimeOriginal or DateTimeCreated
     taken_on: Option<DateTime<FixedOffset>>,
 
+    /// When the *photo*, not the file, was created
     #[serde(
         default,
         rename = "CreateDate",
         deserialize_with = "date_time_string"
     )]
     created_on: Option<DateTime<FixedOffset>>,
+
+    /// When the *file*, not the photo, was created
+    #[serde(
+        default,
+        rename = "FileCreateDate",
+        deserialize_with = "date_time_string"
+    )]
+    file_created_on: Option<DateTime<FixedOffset>>,
 
     #[serde(rename = "GPSLatitude")]
     latitude: Option<f32>,
@@ -182,7 +193,10 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
             }
 
             let mut photo = Photo {
-                name: i.file_name.replace(&config.source_ext, ""),
+                file: PhotoFile {
+                    name: i.file_name.clone(),
+                    created: i.file_created_on.map_or(0, |d| d.timestamp()),
+                },
                 title: mem::replace(&mut i.title, None),
                 artist: mem::replace(&mut i.artist, None),
                 caption: mem::replace(&mut i.caption, None)
@@ -252,6 +266,7 @@ pub fn read_dir(path: &Path, file_pattern: &str) -> Vec<ExifToolOutput> {
         .arg("-Copyright")
         .arg("-DateTimeCreated")
         .arg("-CreateDate")
+        .arg("-FileCreateDate")
         // Offsets seem only to be present for software modified dates
         //.arg("-OffsetTimeOriginal")
         //.arg("-OffsetTimeDigitized")
@@ -320,12 +335,13 @@ mod tests {
     #[test]
     fn deserialize_test() {
         let json = r#"[{
-            "SourceFile": "001.tif",
+            "SourceFile": "001.jpg",
             "Aperture": 2.2,
             "Artist": "Jason Abbott",
             "ColorTemperature": 5800,
             "Copyright": "© Copyright 2017 Jason Abbott",
             "DateTimeCreated": "2017:08:06 11:25:41",
+            "FileCreateDate": "2020:04:22 23:39:28-06:00",
             "Description": "We worked all day yesterday, and various days before that, to get the bikes in working order. A hot and hazy day isn’t my first choice to ride the Boise Ridge but Nick and I want to put the bikes through their paces before a four-day ride in a few weeks.",
             "ExposureProgram": 2,
             "FileName": "001.tif",
@@ -348,7 +364,7 @@ mod tests {
           }]"#;
 
         let target = vec![ExifToolOutput {
-            file_name: "001.tif".to_owned(),
+            file_name: "001.jpg".to_owned(),
             artist: Some("Jason Abbott".to_owned()),
             title: Some("Fuel stop".to_owned()),
             caption: Some("We worked all day yesterday, and various days before that, to get the bikes in working order. A hot and hazy day isn’t my first choice to ride the Boise Ridge but Nick and I want to put the bikes through their paces before a four-day ride in a few weeks.".to_owned()),
@@ -370,6 +386,7 @@ mod tests {
             camera_model: Some("iPhone 6s".to_owned()),
             taken_on: Some(DateTime::parse_from_rfc3339("2017-08-06T11:25:41-06:00").unwrap()),
             created_on: None,
+            file_created_on: Some(DateTime::parse_from_rfc3339("2020-04-22T22:39:28-06:00").unwrap()),
             latitude: Some(43.579192),
             longitude: Some(-116.173061),
             color_profile: Some("ProPhoto RGB".to_owned()),

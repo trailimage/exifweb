@@ -90,6 +90,8 @@ display = ["when", "who", "what", "where"]
 capture_index = "^(?P<index>\\d{3}).(?P<ext>jpg|png|tif)$"
 # type of image files from which photo sizes are rendered
 source_ext = ".jpg"
+output_ext = ".webp"
+
 remove_tags = [
     'Idaho',
     'United States of America',

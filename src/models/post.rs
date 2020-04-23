@@ -1,5 +1,5 @@
 use crate::{
-    config::{BlogConfig, PostLog},
+    config::{BlogConfig, PhotoConfig, PostLog},
     json_ld,
     models::{Category, Photo, TagPhotos},
 };
@@ -26,6 +26,7 @@ pub struct Post {
 
     /// When the depicted events happened
     pub happened_on: Option<DateTime<FixedOffset>>,
+
     /// When the post was created
     //pub created_on: DateTime<FixedOffset>,
     /// When the post was last updated
@@ -68,8 +69,6 @@ pub struct Post {
     pub prev_is_part: bool,
     /// Total number of posts in the series
     pub total_parts: u8,
-    /// Whether this post is the first in a series
-    pub is_series_start: bool,
     /// Whether GPX track was found for the post
     pub has_track: bool,
     /// Categories to which this post belongs
@@ -90,7 +89,7 @@ pub struct Post {
     pub tags: HashMap<String, TagPhotos<u8>>,
 
     /// Information about previous post photos and configuration
-    pub history: Option<PostLog>,
+    pub history: PostLog,
 }
 
 impl Post {
@@ -127,9 +126,8 @@ impl Default for Post {
             is_partial: false,
             next_is_part: false,
             prev_is_part: false,
-            is_series_start: false,
-            has_track: false,
 
+            has_track: false,
             categories: Vec::new(),
 
             photo_count: 0,
@@ -137,7 +135,7 @@ impl Default for Post {
             needs_render: true,
 
             tags: HashMap::new(),
-            history: None,
+            history: PostLog::empty(),
         }
     }
 }
@@ -151,6 +149,7 @@ impl Post {
             .map(|c: &Category| c.name.clone())
             .collect();
 
+        // TODO: implement dates
         serde_json::json!({
             "@type": "BlogPosting",
             "@context": json_ld::CONTEXT,
@@ -165,6 +164,13 @@ impl Post {
             "dateModified": "",
             "articleSection": categories.join(",")
         })
+    }
+
+    /// Build root-relative URLs for all post photo sizes
+    pub fn build_photo_urls(&mut self, config: &PhotoConfig) {
+        for p in self.photos.iter_mut() {
+            p.size.build_urls(&self.path, p.index, config);
+        }
     }
 }
 

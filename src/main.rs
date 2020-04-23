@@ -17,7 +17,7 @@ use config::{
     BlogConfig, FeaturedPost, PhotoConfig, PostConfig, PostLog, SeriesConfig,
     CONFIG_FILE,
 };
-use image::exif_tool;
+use image::{exif_tool, image_magick};
 use models::{collate_tags, Blog, Photo, Post};
 use std::{
     env,
@@ -122,6 +122,8 @@ fn main() {
     // or next posts need to be re-rendered to update navigation HTML
     load_post_photos(root, &config, &mut blog, &sequence_changed);
 
+    blog.build_photo_urls(&config.photo);
+
     let render_count = blog.needs_render_count();
 
     success_metric(render_count, "posts need rendered");
@@ -157,6 +159,18 @@ fn main() {
         write.mobile_menu();
         write.photo_tags();
         write.categories();
+
+        for (path, post) in blog.posts {
+            let last_render = post.history.as_of;
+
+            for p in post.photos {
+                let full_path = &root.join(&path).to_string_lossy().to_string();
+
+                if p.file.created > last_render {
+                    image_magick::create_sizes(&full_path, &p, &config.photo)
+                }
+            }
+        }
     }
 }
 
@@ -293,64 +307,58 @@ fn create_post(
 ) -> Option<Post> {
     // path to series post includes parent
     let post_path = path_slice(path, if is_series { 2 } else { 1 });
+    let log = load_post_log(path, config);
 
-    match load_post_log(path, config) {
-        Some(log) => Some(Post {
+    if !(log.files_have_changed || config.force_rerender) {
+        // no files have changed and re-render NOT forced
+        Some(Post {
             path: post_path,
             happened_on: log.happened_on,
             photo_count: log.photo_count,
             chronological: post_config.chronological,
             needs_render: false,
             tags: log.tags.clone(),
-            history: Some(log),
+            history: log,
             cover_photo_index: post_config.cover_photo_index,
             ..Post::default()
-        }),
-        _ => {
-            let photos = load_photos(path, &config.photo);
+        })
+    } else {
+        let photos = load_photos(path, &config.photo);
 
-            if photos.is_empty() {
-                None
-            } else {
-                Some(Post {
-                    tags: collate_tags(&photos),
-                    path: post_path,
-                    chronological: post_config.chronological,
-                    happened_on: if post_config.chronological {
-                        earliest_photo_date(&photos)
-                    } else {
-                        None
-                    },
-                    photo_count: photos.len(),
-                    photos,
-                    ..Post::default()
-                })
-            }
+        if photos.is_empty() {
+            None
+        } else {
+            Some(Post {
+                tags: collate_tags(&photos),
+                path: post_path,
+                chronological: post_config.chronological,
+                history: log,
+                happened_on: if post_config.chronological {
+                    earliest_photo_date(&photos)
+                } else {
+                    None
+                },
+                photo_count: photos.len(),
+                photos,
+                ..Post::default()
+            })
         }
     }
 }
 
-/// Load post log if it still matches the source files (no additions, deletions
-/// or changes)
-fn load_post_log(path: &Path, config: &BlogConfig) -> Option<PostLog> {
-    if config.force_rerender {
-        // ignore previous log if forcing re-render
-        return None;
-    }
-
-    PostLog::load(path).and_then(|log| {
+/// Load post log. If there is no file then return a log with
+/// `files_have_changed = true`.
+fn load_post_log(path: &Path, config: &BlogConfig) -> PostLog {
+    PostLog::load(path).map_or(PostLog::empty(), |mut log| {
         match is_modified(
             path,
-            log.as_of.timestamp(),
+            log.as_of,
             log.photo_count + 1, // photos plus configuration file
             config,
         ) {
             Ok(modified) => {
-                if modified {
-                    None // do not return log if post files have changed
-                } else {
-                    Some(log)
-                }
+                log.files_have_changed = modified;
+                return log;
             }
             Err(e) => {
                 println!(
@@ -358,14 +366,17 @@ fn load_post_log(path: &Path, config: &BlogConfig) -> Option<PostLog> {
                     folder_name(path),
                     e
                 );
-                None
+                PostLog::empty()
             }
         }
     })
 }
 
 /// Whether `path` contains any pertinent files modified after `threshold`
-/// timestamp
+/// timestamp.
+///
+/// If `true` then photos will be loaded and a subsequent check will determine
+/// whether particular photos have been modified since the `threshold`.
 fn is_modified(
     path: &Path,
     threshold: i64,

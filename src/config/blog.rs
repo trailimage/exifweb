@@ -89,6 +89,8 @@ pub struct PhotoConfig {
     /// Extension (*with* leading period) of source files from which published
     /// web files are rendered
     pub source_ext: String,
+    /// Extension (*with* leading period) applied to resized photos
+    pub output_ext: String,
 }
 
 #[derive(Deserialize, Debug)]

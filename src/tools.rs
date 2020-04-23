@@ -309,7 +309,7 @@ mod tests {
     fn outlier_test() {
         let mut photos: Vec<Photo> = vec![
             Photo {
-                name: "One".to_owned(),
+                index: 1,
                 date_taken: Some(
                     DateTime::parse_from_rfc3339("1996-12-19T16:39:57-08:00")
                         .unwrap(),
@@ -317,7 +317,7 @@ mod tests {
                 ..Photo::default()
             },
             Photo {
-                name: "Two".to_owned(),
+                index: 2,
                 date_taken: Some(
                     DateTime::parse_from_rfc3339("1996-12-19T16:40:57-08:00")
                         .unwrap(),
@@ -326,7 +326,7 @@ mod tests {
             },
             // outlier
             Photo {
-                name: "Three".to_owned(),
+                index: 3,
                 date_taken: Some(
                     DateTime::parse_from_rfc3339("1992-12-19T16:39:57-08:00")
                         .unwrap(),
@@ -334,7 +334,7 @@ mod tests {
                 ..Photo::default()
             },
             Photo {
-                name: "Four".to_owned(),
+                index: 4,
                 date_taken: Some(
                     DateTime::parse_from_rfc3339("1996-12-19T16:43:57-08:00")
                         .unwrap(),
@@ -346,7 +346,7 @@ mod tests {
         identify_outliers(&mut photos);
 
         assert!(!photos[0].outlier_date);
-        assert_eq!(photos[2].name, "Three");
+        assert_eq!(photos[2].index, 3);
         assert!(photos[2].outlier_date);
     }
 
@@ -354,7 +354,7 @@ mod tests {
     fn earliest_photo_date_test() {
         let mut photos: Vec<Photo> = vec![
             Photo {
-                name: "Two".to_owned(),
+                index: 2,
                 date_taken: Some(
                     DateTime::parse_from_rfc3339("1996-12-19T16:40:57-08:00")
                         .unwrap(),
@@ -362,7 +362,7 @@ mod tests {
                 ..Photo::default()
             },
             Photo {
-                name: "One".to_owned(),
+                index: 1,
                 date_taken: Some(
                     DateTime::parse_from_rfc3339("1996-12-19T16:39:57-08:00")
                         .unwrap(),
@@ -371,7 +371,7 @@ mod tests {
             },
             // outlier
             Photo {
-                name: "Three".to_owned(),
+                index: 3,
                 date_taken: Some(
                     DateTime::parse_from_rfc3339("1992-12-19T16:39:57-08:00")
                         .unwrap(),
@@ -379,7 +379,7 @@ mod tests {
                 ..Photo::default()
             },
             Photo {
-                name: "Four".to_owned(),
+                index: 4,
                 date_taken: Some(
                     DateTime::parse_from_rfc3339("1996-12-19T16:43:57-08:00")
                         .unwrap(),

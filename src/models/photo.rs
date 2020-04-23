@@ -18,9 +18,15 @@ impl PhotoPath {
 }
 
 #[derive(Debug)]
-pub struct Photo {
-    /// File name of the photo without extension
+pub struct PhotoFile {
+    /// File name of source image including extension
     pub name: String,
+    /// Timestamp when the file was created
+    pub created: i64,
+}
+
+#[derive(Debug)]
+pub struct Photo {
     /// Name of photographer recorded in EXIF
     pub artist: Option<String>,
     /// Name of software used to process the photo
@@ -50,6 +56,8 @@ pub struct Photo {
 
     /// Sizes in which the photo is available
     pub size: SizeCollection,
+
+    pub file: PhotoFile,
 }
 
 impl Photo {
@@ -104,7 +112,7 @@ impl Ord for Photo {
 
 impl PartialEq for Photo {
     fn eq(&self, other: &Self) -> bool {
-        self.name == other.name && self.date_taken == other.date_taken
+        self.file.name == other.file.name && self.date_taken == other.date_taken
     }
 }
 
@@ -113,7 +121,10 @@ impl Eq for Photo {}
 impl Default for Photo {
     fn default() -> Self {
         Photo {
-            name: String::new(),
+            file: PhotoFile {
+                name: String::new(),
+                created: 0,
+            },
             artist: None,
             software: String::new(),
             title: None,

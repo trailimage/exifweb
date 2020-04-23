@@ -1,4 +1,4 @@
-use crate::config::{ExifConfig, PostLog};
+use crate::config::{ExifConfig, PhotoConfig, PostLog};
 use crate::models::{
     Category, CategoryKind, Photo, PhotoPath, Post, TagPhotos,
 };
@@ -36,6 +36,13 @@ impl Blog {
         }
         if let Some(post) = self.posts.get_mut(path) {
             post.photos.append(photos);
+        }
+    }
+
+    /// Build root-relative post photo size URLs
+    pub fn build_photo_urls(&mut self, config: &PhotoConfig) {
+        for (_, p) in self.posts.iter_mut() {
+            p.build_photo_urls(config);
         }
     }
 
@@ -192,13 +199,13 @@ impl Blog {
         let mut paths: Vec<String> = Vec::new();
 
         for (path, p) in self.posts.iter_mut() {
-            if p.needs_render || p.history.is_none() {
+            if p.needs_render {
                 continue;
             }
 
-            let log: &PostLog = Option::as_ref(&p.history).unwrap();
-
-            if log.prev_path != p.prev_path || log.next_path != p.next_path {
+            if p.history.prev_path != p.prev_path
+                || p.history.next_path != p.next_path
+            {
                 p.needs_render = true;
                 paths.push(path.clone());
             }

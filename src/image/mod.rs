@@ -1,2 +1,2 @@
 pub mod exif_tool;
-mod xmp;
+pub mod image_magick;
