@@ -2,7 +2,7 @@
 
 use crate::{
     config::{BlogConfig, CategoryIcon, FacebookConfig, FeaturedPost, PostLog},
-    html, json_ld,
+    html,
     models::{Blog, Category, CategoryKind, PhotoPath, Post},
     tools::{config_regex, path_slice, write_result},
 };
@@ -217,7 +217,7 @@ impl<'a> Writer<'a> {
             AboutContext {
                 ctx: &self.context,
                 enable: Enable::new(true, false),
-                // TODO: render JSON-LD for category kind
+                // TODO: render JSON-LD for about page
                 json_ld: None,
             },
         );

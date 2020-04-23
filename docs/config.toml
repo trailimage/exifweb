@@ -97,9 +97,9 @@ remove_tags = [
 ]
 
    [photo.size]
-   large = 4096
-   regular = 2048
-   small = 1024
+   large = 2048
+   regular = 1024
+   small = 320
    thumb = 256
 
    [photo.exif]

@@ -59,6 +59,42 @@ struct ImageMagickInfo {
     pub image: ImageFields,
 }
 
+// magick convert *.tif -quiet ( +clone -resize 2048x -write *-large.webp +delete ) ( +clone -resize 1024x -write *-regular.webp +delete ) ( +clone -resize 320x -write *-small.webp +delete ) -resize 256x256^ -gravity center -extent 256x256 001-thumb.webp
+
+// -thumbnail 100x100^ -gravity center -extent 100x100
+
+// magick convert *.tif -define tiff:ignore-tags=42033 -resize 256x256^ -gravity center -extent 256x256 *-thumb.webp
+
+// convert -resize 256x256^ -extent 256x256 in.png out.png
+
+// -define tiff:ignore-tags=42033
+
+/// https://imagemagick.org/script/webp.php
+/// TIFF options
+/// http://www.imagemagick.org/script/command-line-options.php#define
+pub fn resize(path: &Path, config: &PhotoConfig) {
+    // magick convert 001.tif -quiet -resize 2048x2048 -define webp:lossless=false -define webp:thread-level=1 001.webp
+    let output = match Command::new("magick")
+        .current_dir(path.to_string_lossy().to_string())
+        .arg("convert")
+        .arg("-quality")
+        .arg("50")
+        .output()
+    {
+        Ok(out) => out,
+        _ => {
+            println!(
+                "{:>3} {}",
+                "Failed to generate EXIF for".red(),
+                folder_name(&path).magenta(),
+            );
+            return Vec::new();
+        }
+    };
+}
+
+// magick convert 001.tif -quiet ( +clone -resize 2048x -write 001-large.webp +delete ) ( +clone -resize 1024x -write 001-regular.webp +delete ) ( +clone -resize 320x -write 001-small.webp +delete ) -resize 256x256^ -gravity center -extent 256x256 001-thumb.webp
+
 pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
     read_dir(&path)
         .iter()
@@ -69,7 +105,7 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
 
             if index == 0 {
                 println!(
-                    "{:>3} {}",
+                    "   {} {}",
                     "failed to infer index of".red(),
                     i.image.file_name.red(),
                 );
