@@ -88,6 +88,7 @@ display = ["when", "who", "what", "where"]
 
 [photo]
 capture_index = "^(?P<index>\\d{3}).(?P<ext>jpg|png|tif)$"
+source_ext = "jpg"
 remove_tags = [
     'Idaho',
     'United States of America',

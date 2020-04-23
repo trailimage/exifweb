@@ -1,3 +1,4 @@
 docs/**/*.tif
+docs/**/???.jpg
 docs/**/log.toml
 target/*

@@ -1,0 +1,65 @@
+(
+    next_path: Some("atlanta-loop"),
+    prev_path: Some("brother-ride-2008/2.camping-with-cows"),
+    happened_on: Some("2008-09-21T09:15:19-06:00"),
+    as_of: "2020-04-23T11:35:13.910012800-06:00",
+    photo_count: 16,
+    tags: {
+        "rain": (
+            name: "Rain",
+            photos: [1,2,3,6,8,9,10,11,],
+        ),
+        "honda-crf-230l": (
+            name: "Honda CRF 230L",
+            photos: [2,6,9,10,12,],
+        ),
+        "bmw-r1200gs-adventure": (
+            name: "BMW R1200GS Adventure",
+            photos: [2,6,9,13,14,16,],
+        ),
+        "cooking": (
+            name: "Cooking",
+            photos: [4,8,],
+        ),
+        "tool": (
+            name: "Tool",
+            photos: [5,],
+        ),
+        "fire": (
+            name: "Fire",
+            photos: [1,2,3,7,],
+        ),
+        "axe": (
+            name: "Axe",
+            photos: [5,],
+        ),
+        "tent": (
+            name: "Tent",
+            photos: [1,2,6,],
+        ),
+        "yamaha-xt-250": (
+            name: "Yamaha XT 250",
+            photos: [9,11,],
+        ),
+        "horse": (
+            name: "Horse",
+            photos: [12,],
+        ),
+        "motorcycle": (
+            name: "Motorcycle",
+            photos: [2,6,9,10,11,12,13,14,16,],
+        ),
+        "camping": (
+            name: "Camping",
+            photos: [1,],
+        ),
+        "power-line": (
+            name: "Power Line",
+            photos: [12,],
+        ),
+        "beer": (
+            name: "Beer",
+            photos: [5,7,],
+        ),
+    },
+)

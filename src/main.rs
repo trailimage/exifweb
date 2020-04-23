@@ -329,10 +329,11 @@ fn create_post(
     }
 }
 
-/// Load post log if source files are still valid (no additions or deletions and
-/// unchanged)
+/// Load post log if source files are still valid (no additions, deletions or
+/// changes)
 fn load_post_log(path: &Path, config: &BlogConfig) -> Option<PostLog> {
     if config.force_rerender {
+        // ignore previous log if forcing re-render
         return None;
     }
 
@@ -341,7 +342,7 @@ fn load_post_log(path: &Path, config: &BlogConfig) -> Option<PostLog> {
             path,
             log.as_of.timestamp(),
             log.photo_count + 1, // photos plus configuration file
-            |name: &str| name.ends_with(".tif") || name == CONFIG_FILE,
+            |name: &str| name.ends_with(".jpg") || name == CONFIG_FILE,
         ) {
             Ok(modified) => {
                 if modified {

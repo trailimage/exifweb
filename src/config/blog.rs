@@ -86,6 +86,9 @@ pub struct PhotoConfig {
     pub exif: ExifConfig,
     /// Tags to exclude from rendered views
     pub remove_tags: Vec<String>,
+    /// Extension (without leading period) of source files from which published
+    /// web files are rendered
+    pub source_ext: String,
 }
 
 #[derive(Deserialize, Debug)]

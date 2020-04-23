@@ -1,0 +1,101 @@
+(
+    next_path: Some("brother-ride-2008/3.cold-ride-home"),
+    prev_path: Some("brother-ride-2008/1.party-on-crater-peak"),
+    happened_on: Some("2008-09-20T07:25:49-06:00"),
+    as_of: "2020-04-23T11:35:13.915011500-06:00",
+    photo_count: 21,
+    tags: {
+        "coffee": (
+            name: "Coffee",
+            photos: [1,2,3,4,],
+        ),
+        "dirt-road": (
+            name: "Dirt Road",
+            photos: [7,9,11,16,17,18,],
+        ),
+        "bmw-r1200gs-adventure": (
+            name: "BMW R1200GS Adventure",
+            photos: [2,4,6,7,8,9,12,16,18,21,],
+        ),
+        "drinking": (
+            name: "Drinking",
+            photos: [2,4,],
+        ),
+        "throwing": (
+            name: "Throwing",
+            photos: [14,15,],
+        ),
+        "throwing-rocks": (
+            name: "Throwing Rocks",
+            photos: [14,15,],
+        ),
+        "motorcycle": (
+            name: "Motorcycle",
+            photos: [2,4,6,7,8,9,12,16,17,18,21,],
+        ),
+        "beer": (
+            name: "Beer",
+            photos: [1,19,20,],
+        ),
+        "outcrop": (
+            name: "Outcrop",
+            photos: [10,],
+        ),
+        "ailing": (
+            name: "Ailing",
+            photos: [16,],
+        ),
+        "sunrise": (
+            name: "Sunrise",
+            photos: [5,],
+        ),
+        "sign": (
+            name: "Sign",
+            photos: [7,],
+        ),
+        "photographing": (
+            name: "Photographing",
+            photos: [9,],
+        ),
+        "fire": (
+            name: "Fire",
+            photos: [2,3,4,6,13,14,19,20,],
+        ),
+        "river": (
+            name: "River",
+            photos: [13,14,15,],
+        ),
+        "night": (
+            name: "Night",
+            photos: [19,20,21,],
+        ),
+        "rain": (
+            name: "Rain",
+            photos: [19,21,],
+        ),
+        "mountain": (
+            name: "Mountain",
+            photos: [5,6,11,],
+        ),
+        "camp-chair": (
+            name: "Camp Chair",
+            photos: [2,4,],
+        ),
+        "yamaha-xt-250": (
+            name: "Yamaha XT 250",
+            photos: [4,6,7,8,9,12,16,17,18,],
+        ),
+        "chair": (
+            name: "Chair",
+            photos: [2,4,],
+        ),
+        "honda-crf-230l": (
+            name: "Honda CRF 230L",
+            photos: [4,6,7,8,9,12,21,],
+        ),
+        "tent": (
+            name: "Tent",
+            photos: [1,2,3,4,6,19,20,21,],
+        ),
+    },
+)

@@ -240,14 +240,14 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
 }
 
 pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
-    // exiftool *.tif -json -quiet -coordFormat %.6f
-    // exiftool 002.tif -json -quiet -coordFormat %.6f -ExposureProgram#
-    // exiftool *.tif -json -quiet -Aperture# -ColorTemperature# -DateTimeCreated -FocalLength# -FOV# -Keywords# -ShutterSpeed
+    // exiftool *.jpg -json -quiet -coordFormat %.6f
+    // exiftool 002.jpg -json -quiet -coordFormat %.6f -ExposureProgram#
+    // exiftool *.jpg -json -quiet -Aperture# -ColorTemperature# -DateTimeCreated -FocalLength# -FOV# -Keywords# -ShutterSpeed
 
     // suffix field name with # to disable ExifTool formatting
     let output = match Command::new("exiftool")
         .current_dir(path.to_string_lossy().to_string())
-        .arg("*.tif")
+        .arg("*.jpg")
         .arg("-json")
         .arg("-quiet")
         .arg("-Aperture#")

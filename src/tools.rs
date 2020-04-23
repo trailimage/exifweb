@@ -220,9 +220,7 @@ pub fn write_result<E: error::Error, F: FnOnce() -> Result<String, E>>(
             };
             return;
         }
-        Err(e) => {
-            eprintln!("Error serializing {} {:?}", folder_name(path), e)
-        }
+        Err(e) => eprintln!("Error serializing {} {:?}", folder_name(path), e),
     }
 }
 

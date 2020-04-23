@@ -1,0 +1,85 @@
+(
+    next_path: None,
+    prev_path: None,
+    happened_on: None,
+    as_of: "2020-04-23T11:35:13.895024500-06:00",
+    photo_count: 11,
+    tags: {
+        "park": (
+            name: "Park",
+            photos: [2,],
+        ),
+        "climbing": (
+            name: "Climbing",
+            photos: [7,],
+        ),
+        "mccallidaho": (
+            name: "#mccallidaho",
+            photos: [8,],
+        ),
+        "ice": (
+            name: "Ice",
+            photos: [9,],
+        ),
+        "leaves": (
+            name: "Leaves",
+            photos: [4,],
+        ),
+        "rumination": (
+            name: "Rumination",
+            photos: [1,2,3,4,5,6,7,],
+        ),
+        "sunset": (
+            name: "Sunset",
+            photos: [8,9,],
+        ),
+        "night": (
+            name: "Night",
+            photos: [10,11,],
+        ),
+        "flag": (
+            name: "Flag",
+            photos: [3,],
+        ),
+        "waterfall": (
+            name: "Waterfall",
+            photos: [4,],
+        ),
+        "algae": (
+            name: "Algae",
+            photos: [4,],
+        ),
+        "photographing": (
+            name: "Photographing",
+            photos: [3,8,],
+        ),
+        "dry-plant": (
+            name: "Dry Plant",
+            photos: [5,6,],
+        ),
+        "dock": (
+            name: "Dock",
+            photos: [8,],
+        ),
+        "lake": (
+            name: "Lake",
+            photos: [8,9,],
+        ),
+        "payette-lake": (
+            name: "Payette Lake",
+            photos: [8,9,],
+        ),
+        "fire": (
+            name: "Fire",
+            photos: [10,11,],
+        ),
+        "boisephotographer": (
+            name: "#boisephotographer",
+            photos: [8,],
+        ),
+        "snow": (
+            name: "Snow",
+            photos: [8,9,10,11,],
+        ),
+    },
+)
