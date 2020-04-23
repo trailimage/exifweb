@@ -6,7 +6,7 @@ pub struct SizeCollection {
     /// Size shown when image is enlarged
     pub large: Size,
     /// Main size within post body
-    pub regular: Size,
+    pub medium: Size,
     /// Size shown in post summary on category page
     pub small: Size,
     /// Size shown in search results
@@ -20,7 +20,7 @@ impl SizeCollection {
 
         SizeCollection {
             large: original.limit_to(config.large),
-            regular: original.limit_to(config.regular),
+            medium: original.limit_to(config.medium),
             small: original.limit_to(config.small),
             thumb: Size {
                 width: config.thumb,

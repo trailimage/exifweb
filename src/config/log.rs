@@ -68,6 +68,7 @@ impl PostLog {
         write_result(&path, || to_string_pretty(&log, pretty));
     }
 
+    /// Load log file from path
     pub fn load(path: &Path) -> Option<Self> {
         load_ron(path, LOG_FILE, false)
     }

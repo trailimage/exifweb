@@ -250,7 +250,7 @@ fn load_post(path: &Path, config: &BlogConfig) -> Option<Post> {
 /// Load photos for all posts with given `paths`. This may be used to populate
 /// posts initially created from a log file but then found to have changed
 /// sequence (different next or previous post), requiring a re-render which
-/// needs complete photo information.
+/// depends on complete photo information.
 fn load_post_photos(
     root: &Path,
     config: &BlogConfig,
@@ -267,10 +267,6 @@ fn load_post_photos(
 }
 
 /// Load information about each photo in `path`
-///
-/// - `capture_photo_index` Photos will be sorted with the index captured with
-///    this pattern
-///
 fn load_photos(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
     let mut photos: Vec<Photo> = exif_tool::parse_dir(&path, config);
 
@@ -283,7 +279,12 @@ fn load_photos(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
     photos
 }
 
-/// Load basic post data from previous render log or by reading photo files
+/// Load basic post data from previous render log or by reading photo files.
+///
+/// If the post is loaded from the log, that implies there were no changes and
+/// its photos won't be loaded, leaving the `photos` field will be empty.
+///
+/// If there is no log or photos, `None` will be returned.
 fn create_post(
     path: &Path,
     is_series: bool,
@@ -329,8 +330,8 @@ fn create_post(
     }
 }
 
-/// Load post log if source files are still valid (no additions, deletions or
-/// changes)
+/// Load post log if it still matches the source files (no additions, deletions
+/// or changes)
 fn load_post_log(path: &Path, config: &BlogConfig) -> Option<PostLog> {
     if config.force_rerender {
         // ignore previous log if forcing re-render
@@ -342,7 +343,7 @@ fn load_post_log(path: &Path, config: &BlogConfig) -> Option<PostLog> {
             path,
             log.as_of.timestamp(),
             log.photo_count + 1, // photos plus configuration file
-            |name: &str| name.ends_with(".jpg") || name == CONFIG_FILE,
+            config,
         ) {
             Ok(modified) => {
                 if modified {
@@ -363,21 +364,22 @@ fn load_post_log(path: &Path, config: &BlogConfig) -> Option<PostLog> {
     })
 }
 
-// TODO: retrieve per-photo modified date to know they need to have their sizes
-// regenerated (independent of re-rendering post)
-
-/// Whether `path` contains any `allow_name` files modified after `threshold`
+/// Whether `path` contains any pertinent files modified after `threshold`
 /// timestamp
 fn is_modified(
     path: &Path,
     threshold: i64,
     file_count: usize,
-    allow_name: fn(name: &str) -> bool,
+    config: &BlogConfig,
 ) -> io::Result<bool> {
     if !path.is_dir() {
         return Ok(true);
     }
     let mut count: usize = 0;
+
+    let allow_name = |name: &str| {
+        name.ends_with(&config.photo.source_ext) || name == CONFIG_FILE
+    };
 
     for entry in fs::read_dir(path)? {
         let entry: DirEntry = entry?;

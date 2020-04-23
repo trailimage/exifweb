@@ -66,6 +66,7 @@ impl PostConfig {
         categories
     }
 
+    /// Load standard post configuration file from path
     pub fn load(path: &Path) -> Option<Self> {
         load_config::<Self>(path)
     }

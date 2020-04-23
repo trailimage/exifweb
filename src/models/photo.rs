@@ -48,6 +48,7 @@ pub struct Photo {
     /// Whether values have been formatted based on configuration
     pub sanitized: bool,
 
+    /// Sizes in which the photo is available
     pub size: SizeCollection,
 }
 
@@ -78,7 +79,7 @@ impl Photo {
     }
 
     pub fn json_ld(&self) -> serde_json::Value {
-        let size = &self.size.regular;
+        let size = &self.size.medium;
 
         serde_json::json!({
             "@type": "ImageObject",

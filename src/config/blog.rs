@@ -69,7 +69,7 @@ pub struct ExifConfig {
 #[derive(Deserialize, Debug)]
 pub struct SizeConfig {
     pub large: u16,
-    pub regular: u16,
+    pub medium: u16,
     pub small: u16,
     pub thumb: u16,
 }
@@ -86,7 +86,7 @@ pub struct PhotoConfig {
     pub exif: ExifConfig,
     /// Tags to exclude from rendered views
     pub remove_tags: Vec<String>,
-    /// Extension (without leading period) of source files from which published
+    /// Extension (*with* leading period) of source files from which published
     /// web files are rendered
     pub source_ext: String,
 }

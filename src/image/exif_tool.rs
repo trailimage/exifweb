@@ -7,8 +7,6 @@ use crate::models::{Camera, ExposureMode, Location, Photo, SizeCollection};
 use crate::tools::pos_from_name;
 use chrono::{DateTime, FixedOffset};
 use colored::*;
-use lazy_static::*;
-use regex::Regex;
 use serde::Deserialize;
 use serde_json;
 use std::{mem, path::Path, process::Command};
@@ -165,12 +163,9 @@ impl Eq for ExifToolOutput {}
 /// Execute exif_tool for each image file in given `path` and capture output as
 /// `Photo` structs
 pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
-    lazy_static! {
-        /// Period followed by two or more non-periods at end of text
-        static ref FILE_EXT: Regex = Regex::new(r"\.[^\.]{2,}$").unwrap();
-    }
+    let pattern = format!("*{}", config.source_ext);
 
-    read_dir(&path)
+    read_dir(&path, &pattern)
         .iter_mut()
         .filter_map(|i: &mut ExifToolOutput| {
             // Photo index based on its file name pattern
@@ -187,7 +182,7 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
             }
 
             let mut photo = Photo {
-                name: FILE_EXT.replace(&i.file_name, "").to_string(),
+                name: i.file_name.replace(&config.source_ext, ""),
                 title: mem::replace(&mut i.title, None),
                 artist: mem::replace(&mut i.artist, None),
                 caption: mem::replace(&mut i.caption, None)
@@ -239,7 +234,7 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
         .collect()
 }
 
-pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
+pub fn read_dir(path: &Path, file_pattern: &str) -> Vec<ExifToolOutput> {
     // exiftool *.jpg -json -quiet -coordFormat %.6f
     // exiftool 002.jpg -json -quiet -coordFormat %.6f -ExposureProgram#
     // exiftool *.jpg -json -quiet -Aperture# -ColorTemperature# -DateTimeCreated -FocalLength# -FOV# -Keywords# -ShutterSpeed
@@ -247,7 +242,7 @@ pub fn read_dir(path: &Path) -> Vec<ExifToolOutput> {
     // suffix field name with # to disable ExifTool formatting
     let output = match Command::new("exiftool")
         .current_dir(path.to_string_lossy().to_string())
-        .arg("*.jpg")
+        .arg(file_pattern)
         .arg("-json")
         .arg("-quiet")
         .arg("-Aperture#")

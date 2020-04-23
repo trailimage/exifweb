@@ -88,7 +88,8 @@ display = ["when", "who", "what", "where"]
 
 [photo]
 capture_index = "^(?P<index>\\d{3}).(?P<ext>jpg|png|tif)$"
-source_ext = "jpg"
+# type of image files from which photo sizes are rendered
+source_ext = ".jpg"
 remove_tags = [
     'Idaho',
     'United States of America',
@@ -99,7 +100,7 @@ remove_tags = [
 
    [photo.size]
    large = 2048
-   regular = 1024
+   medium = 1024
    small = 320
    thumb = 256
 

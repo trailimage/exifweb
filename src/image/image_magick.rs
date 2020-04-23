@@ -84,7 +84,7 @@ pub fn resize(path: &Path, config: &PhotoConfig) {
         Ok(out) => out,
         _ => {
             println!(
-                "{:>3} {}",
+                "   {} {}",
                 "Failed to generate EXIF for".red(),
                 folder_name(&path).magenta(),
             );
@@ -129,7 +129,7 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
         .current_dir(path.to_string_lossy().to_string())
         .arg("convert")
         .arg("-quiet")
-        .arg("*.tif")
+        .arg("*.jpg")
         .arg("json:")
         .output()
     {

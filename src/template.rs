@@ -12,7 +12,6 @@ use regex::Regex;
 use std::{fs, path::Path};
 use yarte::Template;
 
-// TODO: render photo tag page
 // TODO: render map page
 
 /// Render template and write content to `path` file
@@ -302,6 +301,7 @@ struct PostContext<'c> {
     pub json_ld: Option<String>,
 }
 
+// TODO: update template with actual image thumbnails
 #[derive(Template)]
 #[template(path = "photo_tag.hbs")]
 struct PhotoTagContext<'c> {
