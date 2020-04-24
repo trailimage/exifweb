@@ -6,13 +6,15 @@
     <meta property="fb:app_id" content="{{ ctx.facebook.app_id }}" />
     <meta property="fb:admins" content="{{ ctx.facebook.admin_id }}" />
     <meta property="og:url" content="{{{ ctx.site_url }}}/{{{ post.path }}}/" />
-{{#if let Some(photo) = post.cover_photo() }}
+{{~#if let Some(photo) = post.cover_photo() }}
     <meta property="og:image" content="{{{ photo.size.medium.url }}}" />
-{{/if }}
+{{~/if }}
     <meta property="og:type" content="article" />
-    <meta property="article:published_time" content="{{ post.created_on.to_rfc3339() }}" />
-    <meta property="article:modified_time" content="{{ post.created_on.to_rfc3339() }}" />
+{{~#if let Some(d) = post.happened_on }}
+    <meta property="article:published_time" content="{{ d.to_rfc3339() }}" />
+{{~/if }}
+    <meta property="article:modified_time" content="{{ post.updated_on.to_rfc3339() }}" />
     <meta property="article:author" content="{{{ ctx.facebook.author_url }}}" />
-{{#if false }}
+{{~#if false }}
     <meta property="og:video" content="http://youtu.be/{{! post.video.id !}}" />
-{{/if ~}}
+{{~/if ~}}

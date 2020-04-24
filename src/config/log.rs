@@ -2,7 +2,7 @@
 
 use super::load_ron;
 use crate::{
-    models::{Blog, PhotoPath, Post, TagPhotos},
+    models::{Blog, Photo, PhotoPath, Post, TagPhotos},
     tools::write_result,
 };
 use chrono::{DateTime, FixedOffset, Local};
@@ -46,6 +46,10 @@ pub struct PostLog {
     /// re-rendered.
     pub photo_count: usize,
 
+    /// Even if post hasn't changed, its cover photo may be required to re-
+    /// render category pages it's part of
+    pub cover_photo: Option<Photo>,
+
     /// Photo tags keyed by their slug to the photos they were assigned to.
     /// These are logged so that photo tag pages can be regenerated.
     pub tags: HashMap<String, TagPhotos<u8>>,
@@ -66,6 +70,7 @@ impl PostLog {
             as_of: Local::now().timestamp(),
             tags: post.tags.clone(),
             files_have_changed: false,
+            cover_photo: post.cover_photo().map(|p| p.clone()),
         };
         let path = root.join(&post.path).join(LOG_FILE);
         let pretty = PrettyConfig {
@@ -90,6 +95,7 @@ impl PostLog {
             photo_count: 0,
             tags: HashMap::new(),
             files_have_changed: true,
+            cover_photo: None,
         }
     }
 
@@ -115,6 +121,11 @@ impl Clone for PostLog {
             photo_count: self.photo_count,
             tags,
             files_have_changed: self.files_have_changed,
+            cover_photo: if let Some(p) = &self.cover_photo {
+                Some(p.clone())
+            } else {
+                None
+            },
         }
     }
 }

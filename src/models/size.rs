@@ -1,4 +1,5 @@
 use crate::config::{PhotoConfig, SizeConfig};
+use serde::{Deserialize, Serialize};
 
 /// Suffixes added to resized photo files
 pub mod suffix {
@@ -9,8 +10,9 @@ pub mod suffix {
     pub static THUMB: &'static str = "t";
 }
 
-#[derive(Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct SizeCollection {
+    #[serde(skip)]
     original: Size,
 
     /// Size shown when image is enlarged
@@ -56,12 +58,13 @@ impl SizeCollection {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq)]
 pub struct Size {
     pub width: u16,
     pub height: u16,
     pub url: String,
     /// Suffix added to image name for size
+    #[serde(skip)]
     pub suffix: &'static str,
 }
 
@@ -112,7 +115,6 @@ impl Size {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::Photo;
 
     #[test]
     fn test_resize() {

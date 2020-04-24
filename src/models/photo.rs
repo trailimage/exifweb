@@ -17,7 +17,7 @@ impl PhotoPath {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default, Clone)]
 pub struct PhotoFile {
     /// File name of source image including extension
     pub name: String,
@@ -25,23 +25,31 @@ pub struct PhotoFile {
     pub created: i64,
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Photo {
     /// Name of photographer recorded in EXIF
+    #[serde(skip)]
     pub artist: Option<String>,
     /// Name of software used to process the photo
+    #[serde(skip)]
     pub software: String,
+    #[serde(skip)]
     pub title: Option<String>,
+    #[serde(skip)]
     pub caption: Option<String>,
     /// Information about the camera used to make the photo
+    #[serde(skip)]
     pub camera: Option<Camera>,
     /// Latitude and longitude where photo was taken
+    #[serde(skip)]
     pub location: Option<Location>,
     /// One-based position of photo within post
     pub index: u8,
     /// Tags applied to the photo
+    #[serde(skip)]
     pub tags: Vec<String>,
     /// When the photograph was taken per camera EXIF
+    #[serde(skip)]
     pub date_taken: Option<DateTime<FixedOffset>>,
 
     /// Whether taken date is an outlier (such an historic photo) compared to
@@ -49,14 +57,17 @@ pub struct Photo {
     /// the maps aren't overly zoomed-out.
     ///
     /// http://www.wikihow.com/Calculate-Outliers
+    #[serde(skip)]
     pub outlier_date: bool,
 
     /// Whether values have been formatted based on configuration
+    #[serde(skip)]
     pub sanitized: bool,
 
     /// Sizes in which the photo is available
     pub size: SizeCollection,
 
+    #[serde(skip)]
     pub file: PhotoFile,
 }
 

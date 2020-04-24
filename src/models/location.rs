@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 /// Latitude and longitude in degrees
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Deserialize, Clone)]
 pub struct Location {
     pub longitude: f32,
     pub latitude: f32,

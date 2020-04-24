@@ -64,11 +64,9 @@ pub struct Post {
     /// When the depicted events happened
     pub happened_on: Option<DateTime<FixedOffset>>,
 
-    /// When the post was created
-    pub created_on: DateTime<Utc>,
-
     /// When the post was last updated
-    //pub updated_on: DateTime<FixedOffset>,
+    pub updated_on: DateTime<Utc>,
+
     pub title: String,
 
     pub summary: String,
@@ -116,7 +114,26 @@ pub struct Post {
 impl Post {
     /// Photo at `copy_photo_index` position
     pub fn cover_photo(&self) -> Option<&Photo> {
-        self.photos.get(self.cover_photo_index)
+        let photo = if self.photos.is_empty() {
+            //self.history.cover_photo.map(|ref p| p)
+            match self.history.cover_photo {
+                Some(ref p) => Some(p),
+                None => None,
+            }
+        } else {
+            self.photos.get(self.cover_photo_index)
+        };
+
+        if photo.is_none() {
+            panic!(
+                "No photo at index {} for {} among {} photos",
+                self.cover_photo_index,
+                self.title,
+                self.photos.len()
+            );
+        }
+
+        photo
     }
 
     /// Label (not title) for next post in series or `default` if the next post
@@ -150,7 +167,7 @@ impl Default for Post {
             path: String::new(),
 
             happened_on: None,
-            created_on: DateTime::from(SystemTime::now()),
+            updated_on: DateTime::from(SystemTime::now()),
             title: String::new(),
             summary: String::new(),
 
@@ -176,18 +193,13 @@ impl Default for Post {
 }
 
 impl Post {
-    pub fn from_config(
-        config: PostConfig,
-        log: PostLog,
-        created_on: DateTime<Utc>,
-    ) -> Self {
+    pub fn from_config(config: PostConfig, log: PostLog) -> Self {
         Post {
             categories: config.categories(),
             title: config.title,
             summary: config.summary,
             cover_photo_index: config.cover_photo_index,
             chronological: config.chronological,
-            created_on,
             history: log,
             ..Self::default()
         }

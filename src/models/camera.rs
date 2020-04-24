@@ -1,7 +1,7 @@
 use super::ExposureMode;
 
 /// Information about the camera used to make the photo.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Camera {
     /// Make and model of the camera
     pub name: String,

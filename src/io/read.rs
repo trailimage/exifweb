@@ -5,40 +5,32 @@ use crate::{
     image::exif_tool,
     models::{collate_tags, Blog, Photo, Post, PostSeries},
     tools::{
-        created_or_now, earliest_photo_date, folder_name, identify_outliers,
-        path_slice, pos_from_path,
+        earliest_photo_date, folder_name, identify_outliers, path_slice,
+        pos_from_path,
     },
 };
-use chrono::{DateTime, Utc};
 use colored::*;
 use std::{
     self,
     fs::{self, DirEntry},
     path::{Path, PathBuf},
+    process,
     time::UNIX_EPOCH,
 };
 
 /// Create post that is not part of a series
-pub fn post(
-    path: &Path,
-    created_on: DateTime<Utc>,
-    config: &BlogConfig,
-) -> Option<Post> {
-    PostConfig::load(&path).and_then(|post_config| {
-        create_post(path, false, created_on, config, post_config)
-    })
+pub fn post(path: &Path, config: &BlogConfig) -> Option<Post> {
+    PostConfig::load(&path)
+        .and_then(|post_config| create_post(path, false, config, post_config))
 }
 
 /// Attempt to load path entries as if they constitute a post series. `None` is
 /// returned if there are no subdirectories or they don't contain valid posts.
 pub fn series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
-    let sub_dirs: Vec<(PathBuf, DateTime<Utc>)> = match fs::read_dir(&path) {
+    let sub_dirs: Vec<PathBuf> = match fs::read_dir(&path) {
         Ok(entries) => entries
-            .map(|e: std::io::Result<DirEntry>| {
-                let e = e.unwrap();
-                (e.path(), created_or_now(e))
-            })
-            .filter(|(path, _)| path.is_dir())
+            .map(|e: std::io::Result<DirEntry>| e.unwrap().path())
+            .filter(|p| p.is_dir())
             .collect(),
         _ => {
             println!(
@@ -59,13 +51,8 @@ pub fn series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
         return Some(
             sub_dirs
                 .iter()
-                .filter_map(|(path, created_on)| {
-                    series_post(
-                        path.as_path(),
-                        *created_on,
-                        config,
-                        &series_config,
-                    )
+                .filter_map(|p| {
+                    series_post(p.as_path(), config, &series_config)
                 })
                 .collect(),
         );
@@ -79,7 +66,6 @@ pub fn series(path: &Path, config: &BlogConfig) -> Option<Vec<Post>> {
 /// relates to the series.
 fn series_post(
     path: &Path,
-    created_on: DateTime<Utc>,
     config: &BlogConfig,
     series_config: &SeriesConfig,
 ) -> Option<Post> {
@@ -90,26 +76,24 @@ fn series_post(
     }
 
     PostConfig::load(&path).and_then(|post_config| {
-        create_post(path, true, created_on, config, post_config).and_then(
-            |mut p| {
-                p.series = Some(PostSeries {
-                    part,
-                    title: series_config.title.clone(),
-                    path: series_config.path.clone(),
-                    part_path: path_slice(path, 1),
-                    total_parts: series_config.parts,
-                    prev_is_part: part > 1,
-                    next_is_part: part < series_config.parts,
-                });
+        create_post(path, true, config, post_config).and_then(|mut p| {
+            p.series = Some(PostSeries {
+                part,
+                title: series_config.title.clone(),
+                path: series_config.path.clone(),
+                part_path: path_slice(path, 1),
+                total_parts: series_config.parts,
+                prev_is_part: part > 1,
+                next_is_part: part < series_config.parts,
+            });
 
-                // first post in series uses path
-                if part == 1 {
-                    p.path = series_config.path.clone()
-                }
+            // first post in series uses path
+            if part == 1 {
+                p.path = series_config.path.clone()
+            }
 
-                Some(p)
-            },
-        )
+            Some(p)
+        })
     })
 }
 
@@ -154,7 +138,6 @@ fn load_photos(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
 fn create_post(
     path: &Path,
     is_series: bool,
-    created_on: DateTime<Utc>,
     config: &BlogConfig,
     post_config: PostConfig,
 ) -> Option<Post> {
@@ -164,13 +147,19 @@ fn create_post(
 
     if !(log.files_have_changed || config.force_rerender) {
         // no files have changed and re-render NOT forced
+        assert_index(
+            post_config.cover_photo_index,
+            log.photo_count,
+            &post_config.title,
+        );
+
         Some(Post {
             path: post_path,
             happened_on: log.happened_on,
             photo_count: log.photo_count,
             needs_render: false,
             tags: log.tags.clone(),
-            ..Post::from_config(post_config, log, created_on)
+            ..Post::from_config(post_config, log)
         })
     } else {
         let photos = load_photos(path, &config.photo);
@@ -178,6 +167,12 @@ fn create_post(
         if photos.is_empty() {
             None
         } else {
+            assert_index(
+                post_config.cover_photo_index,
+                photos.len(),
+                &post_config.title,
+            );
+
             Some(Post {
                 path: post_path,
                 tags: collate_tags(&photos),
@@ -188,9 +183,20 @@ fn create_post(
                 },
                 photo_count: photos.len(),
                 photos,
-                ..Post::from_config(post_config, log, created_on)
+                ..Post::from_config(post_config, log)
             })
         }
+    }
+}
+
+fn assert_index(index: usize, length: usize, label: &str) {
+    if index >= length {
+        println!(
+            "\n   {}",
+            format!("Index {} exceeded {} for {}", index, length, label).red()
+        );
+
+        process::exit(1);
     }
 }
 

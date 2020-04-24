@@ -22,7 +22,7 @@ use std::{
     path::{Path, PathBuf},
     process,
 };
-use tools::{created_or_now, folder_name};
+use tools::folder_name;
 
 // TODO: generate mini maps
 // TODO: read and process GPX files
@@ -173,9 +173,7 @@ fn post_from_entry(blog: &mut Blog, entry: fs::DirEntry, config: &BlogConfig) {
         return;
     }
 
-    let created_on = created_or_now(entry);
-
-    if let Some(post) = read::post(path.as_path(), created_on, &config) {
+    if let Some(post) = read::post(path.as_path(), &config) {
         println!("   {} ({} photos)", post.title.yellow(), post.photo_count);
         blog.add_post(post);
     }
