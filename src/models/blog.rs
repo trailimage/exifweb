@@ -60,6 +60,7 @@ impl Blog {
                         None => {
                             let mut copy = c.clone();
                             copy.post_paths.push(p.path.clone());
+                            copy.post_paths.sort();
                             category_list.push(copy);
                             category_list.sort();
                         }
@@ -68,30 +69,31 @@ impl Blog {
                 None => {
                     let mut copy = c.clone();
                     copy.post_paths.push(p.path.clone());
+                    copy.post_paths.sort();
                     self.categories.insert(c.kind, vec![copy]);
                 }
             };
         }
     }
 
-    pub fn sorted_categories(&self) -> Vec<(CategoryKind, &Vec<Category>)> {
-        let list = vec![
-            self.category_kind(CategoryKind::When),
-            self.category_kind(CategoryKind::Who),
-            self.category_kind(CategoryKind::What),
-            self.category_kind(CategoryKind::Where),
-        ];
-        list.iter()
-            .filter_map(|(kind, cats)| cats.and_then(|c| Some((*kind, c))))
-            .collect()
-    }
+    // pub fn sorted_categories(&self) -> Vec<(CategoryKind, &Vec<Category>)> {
+    //     let list = vec![
+    //         self.category_kind(CategoryKind::When),
+    //         self.category_kind(CategoryKind::Who),
+    //         self.category_kind(CategoryKind::What),
+    //         self.category_kind(CategoryKind::Where),
+    //     ];
+    //     list.iter()
+    //         .filter_map(|(kind, cats)| cats.and_then(|c| Some((*kind, c))))
+    //         .collect()
+    // }
 
-    pub fn category_kind(
-        &self,
-        kind: CategoryKind,
-    ) -> (CategoryKind, Option<&Vec<Category>>) {
-        (kind, self.categories.get(&kind))
-    }
+    // pub fn category_kind(
+    //     &self,
+    //     kind: CategoryKind,
+    // ) -> (CategoryKind, Option<&Vec<Category>>) {
+    //     (kind, self.categories.get(&kind))
+    // }
 
     /// Number of posts that need to be rendered
     pub fn needs_render_count(&self) -> usize {

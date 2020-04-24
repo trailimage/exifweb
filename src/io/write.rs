@@ -80,7 +80,6 @@ pub struct Writer<'a> {
 impl<'a> Writer<'a> {
     pub fn new(root: &'a Path, config: &'a BlogConfig, blog: &'a Blog) -> Self {
         // sort category kinds to match config.category.display
-        // TODO: sort category vector within kind
         let categories: Vec<(CategoryKind, &'a Vec<Category>)> = config
             .category
             .display
@@ -90,7 +89,7 @@ impl<'a> Writer<'a> {
             // get list of categories for kind
             .map(|kind| (kind, blog.categories.get(&kind)))
             // filter out category kinds that have no categories
-            .filter_map(|(kind, cats)| cats.and_then(|c| Some((kind, c))))
+            .filter_map(|(kind, cats)| cats.map(|c| (kind, c)))
             .collect();
 
         Writer {
