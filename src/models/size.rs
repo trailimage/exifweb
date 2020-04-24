@@ -1,7 +1,7 @@
 use crate::config::{PhotoConfig, SizeConfig};
 
 /// Suffixes added to resized photo files
-mod suffix {
+pub mod suffix {
     pub static ORIGINAL: &'static str = "o";
     pub static LARGE: &'static str = "l";
     pub static MEDIUM: &'static str = "l";

@@ -15,5 +15,5 @@ pub use exposure_mode::ExposureMode;
 pub use location::Location;
 pub use photo::{Photo, PhotoFile, PhotoPath};
 pub use post::Post;
-pub use size::{Size, SizeCollection};
+pub use size::{suffix, Size, SizeCollection};
 pub use tag::{collate_tags, TagPhotos};
