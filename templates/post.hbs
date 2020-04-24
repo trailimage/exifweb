@@ -2,11 +2,13 @@
 <html lang="en">
     {{~#> html_head title=post.title, description=post.summary }}
         {{~#unless post.featured }}
-            {{~#if post.prev_is_part }}
+            {{~#if let Some(series) = &post.series }}
+                {{~#if series.prev_is_part }}
         <link rel="prev" href="/{{{ post.prev_path.as_ref().unwrap() }}}" />
-            {{~/if }}
-            {{~#if post.next_is_part }}
-        <link rel="prev" href="/{{{ post.next_path.as_ref().unwrap() }}}" />
+                {{~/if }}
+                {{~#if series.next_is_part }}
+        <link rel="next" href="/{{{ post.next_path.as_ref().unwrap() }}}" />
+                {{~/if }}
             {{~/if }}
         {{~/unless }}
         {{~> html_head_facebook }}
@@ -14,11 +16,11 @@
         <script src="/js/post.js" type="text/javascript" defer></script>
     {{~/html_head }}
 <body>
-    {{#> header title=post.title, sub_title=post.sub_title }}
-        {{~#if post.is_partial }}
+    {{#> header title=title, sub_title=sub_title }}
+        {{~#if let Some(series) = &post.series }}
             <div class="subtitle">
-                <div class="parts"><span>Part </span>{{ post.part }} of {{ post.total_parts }}:</div>
-                <p>{{ post.sub_title }}</p>
+                <div class="parts"><span>Part </span>{{ series.part }} of {{ series.total_parts }}:</div>
+                <p>{{ sub_title }}</p>
             </div>
         {{~/if }}
         {{~#if let Some(d) = post.happened_on }}

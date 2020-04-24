@@ -1,36 +1,24 @@
 {{! Next and Previous links displayed within a post !}}
 
 {{~#if let Some(prev) = ctx.blog.get_prev(&post) ~}}
+    {{ let label = post.next_label("Next") }}
         <!--googleoff: index-->
         <div class="previous">
-            {{~#if post.prev_is_part ~}}
             <a href="/{{{ prev.path }}}">
-                <h4>{{{ ctx.icon("chevron_left") }}} Part {{ prev.part }}</h4>
-                {{ prev.sub_title }}
-            </a>
-            {{~else }}
-            <a href="/{{{ prev.path }}}">
-                <h4>{{{ ctx.icon("chevron_left") }}} Previous</h4>
+                <h4>{{{ ctx.icon("chevron_left") }}} {{ label }}</h4>
                 {{ prev.title }}
             </a>
-            {{~/if }}
         </div>
         <!--googleon: index-->
 {{~/if}}
 {{~#if let Some(next) = ctx.blog.get_next(&post) ~}}
+    {{ let label = post.prev_label("Previous") }}
         <!--googleoff: index-->
         <div class="next">
-            {{~#if post.next_is_part }}
             <a href="/{{{ next.path }}}">
-                <h4>Part {{next.part}}{{{ ctx.icon("chevron_right") }}}</h4>
-                {{ next.sub_title }}
-            </a>
-            {{~else}}
-            <a href="/{{{ next.path }}}">
-                <h4>Next {{{ ctx.icon("chevron_right") }}}</h4>
+                <h4>{{ label }} {{{ ctx.icon("chevron_right") }}}</h4>
                 {{ next.title }}
             </a>
-            {{~/if }}
         </div>
         <!--googleon: index-->
 {{/if }}

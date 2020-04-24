@@ -1,4 +1,4 @@
-use crate::config::{ExifConfig, PhotoConfig, PostLog};
+use crate::config::{BlogLog, ExifConfig, PhotoConfig};
 use crate::models::{
     Category, CategoryKind, Photo, PhotoPath, Post, TagPhotos,
 };
@@ -19,6 +19,8 @@ pub struct Blog {
     pub categories: HashMap<CategoryKind, Vec<Category>>,
     /// Tag slugs mapped to the original tag names and photos with the tag
     pub tags: HashMap<String, TagPhotos<PhotoPath>>,
+    /// Record of previously loaded photo tags
+    pub history: BlogLog,
 }
 
 impl Blog {
@@ -203,9 +205,7 @@ impl Blog {
                 continue;
             }
 
-            if p.history.prev_path != p.prev_path
-                || p.history.next_path != p.next_path
-            {
+            if p.changed() {
                 p.needs_render = true;
                 paths.push(path.clone());
             }
@@ -260,5 +260,11 @@ impl Blog {
         }
 
         self.tags = tags;
+    }
+
+    /// Whether blog details other than posts themselves (like tags, copyright)
+    /// have changed since they were last loaded
+    pub fn changed(&self) -> bool {
+        self.history.differs(self)
     }
 }

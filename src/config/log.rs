@@ -1,8 +1,10 @@
-//! TOML photo log
+//! RON logs
 
 use super::load_ron;
-use crate::models::{Post, TagPhotos};
-use crate::tools::write_result;
+use crate::{
+    models::{Blog, PhotoPath, Post, TagPhotos},
+    tools::write_result,
+};
 use chrono::{DateTime, FixedOffset, Local};
 use hashbrown::HashMap;
 use ron::ser::{to_string_pretty, PrettyConfig};
@@ -30,6 +32,7 @@ static LOG_FILE: &str = "log.ron";
 pub struct PostLog {
     #[serde(default)]
     pub next_path: Option<String>,
+
     #[serde(default)]
     pub prev_path: Option<String>,
 
@@ -89,6 +92,11 @@ impl PostLog {
             files_have_changed: true,
         }
     }
+
+    /// Whether logged values differ from current post values
+    pub fn differs(&self, post: &Post) -> bool {
+        self.prev_path != post.prev_path || self.next_path != post.next_path
+    }
 }
 
 impl Clone for PostLog {
@@ -108,5 +116,42 @@ impl Clone for PostLog {
             tags,
             files_have_changed: self.files_have_changed,
         }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct BlogLog {
+    pub tags: HashMap<String, TagPhotos<PhotoPath>>,
+}
+
+impl BlogLog {
+    /// Save information about photo tags to avoid unecessary re-processing
+    pub fn write(root: &Path, blog: &Blog) {
+        let log = BlogLog {
+            tags: blog.tags.clone(),
+        };
+        let path = root.join(LOG_FILE);
+        let pretty = PrettyConfig {
+            depth_limit: 4,
+            ..PrettyConfig::default()
+        };
+
+        write_result(&path, || to_string_pretty(&log, pretty));
+    }
+
+    pub fn empty() -> BlogLog {
+        BlogLog {
+            tags: HashMap::new(),
+        }
+    }
+
+    /// Load log file from path
+    pub fn load(path: &Path) -> Option<Self> {
+        load_ron(path, LOG_FILE, false)
+    }
+
+    /// Whether logged values differ from current blog values
+    pub fn differs(&self, blog: &Blog) -> bool {
+        true
     }
 }

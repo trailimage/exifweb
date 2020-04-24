@@ -1,5 +1,5 @@
 use crate::{
-    config::{BlogConfig, PhotoConfig, PostLog},
+    config::{BlogConfig, PhotoConfig, PostConfig, PostLog},
     json_ld,
     models::{Category, Photo, TagPhotos},
 };
@@ -8,6 +8,49 @@ use core::cmp::Ordering;
 use hashbrown::HashMap;
 use serde_json;
 
+/// Additional details for posts that are part of series
+#[derive(Debug)]
+pub struct PostSeries {
+    /// Portion of path that is common among series members. For example, with
+    /// `brother-ride/2.trying-to-survive` the `series_path` is `brother-ride`.
+    pub path: String,
+
+    /// Portion of path that is unique among series members. For example, with
+    /// `brother-ride/2.trying-to-survive` the `parth_path` is
+    /// `2.trying-to-survive`.
+    pub part_path: String,
+
+    pub title: String,
+
+    /// Position of post in series
+    pub part: u8,
+    /// Total number of posts in the series
+    pub total_parts: u8,
+    /// Whether next post is part of the same series
+    pub next_is_part: bool,
+    /// Whether previous post is part of the same series
+    pub prev_is_part: bool,
+}
+impl PostSeries {
+    /// Navigation label to show if adjacent post is part of the same series.
+    /// This is a convenience method used in template rendering.
+    fn navigation_label(&self, to_part: u8) -> Option<String> {
+        if to_part > 0 && to_part <= self.total_parts {
+            Some(format!("Part {}", self.part))
+        } else {
+            None
+        }
+    }
+
+    pub fn next_label(&self) -> Option<String> {
+        self.navigation_label(self.part + 1)
+    }
+
+    pub fn prev_label(&self) -> Option<String> {
+        self.navigation_label(self.part - 1)
+    }
+}
+
 #[derive(Debug)]
 pub struct Post {
     /// File path to the post
@@ -15,39 +58,27 @@ pub struct Post {
     /// *example* `brother-ride/2.trying-to-survive`
     pub path: String,
 
-    /// Portion of path that is common among series members. For example, with
-    /// `brother-ride/2.trying-to-survive` the `series_path` is `brother-ride`.
-    pub series_path: String,
-
-    /// Portion of path that is unique among series members. For example, with
-    /// `brother-ride/2.trying-to-survive` the `parth_path` is
-    /// `2.trying-to-survive`.
-    pub part_path: String,
+    pub series: Option<PostSeries>,
 
     /// When the depicted events happened
     pub happened_on: Option<DateTime<FixedOffset>>,
 
+    // TODO: get created time from containing folder creation have updated
+    // time be current date
     /// When the post was created
     //pub created_on: DateTime<FixedOffset>,
     /// When the post was last updated
     //pub updated_on: DateTime<FixedOffset>,
-
-    /// Title of the post. For series, this will be the series title and the
-    /// configured post title will become the `sub_title`.
     pub title: String,
 
-    /// Subtitle of the post. For series, this will be the title the post was
-    /// configured with while the post's `title` will be series title.
-    pub sub_title: String,
-
-    //pub original_title: String,
     pub summary: String,
 
     /// Whether post pictures occurred sequentially in a specific time range as
     /// opposed to, for example, a themed set of images from various times
     pub chronological: bool,
 
-    /// Whether post is featured in main navigation (implies not chronological)
+    /// Whether post is featured in main navigation rather than being included
+    /// in regular post sequence and categories
     pub featured: bool,
 
     /// Photos found for the post. If post data were loaded from a previous
@@ -59,16 +90,6 @@ pub struct Post {
     /// Previous chronological post path (older)
     pub prev_path: Option<String>,
 
-    /// One-based position of this post in a series or 0 if it's not in a series
-    pub part: u8,
-    /// Whether post is part of a series
-    pub is_partial: bool,
-    /// Whether next post is part of the same series
-    pub next_is_part: bool,
-    /// Whether previous post is part of the same series
-    pub prev_is_part: bool,
-    /// Total number of posts in the series
-    pub total_parts: u8,
     /// Whether GPX track was found for the post
     pub has_track: bool,
     /// Categories to which this post belongs
@@ -88,14 +109,38 @@ pub struct Post {
 
     pub tags: HashMap<String, TagPhotos<u8>>,
 
-    /// Information about previous post photos and configuration
+    /// Record of previous post photos and configuration
     pub history: PostLog,
 }
 
 impl Post {
-    /// First photo flagged as `primary`
+    /// Photo at `copy_photo_index` position
     pub fn cover_photo(&self) -> Option<&Photo> {
         self.photos.get(self.cover_photo_index)
+    }
+
+    /// Label (not title) for next post in series or `default` if the next post
+    /// is not part of the same series. This is a convenience method for
+    /// template rendering.
+    pub fn next_label(&self, default: &str) -> String {
+        if let Some(series) = &self.series {
+            if let Some(label) = series.next_label() {
+                return label;
+            }
+        }
+        String::from(default)
+    }
+
+    /// Label (not title) for previous post in series or `default` if the
+    /// previous post is not part of the same series. This is a convenience
+    /// method for template rendering.
+    pub fn prev_label(&self, default: &str) -> String {
+        if let Some(series) = &self.series {
+            if let Some(label) = series.prev_label() {
+                return label;
+            }
+        }
+        String::from(default)
     }
 }
 
@@ -103,14 +148,11 @@ impl Default for Post {
     fn default() -> Self {
         Post {
             path: String::new(),
-            series_path: String::new(),
-            part_path: String::new(),
 
             happened_on: None,
             //created_on: min_date(),
             //updated_on: min_date(),
             title: String::new(),
-            sub_title: String::new(),
             //original_title: "",
             summary: String::new(),
 
@@ -121,12 +163,6 @@ impl Default for Post {
             next_path: None,
             prev_path: None,
 
-            part: 0,
-            total_parts: 0,
-            is_partial: false,
-            next_is_part: false,
-            prev_is_part: false,
-
             has_track: false,
             categories: Vec::new(),
 
@@ -136,11 +172,24 @@ impl Default for Post {
 
             tags: HashMap::new(),
             history: PostLog::empty(),
+            series: None,
         }
     }
 }
 
 impl Post {
+    pub fn from_config(config: PostConfig, log: PostLog) -> Self {
+        Post {
+            categories: config.categories(),
+            title: config.title,
+            summary: config.summary,
+            cover_photo_index: config.cover_photo_index,
+            chronological: config.chronological,
+            history: log,
+            ..Self::default()
+        }
+    }
+
     pub fn json_ld(&self, config: &BlogConfig) -> serde_json::Value {
         let image = self.cover_photo().and_then(|p| Some(p.json_ld()));
         let categories: Vec<String> = self
@@ -171,6 +220,11 @@ impl Post {
         for p in self.photos.iter_mut() {
             p.size.build_urls(&self.path, p.index, config);
         }
+    }
+
+    /// Whether post has changed since it was last loaded
+    pub fn changed(&self) -> bool {
+        self.history.differs(self)
     }
 }
 

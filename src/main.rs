@@ -83,11 +83,14 @@ fn main() {
 
         write.posts();
         write.home_page();
-        write.about_page();
         write.sitemap();
         write.category_menu();
         write.mobile_menu();
-        write.photo_tags();
+
+        if blog.changed() {
+            write.photo_tags();
+            write.about_page();
+        }
         write.categories();
 
         for (path, post) in blog.posts {
@@ -163,12 +166,7 @@ fn post_from_entry(blog: &mut Blog, entry: fs::DirEntry, config: &BlogConfig) {
     if let Some(posts) = read::series(&path, &config) {
         println!("   Series of {} posts:", posts.len());
         for p in posts {
-            println!(
-                "{:6}{} ({} photos)",
-                "",
-                p.sub_title.yellow(),
-                p.photo_count
-            );
+            println!("{:6}{} ({} photos)", "", p.title.yellow(), p.photo_count);
             blog.add_post(p);
         }
         // skip to next path entry if series was found

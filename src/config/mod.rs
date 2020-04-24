@@ -8,7 +8,7 @@ pub use blog::{
     FeaturedPost, ImageConfig, OwnerConfig, PhotoConfig, SiteConfig,
     SizeConfig,
 };
-pub use log::PostLog;
+pub use log::{BlogLog, PostLog};
 pub use post::PostConfig;
 pub use series::SeriesConfig;
 

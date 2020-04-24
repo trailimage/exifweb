@@ -3,7 +3,7 @@ use crate::{
         BlogConfig, PhotoConfig, PostConfig, PostLog, SeriesConfig, CONFIG_FILE,
     },
     image::exif_tool,
-    models::{collate_tags, Blog, Photo, Post},
+    models::{collate_tags, Blog, Photo, Post, PostSeries},
     tools::{
         earliest_photo_date, folder_name, identify_outliers, path_slice,
         pos_from_path,
@@ -19,16 +19,8 @@ use std::{
 
 /// Create post that is not part of a series
 pub fn post(path: &Path, config: &BlogConfig) -> Option<Post> {
-    PostConfig::load(&path).and_then(|post_config| {
-        create_post(path, false, config, &post_config).and_then(|p| {
-            Some(Post {
-                categories: post_config.categories(),
-                title: post_config.title,
-                summary: post_config.summary,
-                ..p
-            })
-        })
-    })
+    PostConfig::load(&path)
+        .and_then(|post_config| create_post(path, false, config, post_config))
 }
 
 /// Attempt to load path entries as if they constitute a post series. `None` is
@@ -83,19 +75,23 @@ fn series_post(
     }
 
     PostConfig::load(&path).and_then(|post_config| {
-        create_post(path, true, config, &post_config).and_then(|p| {
-            Some(Post {
-                categories: post_config.categories(),
+        create_post(path, true, config, post_config).and_then(|mut p| {
+            p.series = Some(PostSeries {
                 part,
+                title: series_config.title.clone(),
+                path: series_config.path.clone(),
+                part_path: path_slice(path, 1),
                 total_parts: series_config.parts,
-                is_partial: true,
                 prev_is_part: part > 1,
                 next_is_part: part < series_config.parts,
-                title: series_config.title.clone(),
-                sub_title: post_config.title,
-                summary: post_config.summary,
-                ..p
-            })
+            });
+
+            // first post in series uses path
+            if part == 1 {
+                p.path = series_config.path.clone()
+            }
+
+            Some(p)
         })
     })
 }
@@ -111,7 +107,7 @@ pub fn post_photos(
     paths: &Vec<String>,
 ) {
     for path in paths.iter() {
-        println!(" Attempting to add photos to {}", path);
+        println!("   Attempting to add photos to {}", path);
 
         let mut photos = load_photos(&root.join(path), &config.photo);
 
@@ -142,7 +138,7 @@ fn create_post(
     path: &Path,
     is_series: bool,
     config: &BlogConfig,
-    post_config: &PostConfig,
+    post_config: PostConfig,
 ) -> Option<Post> {
     // path to series post includes parent
     let post_path = path_slice(path, if is_series { 2 } else { 1 });
@@ -154,12 +150,9 @@ fn create_post(
             path: post_path,
             happened_on: log.happened_on,
             photo_count: log.photo_count,
-            chronological: post_config.chronological,
             needs_render: false,
             tags: log.tags.clone(),
-            history: log,
-            cover_photo_index: post_config.cover_photo_index,
-            ..Post::default()
+            ..Post::from_config(post_config, log)
         })
     } else {
         let photos = load_photos(path, &config.photo);
@@ -168,10 +161,8 @@ fn create_post(
             None
         } else {
             Some(Post {
-                tags: collate_tags(&photos),
                 path: post_path,
-                chronological: post_config.chronological,
-                history: log,
+                tags: collate_tags(&photos),
                 happened_on: if post_config.chronological {
                     earliest_photo_date(&photos)
                 } else {
@@ -179,7 +170,7 @@ fn create_post(
                 },
                 photo_count: photos.len(),
                 photos,
-                ..Post::default()
+                ..Post::from_config(post_config, log)
             })
         }
     }

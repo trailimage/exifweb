@@ -58,6 +58,12 @@
       "problemMatcher": [],
       "dependsOn": ["Clean", "Run"],
       "dependsOrder": "sequence"
+    },
+    {
+      "label": "Clean Build",
+      "problemMatcher": [],
+      "dependsOn": ["Clean", "Build"],
+      "dependsOrder": "sequence"
     }
   ]
 }

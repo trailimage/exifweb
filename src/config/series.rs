@@ -1,4 +1,5 @@
 use super::load_config;
+use crate::tools::folder_name;
 use serde::Deserialize;
 use std::path::Path;
 
@@ -11,10 +12,17 @@ pub struct SeriesConfig {
     /// Number of parts in the series. The part number of each post is inferred
     /// from its folder name using `capture_series_index` configuration.
     pub parts: u8,
+
+    /// Root-relative path to series
+    #[serde(skip)]
+    pub path: String,
 }
 
 impl SeriesConfig {
     pub fn load(path: &Path) -> Option<Self> {
-        load_config::<Self>(path)
+        load_config::<Self>(path).and_then(|mut c: SeriesConfig| {
+            c.path = folder_name(path).to_string();
+            Some(c)
+        })
     }
 }

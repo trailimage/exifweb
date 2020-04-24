@@ -141,6 +141,14 @@ impl<'a> Writer<'a> {
     }
 
     fn post(&self, post: &Post) {
+        let mut title = post.title.clone();
+        let mut sub_title = String::new();
+
+        if let Some(series) = &post.series {
+            sub_title = title;
+            title = series.title.clone();
+        }
+
         self.default_page(
             &post.path,
             PostContext {
@@ -148,6 +156,8 @@ impl<'a> Writer<'a> {
                 enable: Enable::default(),
                 ctx: &self.context,
                 json_ld: Some(post.json_ld(&self.config).to_string()),
+                title,
+                sub_title,
             },
         );
     }
@@ -299,6 +309,8 @@ struct PostContext<'c> {
     pub post: &'c Post,
     pub enable: Enable,
     pub json_ld: Option<String>,
+    pub title: String,
+    pub sub_title: String,
 }
 
 // TODO: update template with actual image thumbnails

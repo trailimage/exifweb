@@ -23,11 +23,14 @@
                         {{~/if }}
                         <li class="photo-count">{{ post.photo_count }} photos{{!#if video!}} and a video{{!/if!}}</li>
                     </ul>
-                    <a class="title" href="/{{{ post.path }}}">{{ post.title }}
-                    {{~#if !post.sub_title.is_empty() }}
+                    <a class="title" href="/{{{ post.path }}}">
+                    {{~#if let Some(series) = &post.series }}
+                        {{ series.title }}
                         <span class="subtitle">
-                            <span class="part">Part {{ post.part }}:</span>{{ post.sub_title }}
+                            <span class="part">Part {{ series.part }}:</span>{{ post.title }}
                         </span>
+                    {{ else }}
+                        {{ post.title }}
                     {{~/if ~}}
                     </a>
                     <span class="mode-icon {{ super::ctx.travel_icon(post.categories.as_ref()) }}"></span>
