@@ -206,14 +206,13 @@ impl Post {
     }
 
     pub fn json_ld(&self, config: &BlogConfig) -> serde_json::Value {
-        let image = self.cover_photo().and_then(|p| Some(p.json_ld()));
+        let image = self.cover_photo().map(|p| p.json_ld());
         let categories: Vec<String> = self
             .categories
             .iter()
             .map(|c: &Category| c.name.clone())
             .collect();
 
-        // TODO: implement dates
         serde_json::json!({
             "@type": "BlogPosting",
             "@context": json_ld::CONTEXT,
@@ -224,8 +223,8 @@ impl Post {
             "image": image,
             "publisher": json_ld::organization(config),
             "mainEntityOfPage": json_ld::web_page(config, "about"),
-            "datePublished": "",
-            "dateModified": "",
+            "datePublished": &self.happened_on.map(|d| d.to_rfc3339()),
+            "dateModified": &self.updated_on.to_rfc3339(),
             "articleSection": categories.join(",")
         })
     }
