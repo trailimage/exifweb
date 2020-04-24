@@ -213,7 +213,6 @@ pub struct BlogConfig {
     #[serde(deserialize_with = "regex_string")]
     pub capture_series_index: Regex,
 
-    // TODO: update URLs to absolute path with domain
     /// Redirect source slug to target
     pub redirects: Option<Pairs>,
     pub site: SiteConfig,

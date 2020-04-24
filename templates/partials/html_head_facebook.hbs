@@ -10,8 +10,8 @@
     <meta property="og:image" content="{{{ photo.size.medium.url }}}" />
 {{/if }}
     <meta property="og:type" content="article" />
-    <meta property="article:published_time" content="{{! formatISO8601 post.createdOn !}}" />
-    <meta property="article:modified_time" content="{{! formatISO8601 post.updatedOn !}}" />
+    <meta property="article:published_time" content="{{ post.created_on.to_rfc3339() }}" />
+    <meta property="article:modified_time" content="{{ post.created_on.to_rfc3339() }}" />
     <meta property="article:author" content="{{{ ctx.facebook.author_url }}}" />
 {{#if false }}
     <meta property="og:video" content="http://youtu.be/{{! post.video.id !}}" />

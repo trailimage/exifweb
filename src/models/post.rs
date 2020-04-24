@@ -3,10 +3,11 @@ use crate::{
     json_ld,
     models::{Category, Photo, TagPhotos},
 };
-use chrono::{DateTime, FixedOffset};
+use chrono::{DateTime, FixedOffset, Utc};
 use core::cmp::Ordering;
 use hashbrown::HashMap;
 use serde_json;
+use std::time::SystemTime;
 
 /// Additional details for posts that are part of series
 #[derive(Debug)]
@@ -63,10 +64,9 @@ pub struct Post {
     /// When the depicted events happened
     pub happened_on: Option<DateTime<FixedOffset>>,
 
-    // TODO: get created time from containing folder creation have updated
-    // time be current date
     /// When the post was created
-    //pub created_on: DateTime<FixedOffset>,
+    pub created_on: DateTime<Utc>,
+
     /// When the post was last updated
     //pub updated_on: DateTime<FixedOffset>,
     pub title: String,
@@ -150,10 +150,8 @@ impl Default for Post {
             path: String::new(),
 
             happened_on: None,
-            //created_on: min_date(),
-            //updated_on: min_date(),
+            created_on: DateTime::from(SystemTime::now()),
             title: String::new(),
-            //original_title: "",
             summary: String::new(),
 
             chronological: true,
@@ -178,13 +176,18 @@ impl Default for Post {
 }
 
 impl Post {
-    pub fn from_config(config: PostConfig, log: PostLog) -> Self {
+    pub fn from_config(
+        config: PostConfig,
+        log: PostLog,
+        created_on: DateTime<Utc>,
+    ) -> Self {
         Post {
             categories: config.categories(),
             title: config.title,
             summary: config.summary,
             cover_photo_index: config.cover_photo_index,
             chronological: config.chronological,
+            created_on,
             history: log,
             ..Self::default()
         }

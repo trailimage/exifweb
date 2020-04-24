@@ -1,11 +1,12 @@
 use crate::Photo;
-use chrono::{DateTime, FixedOffset};
+use chrono::{DateTime, FixedOffset, Utc};
 use hashbrown::HashMap;
 use lazy_static::*;
 use regex::Regex;
 use std::{
     error, fs,
     path::{Path, PathBuf},
+    time::SystemTime,
 };
 
 /// Hash represented as vector of string tuples
@@ -222,6 +223,13 @@ pub fn write_result<E: error::Error, F: FnOnce() -> Result<String, E>>(
         }
         Err(e) => eprintln!("Error serializing {} {:?}", folder_name(path), e),
     }
+}
+
+/// Created date of a directory entry or now if that date can't be retrieved
+pub fn created_or_now(entry: fs::DirEntry) -> DateTime<Utc> {
+    DateTime::from(entry.metadata().map_or(SystemTime::now(), |m| {
+        m.created().unwrap_or(SystemTime::now())
+    }))
 }
 
 #[cfg(test)]
