@@ -252,6 +252,7 @@ impl Blog {
                             TagPhotos {
                                 name: post_tag.name.clone(),
                                 photos: photo_paths,
+                                changed: true,
                             },
                         );
                     }
@@ -259,12 +260,22 @@ impl Blog {
             }
         }
 
-        self.tags = tags;
-    }
+        if !self.history.tags.is_empty() {
+            // if previous tags were logged then compare to new tags to identify
+            // which haven't changed and so don't need to be rendered again
+            for (slug, mut tag_photos) in &mut tags {
+                if let Some(log_tag_photos) = self.history.tags.get(slug) {
+                    if tag_photos.name == log_tag_photos.name
+                        && tag_photos.photos.len()
+                            == log_tag_photos.photos.len()
+                    {
+                        // naive check only considers number of matched photos
+                        tag_photos.changed = false;
+                    }
+                }
+            }
+        }
 
-    /// Whether blog details other than posts themselves (like tags, copyright)
-    /// have changed since they were last loaded
-    pub fn changed(&self) -> bool {
-        self.history.differs(self)
+        self.tags = tags;
     }
 }

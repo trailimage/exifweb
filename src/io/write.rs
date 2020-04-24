@@ -3,7 +3,7 @@
 use crate::{
     config::{BlogConfig, CategoryIcon, FacebookConfig, FeaturedPost, PostLog},
     html,
-    models::{Blog, Category, CategoryKind, PhotoPath, Post},
+    models::{Blog, Category, CategoryKind, PhotoPath, Post, TagPhotos},
     tools::{config_regex, path_slice, write_result},
 };
 use chrono::{DateTime, FixedOffset};
@@ -247,7 +247,14 @@ impl<'a> Writer<'a> {
     }
 
     pub fn photo_tags(&self) {
-        for (slug, tag_photos) in self.context.blog.tags.iter() {
+        for (slug, tag_photos) in self
+            .context
+            .blog
+            .tags
+            .iter()
+            .filter(|(_, tag_photos)| tag_photos.changed)
+        {
+            // only render tags that have changes
             self.default_page(
                 &format!("photo-tag/{}", slug),
                 PhotoTagContext {

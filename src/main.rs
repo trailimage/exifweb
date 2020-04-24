@@ -13,7 +13,7 @@ mod models;
 mod tools;
 
 use colored::*;
-use config::{BlogConfig, FeaturedPost};
+use config::{BlogConfig, BlogLog, FeaturedPost};
 use image::image_magick;
 use io::{read, Writer};
 use models::{Blog, Photo};
@@ -33,6 +33,8 @@ fn main() {
     let entries = load_root_directory(&root);
     let mut config = load_config(&root);
     let mut blog = Blog::default();
+
+    blog.history = BlogLog::load(&root).unwrap_or(BlogLog::empty());
 
     // iterate over every file or directory within root
     for entry in entries {
@@ -78,6 +80,7 @@ fn main() {
 
         success_metric(blog.category_count(), "post categories");
         success_metric(blog.tag_count(), "unique photo tags");
+        BlogLog::write(root, &blog);
 
         let write = Writer::new(root, &config, &blog);
 
@@ -86,11 +89,9 @@ fn main() {
         write.sitemap();
         write.category_menu();
         write.mobile_menu();
+        write.photo_tags();
+        write.about_page();
 
-        if blog.changed() {
-            write.photo_tags();
-            write.about_page();
-        }
         write.categories();
 
         for (path, post) in blog.posts {

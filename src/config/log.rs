@@ -161,8 +161,23 @@ impl BlogLog {
         load_ron(path, LOG_FILE, false)
     }
 
-    /// Whether logged values differ from current blog values
-    pub fn differs(&self, blog: &Blog) -> bool {
-        true
+    /// Whether logged values differ from current blog values. This method also
+    /// updates the `changed` field of specific `TagPhotos`.
+    pub fn differs(&mut self, blog: &Blog) -> bool {
+        for (slug, tag_photos) in &self.tags {
+            
+
+            if let Some(tp) = blog.tags.get(slug) {
+                if tp.name != tag_photos.name
+                    || tp.photos.len() != tag_photos.photos.len()
+                {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        }
+
+        false
     }
 }

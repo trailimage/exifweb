@@ -13,6 +13,10 @@ pub struct TagPhotos<T> {
     /// Photos that have the tag applied, identified by `index` or by
     /// `post_path` and `index` (`PhotoPath`)
     pub photos: Vec<T>,
+
+    /// Whether tag has changed since the last time it was loaded
+    #[serde(skip)]
+    pub changed: bool,
 }
 
 /// Collect unique photo tag slugs as keys to the list of photos that applied
@@ -33,6 +37,7 @@ pub fn collate_tags(photos: &Vec<Photo>) -> HashMap<String, TagPhotos<u8>> {
                         TagPhotos {
                             name: tag.clone(),
                             photos: vec![photo.index],
+                            changed: false,
                         },
                     );
                 }
