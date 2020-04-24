@@ -20,6 +20,7 @@ use models::{Blog, Photo};
 use std::{
     self, env, fs,
     path::{Path, PathBuf},
+    process,
 };
 use tools::folder_name;
 
@@ -29,75 +30,13 @@ use tools::folder_name;
 fn main() {
     // GitHub pages feature requires root at / or /docs
     let root = Path::new("./docs/");
-    let mut config = match BlogConfig::load(root) {
-        Some(config) => config,
-        _ => {
-            println!("{}", "Missing root configuration file".red());
-            return;
-        }
-    };
-
-    let entries = match fs::read_dir(root) {
-        Ok(entries) => entries,
-        _ => {
-            println!(
-                "{} {}",
-                "Failed to open root directory".red(),
-                folder_name(root).red()
-            );
-            return;
-        }
-    };
-
-    let args: Vec<String> = env::args().collect();
+    let entries = load_root_directory(&root);
+    let mut config = load_config(&root);
     let mut blog = Blog::default();
 
-    config.force_rerender = args.contains(&"force".to_owned());
-
-    println!(
-        "{}",
-        format!("\nForce re-render: {}", config.force_rerender)
-            .cyan()
-            .bold()
-    );
-
-    // iterate over every file or subdirectory within root
+    // iterate over every file or directory within root
     for entry in entries {
-        let path: PathBuf = entry.unwrap().path();
-        let dir_name: &str = folder_name(&path);
-
-        if !path.is_dir()
-            || config.ignore_folders.contains(&dir_name.to_string())
-        {
-            // ignore root files and specified folders
-            continue;
-        }
-
-        println!("\n{} └ {}", "Found root directory".bold(), dir_name.bold());
-
-        if let Some(posts) = read::series(&path, &config) {
-            println!("   Series of {} posts:", posts.len());
-            for p in posts {
-                println!(
-                    "{:6}{} ({} photos)",
-                    "",
-                    p.sub_title.yellow(),
-                    p.photo_count
-                );
-                blog.add_post(p);
-            }
-            // skip to next path entry if series was found
-            continue;
-        }
-
-        if let Some(post) = read::post(path.as_path(), &config) {
-            println!(
-                "   {} ({} photos)",
-                post.title.yellow(),
-                post.photo_count
-            );
-            blog.add_post(post);
-        }
+        post_from_entry(&mut blog, entry.unwrap(), &config);
     }
 
     print!("\n");
@@ -159,9 +98,86 @@ fn main() {
 
                 if p.file.created > last_render {
                     image_magick::create_sizes(&full_path, &p, &config.photo)
+                } else {
+                    println!("Too old {} > {}", p.file.created, last_render);
                 }
             }
         }
+    }
+}
+
+/// Load all entries (files and directories) from the root directory
+fn load_root_directory(root: &Path) -> fs::ReadDir {
+    match fs::read_dir(root) {
+        Ok(entries) => entries,
+        _ => {
+            println!(
+                "{} {}",
+                "Failed to open root directory".red(),
+                folder_name(root).red()
+            );
+            process::exit(1)
+        }
+    }
+}
+
+/// Load configuration file and apply command line arguments and environment
+/// variables
+fn load_config(root: &Path) -> BlogConfig {
+    let mut config: BlogConfig = match BlogConfig::load(root) {
+        Some(config) => config,
+        _ => {
+            println!("{}", "Missing root configuration file".red());
+            process::exit(1)
+        }
+    };
+    let args: Vec<String> = env::args().collect();
+
+    config.force_rerender = args.contains(&"force".to_owned());
+
+    println!(
+        "{}",
+        format!("\nForce re-render: {}", config.force_rerender)
+            .cyan()
+            .bold()
+    );
+
+    config
+}
+
+/// Create post(s) from a directory entry. The number of posts created for the
+/// blog may be one, several or none depending on whether the entry is a
+/// post-containing directory, a series-containing directory or neither,
+/// respectively.
+fn post_from_entry(blog: &mut Blog, entry: fs::DirEntry, config: &BlogConfig) {
+    let path: PathBuf = entry.path();
+    let dir_name: &str = folder_name(&path);
+
+    if !path.is_dir() || config.ignore_folders.contains(&dir_name.to_string()) {
+        // ignore root files and specified folders
+        return;
+    }
+
+    println!("\n{} └ {}", "Found root directory".bold(), dir_name.bold());
+
+    if let Some(posts) = read::series(&path, &config) {
+        println!("   Series of {} posts:", posts.len());
+        for p in posts {
+            println!(
+                "{:6}{} ({} photos)",
+                "",
+                p.sub_title.yellow(),
+                p.photo_count
+            );
+            blog.add_post(p);
+        }
+        // skip to next path entry if series was found
+        return;
+    }
+
+    if let Some(post) = read::post(path.as_path(), &config) {
+        println!("   {} ({} photos)", post.title.yellow(), post.photo_count);
+        blog.add_post(post);
     }
 }
 
