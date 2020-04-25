@@ -296,6 +296,7 @@ impl<'a> Writer<'a> {
                 enable: Enable::new(true, false),
                 // TODO: render JSON-LD for about page
                 json_ld: None,
+                title: format!("About {}", self.context.site_title),
             },
         );
     }
@@ -434,6 +435,7 @@ struct AboutContext<'c> {
     pub ctx: &'c CommonContext<'c>,
     pub enable: Enable,
     pub json_ld: Option<String>,
+    pub title: String,
 }
 
 #[derive(Template)]

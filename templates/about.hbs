@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-    {{#> html_head title=ctx.site_title, description=ctx.site_description }}
+    {{#> html_head title=title, description=ctx.site_description }}
     {{~> json_ld ~}}
     {{/html_head }}
 <body>
-    {{#> header title=ctx.site_title, sub_title="About" }}{{/header }}
+    {{#> header title=title, sub_title="" }}{{/header }}
 
     <div class="about content">
         <a class="main-image" href="/hat-point-above-hells-canyon#68"><img src="/img/about.jpg" width="400"
