@@ -108,8 +108,6 @@ fn main() {
                 if p.file.created > last_render {
                     print!("{}, ", p.index);
                     image_magick::create_sizes(&full_path, &p, &config.photo)
-                } else {
-                    println!("Too old {} > {}", p.file.created, last_render);
                 }
             }
             print!("done!\n");
