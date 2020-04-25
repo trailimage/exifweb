@@ -3,7 +3,7 @@
 use crate::{
     config::{BlogConfig, CategoryIcon, FacebookConfig, FeaturedPost, PostLog},
     html,
-    models::{Blog, Category, CategoryKind, PhotoPath, Post, TagPhotos},
+    models::{Blog, Category, CategoryKind, PhotoPath, Post},
     tools::{config_regex, path_slice, write_result},
 };
 use chrono::{DateTime, FixedOffset};
@@ -80,16 +80,17 @@ pub struct Writer<'a> {
 impl<'a> Writer<'a> {
     pub fn new(root: &'a Path, config: &'a BlogConfig, blog: &'a Blog) -> Self {
         // sort category kinds to match config.category.display
-        let categories: Vec<(CategoryKind, &'a Vec<Category>)> = config
+        let category_kinds: Vec<(CategoryKind, &'a Vec<Category>)> = config
             .category
             .display
+            // iterate over category kinds in configured order
             .iter()
             // get enum for name
             .filter_map(|name| CategoryKind::from_str(name))
             // get list of categories for kind
             .map(|kind| (kind, blog.categories.get(&kind)))
-            // filter out category kinds that have no categories
-            .filter_map(|(kind, cats)| cats.map(|c| (kind, c)))
+            // filter out kinds that have no categories
+            .filter_map(|(kind, categories)| categories.map(|c| (kind, c)))
             .collect();
 
         Writer {
@@ -105,7 +106,7 @@ impl<'a> Writer<'a> {
                 featured_post: &config.featured_post,
                 post_alias: &config.site.post_alias,
                 facebook: &config.facebook,
-                categories,
+                categories: category_kinds,
                 mode_icons: config_regex(&config.category.what_regex),
                 category_icons: &config.category.icon,
             },

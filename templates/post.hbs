@@ -51,8 +51,8 @@
         {{! data-src attribute supports lazyload !}}
         <img src="/{{{ size.small.url }}}"
             {{~#if let Some(text) = &title }} alt="{{ text }}" {{/if ~}}
-            style="width: {{ size.medium.width }}px; height: {{ size.medium.height }}px;" data-src="{{{ size.medium.url }}}"
-            data-big="{{{ size.large.url }}}" data-big-width="{{ size.large.width }}" data-big-height="{{ size.large.height }}" />
+            style="width: {{ size.medium.width }}px; height: {{ size.medium.height }}px;" data-src="/{{{ size.medium.url }}}"
+            data-big="/{{{ size.large.url }}}" data-big-width="{{ size.large.width }}" data-big-height="{{ size.large.height }}" />
         <div class="info-button">{{{ super::ctx.icon("photo_camera") }}}
             <p>Camera Settings</p>
         </div>

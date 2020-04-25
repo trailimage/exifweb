@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 pub mod suffix {
     pub static ORIGINAL: &'static str = "o";
     pub static LARGE: &'static str = "l";
-    pub static MEDIUM: &'static str = "l";
+    pub static MEDIUM: &'static str = "m";
     pub static SMALL: &'static str = "s";
     pub static THUMB: &'static str = "t";
 }

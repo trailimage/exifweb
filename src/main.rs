@@ -96,16 +96,24 @@ fn main() {
 
         for (path, post) in blog.posts {
             let last_render = post.history.as_of;
+            let full_path = root.join(&path).to_string_lossy().to_string();
+
+            println!(
+                "\nRendering {} photos to {}",
+                post.title.yellow(),
+                full_path.cyan()
+            );
+            print!("   ");
 
             for p in post.photos {
-                let full_path = &root.join(&path).to_string_lossy().to_string();
-
                 if p.file.created > last_render {
+                    print!("{}, ", p.index);
                     image_magick::create_sizes(&full_path, &p, &config.photo)
                 } else {
                     println!("Too old {} > {}", p.file.created, last_render);
                 }
             }
+            print!("done!\n");
         }
     }
 }

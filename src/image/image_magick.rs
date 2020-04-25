@@ -3,7 +3,11 @@ use crate::{
     models::{suffix, Photo},
 };
 use colored::*;
-use std::process::Command;
+use std::process::{self, Command};
+
+macro_rules! string_vec {
+    ($($x:expr),*) => (vec![$($x.to_string()),*]);
+}
 
 // magick convert *.tif -quiet
 //  ( +clone -resize 2048x -write *-large.webp +delete )
@@ -19,50 +23,59 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
     };
 
     let sub_command = |size: u16, suffix: &'static str| {
-        format!(
-            "( +clone -resize {}x -write {} +delete )",
-            size,
-            file_name(suffix)
-        )
+        string_vec![
+            "(",
+            "+clone",
+            "-resize",
+            format!("{}x", size),
+            "-write",
+            file_name(suffix),
+            "+delete",
+            ")"
+        ]
     };
+
+    let thumb_command = string_vec![
+        "-resize",
+        format!("{px}x{px}^", px = config.size.thumb),
+        "-gravity",
+        "center",
+        "-extent",
+        format!("{px}x{px}", px = config.size.thumb),
+        file_name(suffix::THUMB)
+    ];
 
     match Command::new("magick")
         .current_dir(path)
         .arg("convert")
         .arg(&photo.file.name)
         .arg("-quiet")
-        .arg(sub_command(config.size.large, suffix::LARGE))
-        .arg(sub_command(config.size.medium, suffix::MEDIUM))
-        .arg(sub_command(config.size.small, suffix::SMALL))
-        .arg(format!("-resize {px}x{px}^", px = config.size.thumb))
-        .arg("-gravity center")
-        .arg(format!("-extent {px}x{px}", px = config.size.thumb))
-        .arg(file_name(suffix::THUMB))
+        .args(sub_command(config.size.large, suffix::LARGE))
+        .args(sub_command(config.size.medium, suffix::MEDIUM))
+        .args(sub_command(config.size.small, suffix::SMALL))
+        .args(&thumb_command)
         .output()
     {
         Ok(out) => {
-            let text = match String::from_utf8(out.stdout) {
-                Ok(text) => text,
-                Err(e) => {
+            if let Ok(err) = String::from_utf8(out.stderr) {
+                if !err.is_empty() {
                     println!(
-                        "   {}: {:?}",
-                        "Failed to read resize output".red(),
-                        e
+                        "Running\nmagick convert {} -quiet {} {} {} {}\n",
+                        &photo.file.name,
+                        sub_command(config.size.large, suffix::LARGE).join(" "),
+                        sub_command(config.size.medium, suffix::MEDIUM)
+                            .join(" "),
+                        sub_command(config.size.small, suffix::SMALL).join(" "),
+                        thumb_command.join(" ")
                     );
-                    String::new()
+                    println!("{}", err.red());
+                    process::exit(1);
                 }
-            };
-            if !text.is_empty() {
-                println!("{}", text);
             }
         }
         Err(e) => {
-            println!(
-                "   {} {} {:?}",
-                "Failed to generate sizes for".red(),
-                path.magenta(),
-                e
-            );
+            println!("   {:?}", e);
+            process::exit(1);
         }
     };
 }
