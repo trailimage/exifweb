@@ -205,14 +205,6 @@ pub struct BlogConfig {
     #[serde(skip)]
     pub force_rerender: bool,
 
-    /// Regex pattern to extract series part index from folder name
-    ///
-    /// *Examples*
-    ///  - `^(\d) - ` for `3 - Cold Ride Home`
-    ///  - `^(\d)\.` for `3.cold-ride-home`
-    #[serde(deserialize_with = "regex_string")]
-    pub capture_series_index: Regex,
-
     /// Redirect source slug to target
     pub redirects: Option<Pairs>,
     pub site: SiteConfig,

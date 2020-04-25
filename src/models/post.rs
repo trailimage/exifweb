@@ -140,6 +140,10 @@ impl Post {
         photo
     }
 
+    pub fn has_video(&self) -> bool {
+        false
+    }
+
     /// Label (not title) for next post in series or `default` if the next post
     /// is not part of the same series. This is a convenience method for
     /// template rendering.
@@ -200,11 +204,13 @@ impl Default for Post {
 
 impl Post {
     pub fn from_config(config: PostConfig, log: PostLog) -> Self {
+        let i = config.cover_photo_index;
+
         Post {
             categories: config.categories(),
             title: config.title,
             summary: config.summary,
-            cover_photo_index: config.cover_photo_index,
+            cover_photo_index: if i > 0 { i - 1 } else { 0 },
             chronological: config.chronological,
             history: log,
             ..Self::default()

@@ -1,0 +1,12 @@
+title = "Cold Ride Home"
+summary = """I find the sun still up and the weather nice after I finish \
+weekend chores so head out for the usual jaunt up Rocky Canyon Road to the \
+ridge and back down Trail 4. Or that’s the plan."""
+cover_photo_index = 10
+part = 3
+
+[categories]
+who = "Brothers"
+when = 2008
+where = ["St. Joe Ranger District"]
+what = "BMW R1200GSA"

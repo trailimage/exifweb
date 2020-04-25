@@ -406,7 +406,6 @@ struct PhotoTagContext<'c> {
 }
 
 // TODO: re-use partials/category for post category list
-// TODO: render static map with photo locations
 #[derive(Template)]
 #[template(path = "category.hbs")]
 struct CategoryContext<'c> {

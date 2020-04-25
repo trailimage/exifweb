@@ -1,6 +1,5 @@
 repo_url = "https://github.com/trailimage/"
 author_name = "Jason Abbott"
-capture_series_index = "^(?P<index>\\d+)\\."
 
 # source to target slug
 redirects = [

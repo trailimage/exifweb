@@ -2,5 +2,3 @@ docs/**/*.tif
 docs/**/???.jpg
 docs/**/log.ron
 target/*
-# temporary
-docs/**/*.webp

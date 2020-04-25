@@ -21,7 +21,7 @@
                         {{~#if let Some(d) = post.happened_on }}
                         <li class="date-taken">{{ super::ctx.date(d) }}</li>
                         {{~/if }}
-                        <li class="photo-count">{{ post.photo_count }} photos{{!#if video!}} and a video{{!/if!}}</li>
+                        <li class="photo-count">{{ post.photo_count }} photos{{#if post.has_video() }} and a video{{/if }}</li>
                     </ul>
                     <a class="title" href="/{{{ post.path }}}">
                     {{~#if let Some(series) = &post.series }}

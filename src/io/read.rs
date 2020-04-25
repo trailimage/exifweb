@@ -4,10 +4,7 @@ use crate::{
     },
     image::exif_tool,
     models::{collate_tags, Blog, Photo, Post, PostSeries},
-    tools::{
-        earliest_photo_date, folder_name, identify_outliers, path_slice,
-        pos_from_path,
-    },
+    tools::{earliest_photo_date, folder_name, identify_outliers, path_slice},
 };
 use colored::*;
 use std::{
@@ -69,13 +66,21 @@ fn series_post(
     config: &BlogConfig,
     series_config: &SeriesConfig,
 ) -> Option<Post> {
-    let part = pos_from_path(&config.capture_series_index, &path).unwrap_or(0);
-
-    if part == 0 {
-        return None;
-    }
-
     PostConfig::load(&path).and_then(|post_config| {
+        let part = post_config.part;
+
+        if part == 0 {
+            return None;
+        } else if part > series_config.parts {
+            println!(
+                "Post {} part {} is more than should be in series ({})",
+                folder_name(path),
+                part,
+                series_config.parts
+            );
+            process::exit(1);
+        }
+
         create_post(path, true, config, post_config).and_then(|mut p| {
             p.series = Some(PostSeries {
                 part,
@@ -86,11 +91,6 @@ fn series_post(
                 prev_is_part: part > 1,
                 next_is_part: part < series_config.parts,
             });
-
-            // first post in series uses path
-            if part == 1 {
-                p.path = series_config.path.clone()
-            }
 
             Some(p)
         })
@@ -199,8 +199,9 @@ fn create_post(
     }
 }
 
+/// - `index` One-based
 fn assert_index(index: usize, length: usize, label: &str) {
-    if index >= length {
+    if index > length {
         println!(
             "\n   {}",
             format!("Index {} exceeded {} for {}", index, length, label).red()

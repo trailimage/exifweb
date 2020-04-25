@@ -21,16 +21,25 @@ pub struct PostCategories {
 pub struct PostConfig {
     pub title: String,
     pub summary: String,
+
     /// Categories to which the post has been assigned
     #[serde(default, rename = "categories")]
     pub category_list: Option<PostCategories>,
+
     /// One-based index of cover photo
     #[serde(default)]
     pub cover_photo_index: usize,
+
+    // TODO: enable YouTube links
     /// YouTube ID used to embed video
     pub youtube_id: Option<String>,
+
     #[serde(default = "chronological_default")]
     pub chronological: bool,
+
+    /// One-based series part or 0 if not in a series
+    #[serde(default)]
+    pub part: u8,
 }
 
 fn chronological_default() -> bool {

@@ -16,7 +16,7 @@
         <script src="/js/post.js" type="text/javascript" defer></script>
     {{~/html_head }}
 <body>
-    {{#> header title=title, sub_title=sub_title }}
+    {{#> header title=title, sub_title="" }}
         {{~#if let Some(series) = &post.series }}
             <div class="subtitle">
                 <div class="parts"><span>Part </span>{{ series.part }} of {{ series.total_parts }}:</div>

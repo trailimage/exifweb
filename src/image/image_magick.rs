@@ -21,8 +21,6 @@ macro_rules! string_vec {
     ($($x:expr),*) => (vec![$($x.to_string()),*]);
 }
 
-// FIX: unable to read image 001.jpg for first brother ride image
-
 // magic convert 001.jpg test.webp
 // magick convert *.tif -quiet
 //  ( +clone -resize 2048x -write *-large.webp +delete )
