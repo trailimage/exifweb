@@ -50,7 +50,7 @@ pub fn path_slice(path: &Path, depth: usize) -> String {
     parts[(end - depth)..end].join("/")
 }
 
-// TODO: create deserializer to turn sanitize-pairs into regex
+// GOAL: create deserializer to turn sanitize-pairs into regex
 /// Update text by replacing source with target values from a `Pairs` hash
 pub fn replace_pairs(text: String, pairs: &[(String, String)]) -> String {
     let mut clean = text;
@@ -155,7 +155,7 @@ fn boundary(numbers: &mut [i64], distance: f64) -> Option<Limits> {
     })
 }
 
-// TODO: outlier formula seems overly complicated — maybe just discard any
+// GOAL: outlier formula seems overly complicated — maybe just discard any
 // photo with a gap of more than a day from the rest
 
 /// Simplistic outlier calculation identifies photos that are likely not part of
@@ -169,7 +169,6 @@ pub fn identify_outliers(photos: &mut Vec<Photo>) {
         .filter_map(|p: &Photo| p.date_taken.and_then(|d| Some(d.timestamp())))
         .collect();
 
-    // TODO: review this fence distance — it is far from the standard values
     if let Some(fence) = boundary(&mut times[..], 0.05) {
         for mut p in photos {
             if p.date_taken.is_none() {

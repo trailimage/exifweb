@@ -24,7 +24,6 @@ use std::{
 };
 use tools::folder_name;
 
-// TODO: generate mini maps
 // TODO: read and process GPX files
 
 fn main() {

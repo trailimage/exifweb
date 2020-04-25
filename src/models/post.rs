@@ -95,6 +95,10 @@ pub struct Post {
 
     pub photo_count: usize,
 
+    /// Photo longitude/latitude pairs used to generate MapBox static maps
+    /// https://docs.mapbox.com/api/maps/#retrieve-a-static-map-from-a-style
+    pub photo_locations: Vec<(f32, f32)>,
+
     /// If post photos or configuration have changed, or an adjacent post has
     /// changed, then the post should be re-rendered.
     ///
@@ -188,6 +192,8 @@ impl Default for Post {
             tags: HashMap::new(),
             history: PostLog::empty(),
             series: None,
+
+            photo_locations: Vec::new(),
         }
     }
 }

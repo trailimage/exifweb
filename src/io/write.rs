@@ -9,6 +9,7 @@ use crate::{
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 use regex::Regex;
+use serde_json;
 use std::{fs, path::Path};
 use yarte::Template;
 
@@ -19,6 +20,63 @@ use yarte::Template;
 /// Render template and write content to `path` file
 fn write_page(path: &Path, template: impl Template) {
     write_result(path, || template.call());
+}
+
+/// Helper methods for MapBox static maps
+struct StaticMap<'a> {
+    config: &'a BlogConfig,
+}
+impl<'a> StaticMap<'a> {
+    /// JSON serialized list of photo locations used to generate pins on map
+    /// image
+    fn locations(&self, post: &Post) -> String {
+        serde_json::to_string(&post.photo_locations).unwrap()
+    }
+
+    /// MapBox URL to static image source
+    fn url(&self, post: &Post, by_cover_photo: bool) -> String {
+        if post.photo_locations.is_empty() {
+            String::new()
+        } else {
+            let mut width: u16 = self.config.style.content_width;
+            let mut height: u16 = 200;
+
+            if by_cover_photo {
+                width = self.width_by_cover(post);
+                height = self.height_by_cover(post);
+            }
+
+            format!("https://api.mapbox.com/styles/v1/{}/static/-pins-/auto/{}x{}?access_token={}&attribution=false&logo=false",
+                self.config.mapbox.style.r#static,
+                width,
+                height,
+                self.config.mapbox.access_token)
+        }
+    }
+
+    /// Height of map image next to cover photo computed so map matches height
+    /// of landscape images but is less than height of portrait images
+    fn height_by_cover(&self, post: &Post) -> u16 {
+        let max_height = self.config.style.inline_map_height;
+
+        post.cover_photo().map_or(max_height, |p| {
+            if p.size.small.height > p.size.small.width {
+                // limit height next to portrait images
+                max_height
+            } else {
+                p.size.small.height
+            }
+        })
+    }
+
+    /// Width of map image next to cover computed so that side-by-side they fill
+    /// the `content_width`
+    fn width_by_cover(&self, post: &Post) -> u16 {
+        let width = self.config.style.content_width;
+
+        post.cover_photo()
+            .map_or(width, |p| width - p.size.small.width)
+    }
 }
 
 /// Context available to each render template
@@ -33,6 +91,7 @@ struct CommonContext<'a> {
     pub featured_post: &'a Option<FeaturedPost>,
     pub post_alias: &'a str,
     pub facebook: &'a FacebookConfig,
+    pub content_width: u16,
 
     mode_icons: HashMap<String, Regex>,
     category_icons: &'a CategoryIcon,
@@ -111,6 +170,7 @@ impl<'a> Writer<'a> {
                 categories: category_kinds,
                 mode_icons: config_regex(&config.category.what_regex),
                 category_icons: &config.category.icon,
+                content_width: config.style.content_width,
             },
             config,
         }
@@ -136,7 +196,7 @@ impl<'a> Writer<'a> {
         for (_, p) in &self.context.blog.posts {
             if p.needs_render {
                 self.post(&p);
-                // TODO: spawn thread to write log
+                // GOAL: spawn thread to write log
                 PostLog::write(self.root, &p);
             }
         }
@@ -160,6 +220,9 @@ impl<'a> Writer<'a> {
                 json_ld: Some(post.json_ld(&self.config).to_string()),
                 title,
                 sub_title,
+                map_image: StaticMap {
+                    config: self.config,
+                },
             },
         );
     }
@@ -187,6 +250,9 @@ impl<'a> Writer<'a> {
                 json_ld: Some(
                     category.json_ld(&self.config, home_page).to_string(),
                 ),
+                map_image: StaticMap {
+                    config: self.config,
+                },
             },
         );
     }
@@ -324,6 +390,7 @@ struct PostContext<'c> {
     pub json_ld: Option<String>,
     pub title: String,
     pub sub_title: String,
+    pub map_image: StaticMap<'c>,
 }
 
 // TODO: update template with actual image thumbnails
@@ -348,6 +415,7 @@ struct CategoryContext<'c> {
     pub enable: Enable,
     pub sub_title: String,
     pub json_ld: Option<String>,
+    pub map_image: StaticMap<'c>,
 }
 
 #[derive(Template)]

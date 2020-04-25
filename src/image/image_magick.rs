@@ -12,7 +12,6 @@ use colored::*;
 use encoding::{all::*, DecoderTrap, Encoding};
 use serde::Deserialize;
 use std::{
-    mem,
     path::Path,
     process::{self, Command},
 };
@@ -22,6 +21,9 @@ macro_rules! string_vec {
     ($($x:expr),*) => (vec![$($x.to_string()),*]);
 }
 
+// FIX: unable to read image 001.jpg for first brother ride image
+
+// magic convert 001.jpg test.webp
 // magick convert *.tif -quiet
 //  ( +clone -resize 2048x -write *-large.webp +delete )
 //  ( +clone -resize 1024x -write *-regular.webp +delete )
@@ -92,6 +94,8 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
         }
     };
 }
+
+// GOAL: use image magick for EXIF
 
 // https://www.awaresystems.be/imaging/tiff/tifftags/private.html
 #[derive(Deserialize, Debug)]

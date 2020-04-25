@@ -26,7 +26,7 @@ pub struct MapBoxStyles {
 #[derive(Deserialize, Debug)]
 pub struct MapBoxConfig {
     #[serde(skip)]
-    pub access_token: String, // env::var("MAPBOX_ACCESS_TOKEN")
+    pub access_token: String,
     /// Maximum number of photo markers to show on static map
     pub max_static_markers: u16,
     pub style: MapBoxStyles,
@@ -227,7 +227,17 @@ pub struct BlogConfig {
 
 impl BlogConfig {
     pub fn load(path: &Path) -> Option<Self> {
-        load_config::<Self>(path)
+        load_config::<Self>(path).and_then(|mut c| {
+            c.from_env();
+            Some(c)
+        })
+    }
+}
+
+impl ReadsEnv for BlogConfig {
+    fn from_env(&mut self) {
+        self.mapbox.from_env();
+        self.google.from_env();
     }
 }
 

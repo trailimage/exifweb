@@ -35,7 +35,21 @@
     <div class="post content">
     {{~#unless post.featured }}
         {{~> categories post }}
-    {{/unless }}
+        {{#unless post.photo_locations.is_empty() }}
+		{{! https://docs.mapbox.com/api/maps/#retrieve-a-static-map-from-a-style !}}
+		<div class="map">
+            <a href="/{{{ post.path }}}/map" title="View Full Screen Map" rel="nofollow">
+                <img
+                    src="/img/blank.png"
+                    width="{{ ctx.content_width }}"
+                    height="200"
+                    class="static-map"
+                    data-locations="{{ map_image.locations(post) }}"
+                    data-href="{{{ map_image.url(post, false) }}}"/>
+            </a>
+		</div>
+		{{~/unless }}
+    {{~/unless }}
         <nav id="nav-top">
             {{~> navigation ~}}
         </nav>

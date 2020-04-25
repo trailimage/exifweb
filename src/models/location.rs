@@ -15,6 +15,11 @@ impl Location {
             && self.latitude <= 90.0
             && self.latitude >= -90.0
     }
+
+    /// Location as longitude/latitude pair
+    pub fn as_tuple(&self) -> (f32, f32) {
+        (self.longitude, self.latitude)
+    }
 }
 
 impl PartialEq for Location {

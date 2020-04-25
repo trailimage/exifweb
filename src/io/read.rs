@@ -157,6 +157,7 @@ fn create_post(
             path: post_path,
             happened_on: log.happened_on,
             photo_count: log.photo_count,
+            photo_locations: log.photo_locations.clone(),
             needs_render: false,
             tags: log.tags.clone(),
             ..Post::from_config(post_config, log)
@@ -173,6 +174,14 @@ fn create_post(
                 &post_config.title,
             );
 
+            let mut photo_locations: Vec<(f32, f32)> = Vec::new();
+
+            for p in &photos {
+                if let Some(l) = &p.location {
+                    photo_locations.push(l.as_tuple());
+                }
+            }
+
             Some(Post {
                 path: post_path,
                 tags: collate_tags(&photos),
@@ -182,6 +191,7 @@ fn create_post(
                     None
                 },
                 photo_count: photos.len(),
+                photo_locations,
                 photos,
                 ..Post::from_config(post_config, log)
             })

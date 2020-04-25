@@ -46,6 +46,8 @@ pub struct PostLog {
     /// re-rendered.
     pub photo_count: usize,
 
+    pub photo_locations: Vec<(f32, f32)>,
+
     /// Even if post hasn't changed, its cover photo may be required to re-
     /// render category pages it's part of
     pub cover_photo: Option<Photo>,
@@ -67,6 +69,7 @@ impl PostLog {
             next_path: post.next_path.clone(),
             happened_on: post.happened_on,
             photo_count: post.photo_count,
+            photo_locations: post.photo_locations.clone(),
             as_of: Local::now().timestamp(),
             tags: post.tags.clone(),
             files_have_changed: false,
@@ -93,6 +96,7 @@ impl PostLog {
             happened_on: None,
             as_of: 0,
             photo_count: 0,
+            photo_locations: Vec::new(),
             tags: HashMap::new(),
             files_have_changed: true,
             cover_photo: None,
@@ -119,6 +123,7 @@ impl Clone for PostLog {
             happened_on: self.happened_on,
             as_of: self.as_of,
             photo_count: self.photo_count,
+            photo_locations: self.photo_locations.clone(),
             tags,
             files_have_changed: self.files_have_changed,
             cover_photo: if let Some(p) = &self.cover_photo {
@@ -165,8 +170,6 @@ impl BlogLog {
     /// updates the `changed` field of specific `TagPhotos`.
     pub fn differs(&mut self, blog: &Blog) -> bool {
         for (slug, tag_photos) in &self.tags {
-            
-
             if let Some(tp) = blog.tags.get(slug) {
                 if tp.name != tag_photos.name
                     || tp.photos.len() != tag_photos.photos.len()
