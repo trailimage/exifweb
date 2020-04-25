@@ -13,6 +13,8 @@ use std::{fs, path::Path};
 use yarte::Template;
 
 // TODO: render map page
+// TODO: create 404.html page
+// https://help.github.com/en/github/working-with-github-pages/creating-a-custom-404-page-for-your-github-pages-site
 
 /// Render template and write content to `path` file
 fn write_page(path: &Path, template: impl Template) {

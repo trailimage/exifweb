@@ -177,77 +177,73 @@ impl Eq for ExifToolOutput {}
 /// `Photo` structs
 pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
     let pattern = format!("*{}", config.source_ext);
+    let mut photos: Vec<Photo> = Vec::new();
 
-    read_dir(&path, &pattern)
-        .iter_mut()
-        .filter_map(|i: &mut ExifToolOutput| {
-            // Photo index based on its file name pattern
-            let index =
-                pos_from_name(&config.capture_index, &i.file_name).unwrap_or(0);
+    for i in read_dir(&path, &pattern) {
+        // Photo index based on its file name pattern
+        let index =
+            pos_from_name(&config.capture_index, &i.file_name).unwrap_or(0);
 
-            if index == 0 {
-                println!(
-                    "   {} {}",
-                    "failed to infer index of".red(),
-                    i.file_name.red()
-                );
-                return None;
-            }
+        if index == 0 {
+            println!(
+                "   {} {}",
+                "failed to infer index of".red(),
+                i.file_name.red()
+            );
+            continue;
+        }
 
-            let mut photo = Photo {
-                file: PhotoFile {
-                    name: i.file_name.clone(),
-                    created: i.file_created_on.map_or(0, |d| d.timestamp()),
-                },
-                title: mem::replace(&mut i.title, None),
-                artist: mem::replace(&mut i.artist, None),
-                caption: mem::replace(&mut i.caption, None)
-                    .map(|s| html::caption(&s)),
-                software: mem::replace(&mut i.software, String::new()),
-                tags: mem::replace(&mut i.tags, Vec::new()),
-                index,
-                size: SizeCollection::from(i.width, i.height, &config.size),
-                date_taken: i.taken_on.or(i.created_on),
-                ..Photo::default()
+        let mut photo = Photo {
+            file: PhotoFile {
+                name: i.file_name.clone(),
+                created: i.file_created_on.map_or(0, |d| d.timestamp()),
+            },
+            title: i.title,
+            artist: i.artist,
+            caption: i.caption.map(|s| html::caption(&s)),
+            software: i.software,
+            tags: i.tags,
+            index,
+            size: SizeCollection::from(i.width, i.height, &config.size),
+            date_taken: i.taken_on.or(i.created_on),
+            ..Photo::default()
+        };
+
+        if let Some(make) = &i.camera_make {
+            let name = match &i.camera_model {
+                Some(model) => format!("{} {}", make, model),
+                _ => make.clone(),
             };
 
-            if let Some(make) = &i.camera_make {
-                let name = match &i.camera_model {
-                    Some(model) => format!("{} {}", make, model),
-                    _ => make.clone(),
-                };
+            let camera = Camera {
+                name,
+                compensation: i.exposure_compensation,
+                shutter_speed: i.shutter_speed,
+                mode: i.exposure_mode,
+                aperture: i.aperture,
+                focal_length: i.focal_length,
+                iso: i.iso,
+                lens: i.lens,
+            };
 
-                let camera = Camera {
-                    name,
-                    compensation: mem::replace(
-                        &mut i.exposure_compensation,
-                        None,
-                    ),
-                    shutter_speed: mem::replace(&mut i.shutter_speed, None),
-                    mode: i.exposure_mode,
-                    aperture: i.aperture,
-                    focal_length: i.focal_length,
-                    iso: i.iso,
-                    lens: mem::replace(&mut i.lens, None),
-                };
+            photo.camera = Some(camera);
+        }
 
-                photo.camera = Some(camera);
+        if i.latitude.is_some() && i.longitude.is_some() {
+            let loc = Location {
+                latitude: i.latitude.unwrap(),
+                longitude: i.longitude.unwrap(),
+            };
+
+            if loc.is_valid() {
+                photo.location = Some(loc);
             }
+        }
 
-            if i.latitude.is_some() && i.longitude.is_some() {
-                let loc = Location {
-                    latitude: i.latitude.unwrap(),
-                    longitude: i.longitude.unwrap(),
-                };
+        photos.push(photo);
+    }
 
-                if loc.is_valid() {
-                    photo.location = Some(loc);
-                }
-            }
-
-            Some(photo)
-        })
-        .collect()
+    photos
 }
 
 pub fn read_dir(path: &Path, file_pattern: &str) -> Vec<ExifToolOutput> {
@@ -346,7 +342,7 @@ mod tests {
             "FileCreateDate": "2020:04:22 23:39:28-06:00",
             "Description": "We worked all day yesterday, and various days before that, to get the bikes in working order. A hot and hazy day isn’t my first choice to ride the Boise Ridge but Nick and I want to put the bikes through their paces before a four-day ride in a few weeks.",
             "ExposureProgram": 2,
-            "FileName": "001.tif",
+            "FileName": "001.jpg",
             "FocalLength": 4.15,
             "FOV": 63.6549469203798,
             "GPSLatitude": 43.579192,

@@ -181,16 +181,18 @@ struct ProfileFields {
     iptc: Option<IptcFields>,
 }
 
+/// IPTC field values are all string arrays even if they should have only a
+/// single element
 #[derive(Deserialize, Debug)]
 struct IptcFields {
     #[serde(rename = "Caption[2,120]")]
-    caption: Option<String>,
+    caption: Vec<String>,
 
     #[serde(rename = "Keyword[2,25]")]
     tags: Vec<String>,
 
     #[serde(rename = "Image Name[2,5]")]
-    title: Option<String>,
+    title: Vec<String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -208,84 +210,81 @@ struct ImageMagickInfo {
 }
 
 pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
-    read_dir(&path)
-        .iter()
-        .filter_map(|i| {
-            let index =
-                pos_from_name(&config.capture_index, &i.image.file_name)
-                    .unwrap_or(0);
+    let mut photos: Vec<Photo> = Vec::new();
 
-            if index == 0 {
-                println!(
-                    "   {} {}",
-                    "failed to infer index of".red(),
-                    i.image.file_name.red(),
-                );
-                return None;
-            }
+    for i in read_dir(&path) {
+        let i = i.image;
 
-            let i = i.image;
-            let p = i.properties;
-            let iptc = i.profiles.iptc.unwrap();
+        let index =
+            pos_from_name(&config.capture_index, &i.file_name).unwrap_or(0);
 
-            let mut photo = Photo {
-                file: PhotoFile {
-                    name: i.file_name.clone(),
-                    created: i.file_created_on.map_or(0, |d| d.timestamp()),
-                },
-                title: mem::replace(&mut iptc.title, None),
-                artist: mem::replace(&mut p.artist, None),
-                caption: mem::replace(&mut p.caption, None)
-                    .map(|s| html::caption(&s)),
-                software: mem::replace(&mut p.software, String::new()),
-                tags: mem::replace(&mut iptc.tags, Vec::new()),
-                index,
-                size: SizeCollection::from(
-                    i.geometry.width,
-                    i.geometry.height,
-                    &config.size,
-                ),
-                date_taken: p.taken_on.or(p.created_on),
-                ..Photo::default()
+        if index == 0 {
+            println!(
+                "   {} {}",
+                "failed to infer index of".red(),
+                i.file_name.red(),
+            );
+            continue;
+        }
+
+        let p = i.properties;
+        let iptc = i.profiles.iptc.unwrap();
+
+        let mut photo = Photo {
+            file: PhotoFile {
+                name: i.file_name.clone(),
+                created: 0, // i.file_created_on.map_or(0, |d| d.timestamp()),
+            },
+            title: None, // mem::replace(&mut iptc.title, None),
+            artist: p.artist,
+            caption: p.caption.map(|s| html::caption(&s)),
+            software: p.software,
+            tags: iptc.tags,
+            index,
+            size: SizeCollection::from(
+                i.geometry.width,
+                i.geometry.height,
+                &config.size,
+            ),
+            date_taken: p.taken_on.or(p.created_on),
+            ..Photo::default()
+        };
+
+        if let Some(make) = &p.camera_make {
+            let name = match &p.camera_model {
+                Some(model) => format!("{} {}", make, model),
+                _ => make.clone(),
             };
 
-            if let Some(make) = &p.camera_make {
-                let name = match &p.camera_model {
-                    Some(model) => format!("{} {}", make, model),
-                    _ => make.clone(),
-                };
+            let camera = Camera {
+                name,
+                compensation: p.exposure_compensation,
+                shutter_speed: p.shutter_speed,
+                mode: ExposureMode::Manual, // p.exposure_mode,
+                aperture: None,             // p.aperture,
+                focal_length: p.focal_length,
+                iso: p.iso,
+                lens: p.lens,
+            };
 
-                let camera = Camera {
-                    name,
-                    compensation: mem::replace(
-                        &mut p.exposure_compensation,
-                        None,
-                    ),
-                    shutter_speed: mem::replace(&mut p.shutter_speed, None),
-                    mode: p.exposure_mode,
-                    aperture: p.aperture,
-                    focal_length: p.focal_length,
-                    iso: p.iso,
-                    lens: mem::replace(&mut p.lens, None),
-                };
+            photo.camera = Some(camera);
+        }
 
-                photo.camera = Some(camera);
+        if p.latitude.is_some() && p.longitude.is_some() {
+            let loc = Location {
+                latitude: p.latitude.unwrap(),
+                longitude: p.longitude.unwrap(),
+            };
+
+            if loc.is_valid() {
+                photo.location = Some(loc);
             }
+        }
 
-            if p.latitude.is_some() && p.longitude.is_some() {
-                let loc = Location {
-                    latitude: p.latitude.unwrap(),
-                    longitude: p.longitude.unwrap(),
-                };
+        photos.push(photo);
+    }
 
-                if loc.is_valid() {
-                    photo.location = Some(loc);
-                }
-            }
-
-            Some(photo)
-        })
-        .collect()
+    photos
 }
 
 fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
