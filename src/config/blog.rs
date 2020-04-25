@@ -1,61 +1,14 @@
 //! TOML blog configuration
 
-use super::{env_or_empty, load_config, ReadsEnv};
+use super::{
+    env_or_empty, load_config,
+    vendors::{FacebookConfig, GoogleConfig, MapBoxConfig},
+    ReadsEnv,
+};
 use crate::{deserialize::regex_string, models::Location, tools::Pairs};
 use regex::Regex;
 use serde::Deserialize;
 use std::path::Path;
-
-// https://developers.facebook.com/docs/reference/plugins/like/
-// https://developers.facebook.com/apps/110860435668134/summary
-#[derive(Deserialize, Debug)]
-pub struct FacebookConfig {
-    pub app_id: String,
-    pub admin_id: String,
-    pub page_id: String,
-    pub site_id: String,
-    pub author_url: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct MapBoxStyles {
-    pub dynamic: String,
-    pub r#static: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct MapBoxConfig {
-    #[serde(skip)]
-    pub access_token: String,
-    /// Maximum number of photo markers to show on static map
-    pub max_static_markers: u16,
-    pub style: MapBoxStyles,
-}
-
-impl ReadsEnv for MapBoxConfig {
-    fn from_env(&mut self) {
-        self.access_token = env_or_empty("MAPBOX_ACCESS_TOKEN")
-    }
-}
-
-#[derive(Deserialize, Debug)]
-pub struct GoogleConfig {
-    #[serde(skip)]
-    pub api_key: String, // env::var("GOOGLE_KEY")
-    pub project_id: String,
-    /// Shown as `UA-<analytics_id>-1`
-    pub analytics_id: String,
-    #[serde(skip)]
-    pub search_engine_id: String, // env::var("GOOGLE_SEARCH_ID")
-    pub blog_id: String,
-}
-
-impl ReadsEnv for GoogleConfig {
-    fn from_env(&mut self) {
-        self.api_key = env_or_empty("GOOGLE_KEY");
-        self.search_engine_id = env_or_empty("GOOGLE_SEARCH_ID");
-    }
-}
 
 /// Replacement camera, lens and software text
 #[derive(Deserialize, Debug)]
@@ -176,9 +129,15 @@ pub struct SiteConfig {
 #[derive(Deserialize, Debug)]
 pub struct OwnerConfig {
     pub name: String,
+    #[serde(skip)]
     pub email: Option<String>,
     pub urls: Option<Vec<String>>,
     pub image: Option<ImageConfig>,
+}
+impl ReadsEnv for OwnerConfig {
+    fn from_env(&mut self) {
+        self.email = Some(env_or_empty("EMAIL_CONTACT"))
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -230,6 +189,7 @@ impl ReadsEnv for BlogConfig {
     fn from_env(&mut self) {
         self.mapbox.from_env();
         self.google.from_env();
+        self.owner.from_env();
     }
 }
 

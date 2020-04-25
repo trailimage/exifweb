@@ -223,6 +223,18 @@ pub fn write_result<E: error::Error, F: FnOnce() -> Result<String, E>>(
     }
 }
 
+/// ROT13 encode text
+/// from https://github.com/marekventur/rust-rot13
+pub fn rot13(text: &str) -> String {
+    text.chars()
+        .map(|c| match c {
+            'A'...'M' | 'a'...'m' => ((c as u8) + 13) as char,
+            'N'...'Z' | 'n'...'z' => ((c as u8) - 13) as char,
+            _ => c,
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -4,7 +4,7 @@ use crate::{
     config::{BlogConfig, CategoryIcon, FacebookConfig, FeaturedPost, PostLog},
     html,
     models::{Blog, Category, CategoryKind, PhotoPath, Post},
-    tools::{config_regex, path_slice, write_result},
+    tools::{config_regex, path_slice, rot13, write_result},
 };
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
@@ -92,6 +92,7 @@ struct CommonContext<'a> {
     pub post_alias: &'a str,
     pub facebook: &'a FacebookConfig,
     pub content_width: u16,
+    pub contact_link: String,
 
     mode_icons: HashMap<String, Regex>,
     category_icons: &'a CategoryIcon,
@@ -171,6 +172,13 @@ impl<'a> Writer<'a> {
                 mode_icons: config_regex(&config.category.what_regex),
                 category_icons: &config.category.icon,
                 content_width: config.style.content_width,
+                contact_link: config
+                    .owner
+                    .email
+                    .as_ref()
+                    .map_or(String::new(), |e| {
+                        rot13(&format!("<a href=\"mailto:{}\">Contact</a>", e))
+                    }),
             },
             config,
         }

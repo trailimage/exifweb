@@ -1,16 +1,17 @@
-pub mod blog;
-pub mod log;
-pub mod post;
-pub mod series;
+mod blog;
+mod log;
+mod post;
+mod series;
+mod vendors;
 
 pub use blog::{
-    BlogConfig, CategoryConfig, CategoryIcon, ExifConfig, FacebookConfig,
-    FeaturedPost, ImageConfig, OwnerConfig, PhotoConfig, SiteConfig,
-    SizeConfig,
+    BlogConfig, CategoryConfig, CategoryIcon, ExifConfig, FeaturedPost,
+    ImageConfig, OwnerConfig, PhotoConfig, SiteConfig, SizeConfig,
 };
 pub use log::{BlogLog, PostLog};
 pub use post::PostConfig;
 pub use series::SeriesConfig;
+pub use vendors::FacebookConfig;
 
 use colored::*;
 
