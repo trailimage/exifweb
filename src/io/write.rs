@@ -153,7 +153,7 @@ impl<'a> Writer<'a> {
             &post.path,
             PostContext {
                 post,
-                enable: Enable::default(),
+                enable: Enable::all(),
                 ctx: &self.context,
                 json_ld: Some(post.json_ld(&self.config).to_string()),
                 title,
@@ -305,6 +305,10 @@ impl Enable {
 
     fn none() -> Self {
         Enable::new(false, false)
+    }
+
+    fn all() -> Self {
+        Enable::new(true, true)
     }
 }
 

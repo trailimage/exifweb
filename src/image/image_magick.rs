@@ -1,10 +1,23 @@
 use crate::{
     config::PhotoConfig,
-    models::{suffix, Photo},
+    html,
+    models::{
+        suffix, Camera, ExposureMode, Location, Photo, PhotoFile,
+        SizeCollection,
+    },
+    tools::{folder_name, pos_from_name},
 };
+use chrono::{DateTime, FixedOffset};
 use colored::*;
-use std::process::{self, Command};
+use encoding::{all::*, DecoderTrap, Encoding};
+use serde::Deserialize;
+use std::{
+    mem,
+    path::Path,
+    process::{self, Command},
+};
 
+/// Create vector of owned strings
 macro_rules! string_vec {
     ($($x:expr),*) => (vec![$($x.to_string()),*]);
 }
@@ -78,4 +91,258 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
             process::exit(1);
         }
     };
+}
+
+// https://www.awaresystems.be/imaging/tiff/tifftags/private.html
+#[derive(Deserialize, Debug)]
+struct ImageProperties {
+    #[serde(rename = "exif:ApertureValue")] // or exif:FNumber
+    aperture: String,
+
+    #[serde(rename = "exif:artist")]
+    artist: Option<String>,
+
+    #[serde(rename = "exif:Make")]
+    camera_make: Option<String>,
+
+    #[serde(rename = "exif:model")]
+    camera_model: Option<String>,
+
+    #[serde(rename = "exif:ImageDescription")]
+    caption: Option<String>,
+
+    //city: Option<String>,
+    #[serde(rename = "icc:description")]
+    color_profile: Option<String>,
+
+    color_temperature: Option<String>,
+
+    #[serde(rename = "exif:copyright")]
+    copyright: String,
+
+    /// When the *photo*, not the file, was created
+    #[serde(rename = "date:create")]
+    created_on: Option<DateTime<FixedOffset>>,
+
+    #[serde(rename = "exif:ExposureBiasValue")]
+    exposure_compensation: Option<String>,
+
+    #[serde(rename = "exif:FocalLengthIn35mmFilm")]
+    field_of_view: Option<f32>,
+
+    /// When the *file*, not the photo, was created
+    file_created_on: Option<DateTime<FixedOffset>>,
+
+    file_name: String,
+
+    #[serde(rename = "exif:FocalLength")]
+    focal_length: Option<f32>,
+
+    #[serde(rename = "exif:LensModel")]
+    iso: Option<u16>,
+
+    #[serde(rename = "exif:GPSLatitude")]
+    latitude: Option<f32>,
+
+    #[serde(rename = "exif:PhotographicSensitivity")]
+    lens: Option<String>,
+
+    #[serde(rename = "exif:GPSLongitude")]
+    longitude: Option<f32>,
+
+    #[serde(rename = "exif:MaxApertureValue")]
+    max_aperture: Option<f32>,
+
+    #[serde(rename = "exif:Software")]
+    software: String,
+
+    // state: Option<String>,
+
+    //tags: Vec<String>,
+
+    //title: Option<String>,
+    usage_terms: Option<String>,
+
+    #[serde(rename = "exif:ExposureTime")] // or ShutterSpeedValue
+    shutter_speed: Option<String>,
+
+    #[serde(rename = "exif:DateTimeOriginal")]
+    taken_on: Option<DateTime<FixedOffset>>,
+}
+
+#[derive(Deserialize, Debug)]
+struct GeometryFields {
+    width: u16,
+    height: u16,
+}
+
+#[derive(Deserialize, Debug)]
+struct ProfileFields {
+    iptc: Option<IptcFields>,
+}
+
+#[derive(Deserialize, Debug)]
+struct IptcFields {
+    #[serde(rename = "Caption[2,120]")]
+    caption: Option<String>,
+
+    #[serde(rename = "Keyword[2,25]")]
+    tags: Vec<String>,
+
+    #[serde(rename = "Image Name[2,5]")]
+    title: Option<String>,
+}
+
+#[derive(Deserialize, Debug)]
+struct ImageFields {
+    #[serde(rename = "baseName")]
+    file_name: String,
+    format: String,
+    properties: ImageProperties,
+    geometry: GeometryFields,
+    profiles: ProfileFields,
+}
+#[derive(Deserialize, Debug)]
+struct ImageMagickInfo {
+    pub image: ImageFields,
+}
+
+pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
+    read_dir(&path)
+        .iter()
+        .filter_map(|i| {
+            let index =
+                pos_from_name(&config.capture_index, &i.image.file_name)
+                    .unwrap_or(0);
+
+            if index == 0 {
+                println!(
+                    "   {} {}",
+                    "failed to infer index of".red(),
+                    i.image.file_name.red(),
+                );
+                return None;
+            }
+
+            let i = i.image;
+            let p = i.properties;
+            let iptc = i.profiles.iptc.unwrap();
+
+            let mut photo = Photo {
+                file: PhotoFile {
+                    name: i.file_name.clone(),
+                    created: i.file_created_on.map_or(0, |d| d.timestamp()),
+                },
+                title: mem::replace(&mut iptc.title, None),
+                artist: mem::replace(&mut p.artist, None),
+                caption: mem::replace(&mut p.caption, None)
+                    .map(|s| html::caption(&s)),
+                software: mem::replace(&mut p.software, String::new()),
+                tags: mem::replace(&mut iptc.tags, Vec::new()),
+                index,
+                size: SizeCollection::from(
+                    i.geometry.width,
+                    i.geometry.height,
+                    &config.size,
+                ),
+                date_taken: p.taken_on.or(p.created_on),
+                ..Photo::default()
+            };
+
+            if let Some(make) = &p.camera_make {
+                let name = match &p.camera_model {
+                    Some(model) => format!("{} {}", make, model),
+                    _ => make.clone(),
+                };
+
+                let camera = Camera {
+                    name,
+                    compensation: mem::replace(
+                        &mut p.exposure_compensation,
+                        None,
+                    ),
+                    shutter_speed: mem::replace(&mut p.shutter_speed, None),
+                    mode: p.exposure_mode,
+                    aperture: p.aperture,
+                    focal_length: p.focal_length,
+                    iso: p.iso,
+                    lens: mem::replace(&mut p.lens, None),
+                };
+
+                photo.camera = Some(camera);
+            }
+
+            if p.latitude.is_some() && p.longitude.is_some() {
+                let loc = Location {
+                    latitude: p.latitude.unwrap(),
+                    longitude: p.longitude.unwrap(),
+                };
+
+                if loc.is_valid() {
+                    photo.location = Some(loc);
+                }
+            }
+
+            Some(photo)
+        })
+        .collect()
+}
+
+fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
+    // magick convert -quiet 001.jpg json:
+    // magick convert -quiet *.tif xmp:
+    let output = match Command::new("magick")
+        .current_dir(path.to_string_lossy().to_string())
+        .arg("convert")
+        .arg("-quiet")
+        .arg("*.jpg")
+        .arg("json:")
+        .output()
+    {
+        Ok(out) => out,
+        _ => {
+            println!(
+                "   {} {}",
+                "Failed to generate EXIF for".red(),
+                folder_name(&path).magenta(),
+            );
+            return Vec::new();
+        }
+    };
+
+    let text = match ISO_8859_1.decode(&output.stdout[..], DecoderTrap::Ignore)
+    {
+        Ok(text) => text,
+        _ => {
+            println!(
+                "   {} {}",
+                "Failed to convert EXIF output to UTF-8 for".red(),
+                folder_name(&path).magenta(),
+            );
+            return Vec::new();
+        }
+    };
+
+    if text.is_empty() {
+        println!(
+            "   {} {}",
+            "EXIF JSON is empty for".red(),
+            folder_name(&path).magenta()
+        );
+        return Vec::new();
+    }
+
+    match serde_json::from_str::<Vec<ImageMagickInfo>>(&text) {
+        Ok(info) => info,
+        Err(e) => {
+            println!(
+                "   {} {}",
+                "Unable to parse EXIF JSON for".red(),
+                folder_name(&path).magenta(),
+            );
+            //println!("{}", text);
+            //println!("{:?}", e);
+            Vec::new()
+        }
+    }
 }
