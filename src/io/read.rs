@@ -3,8 +3,8 @@ use crate::{
         BlogConfig, PhotoConfig, PostConfig, PostLog, SeriesConfig, CONFIG_FILE,
     },
     image::exif_tool,
-    models::{collate_tags, Blog, Photo, Post, PostSeries},
-    tools::{earliest_photo_date, folder_name, identify_outliers, path_slice},
+    models::{Photo, Post, PostSeries},
+    tools::{folder_name, identify_outliers, path_slice},
 };
 use colored::*;
 use std::{
@@ -97,27 +97,8 @@ fn series_post(
     })
 }
 
-/// Load photos for all posts with given `paths`. This may be used to populate
-/// posts initially created from a log file but then found to have changed
-/// sequence (different next or previous post), requiring a re-render which
-/// depends on complete photo information.
-pub fn post_photos(
-    root: &Path,
-    config: &BlogConfig,
-    blog: &mut Blog,
-    paths: &Vec<String>,
-) {
-    for path in paths.iter() {
-        println!("   Attempting to add photos to {}", path);
-
-        let mut photos = load_photos(&root.join(path), &config.photo);
-
-        blog.add_post_photos(path, &mut photos)
-    }
-}
-
 /// Load information about each photo in `path`
-fn load_photos(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
+pub fn load_photos(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
     let mut photos: Vec<Photo> = exif_tool::parse_dir(&path, config);
 
     if photos.is_empty() {
@@ -145,7 +126,7 @@ fn create_post(
     let post_path = path_slice(path, if is_series { 2 } else { 1 });
     let log = load_post_log(path, config);
 
-    if !(log.files_have_changed || config.force_rerender) {
+    if !(log.files_changed || config.force_rerender) {
         // no files have changed and re-render NOT forced
         assert_index(
             post_config.cover_photo_index,
@@ -158,7 +139,6 @@ fn create_post(
             happened_on: log.happened_on,
             photo_count: log.photo_count,
             photo_locations: log.photo_locations.clone(),
-            needs_render: false,
             tags: log.tags.clone(),
             ..Post::from_config(post_config, log)
         })
@@ -174,27 +154,12 @@ fn create_post(
                 &post_config.title,
             );
 
-            let mut photo_locations: Vec<(f32, f32)> = Vec::new();
+            let mut post = Post::from_config(post_config, log);
 
-            for p in &photos {
-                if let Some(l) = &p.location {
-                    photo_locations.push(l.as_tuple());
-                }
-            }
+            post.path = post_path;
+            post.add_photos(photos);
 
-            Some(Post {
-                path: post_path,
-                tags: collate_tags(&photos),
-                happened_on: if post_config.chronological {
-                    earliest_photo_date(&photos)
-                } else {
-                    None
-                },
-                photo_count: photos.len(),
-                photo_locations,
-                photos,
-                ..Post::from_config(post_config, log)
-            })
+            Some(post)
         }
     }
 }
@@ -222,7 +187,7 @@ fn load_post_log(path: &Path, config: &BlogConfig) -> PostLog {
             config,
         ) {
             Ok(modified) => {
-                log.files_have_changed = modified;
+                log.files_changed = modified;
                 return log;
             }
             Err(e) => {

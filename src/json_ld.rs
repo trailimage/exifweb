@@ -1,3 +1,5 @@
+//! JSON-LD helper methods
+
 use crate::config::BlogConfig;
 use serde_json::{json, Value};
 

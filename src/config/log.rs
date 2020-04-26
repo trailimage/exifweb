@@ -58,7 +58,7 @@ pub struct PostLog {
 
     /// Whether post source files have changed since they were last read
     #[serde(skip)]
-    pub files_have_changed: bool,
+    pub files_changed: bool,
 }
 
 impl PostLog {
@@ -72,7 +72,7 @@ impl PostLog {
             photo_locations: post.photo_locations.clone(),
             as_of: Local::now().timestamp(),
             tags: post.tags.clone(),
-            files_have_changed: false,
+            files_changed: false,
             cover_photo: post.cover_photo().map(|p| p.clone()),
         };
         let path = root.join(&post.path).join(LOG_FILE);
@@ -98,14 +98,18 @@ impl PostLog {
             photo_count: 0,
             photo_locations: Vec::new(),
             tags: HashMap::new(),
-            files_have_changed: true,
+            files_changed: true,
             cover_photo: None,
         }
     }
 
     /// Whether logged values differ from current post values
-    pub fn differs(&self, post: &Post) -> bool {
+    pub fn sequence_changed(&self, post: &Post) -> bool {
         self.prev_path != post.prev_path || self.next_path != post.next_path
+    }
+
+    pub fn locations_changed(&self, post: &Post) -> bool {
+        self.photo_locations != post.photo_locations
     }
 }
 
@@ -125,7 +129,7 @@ impl Clone for PostLog {
             photo_count: self.photo_count,
             photo_locations: self.photo_locations.clone(),
             tags,
-            files_have_changed: self.files_have_changed,
+            files_changed: self.files_changed,
             cover_photo: if let Some(p) = &self.cover_photo {
                 Some(p.clone())
             } else {
@@ -164,23 +168,5 @@ impl BlogLog {
     /// Load log file from path
     pub fn load(path: &Path) -> Option<Self> {
         load_ron(path, LOG_FILE, false)
-    }
-
-    /// Whether logged values differ from current blog values. This method also
-    /// updates the `changed` field of specific `TagPhotos`.
-    pub fn differs(&mut self, blog: &Blog) -> bool {
-        for (slug, tag_photos) in &self.tags {
-            if let Some(tp) = blog.tags.get(slug) {
-                if tp.name != tag_photos.name
-                    || tp.photos.len() != tag_photos.photos.len()
-                {
-                    return true;
-                }
-            } else {
-                return true;
-            }
-        }
-
-        false
     }
 }

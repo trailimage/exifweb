@@ -1,7 +1,5 @@
 use crate::config::{BlogLog, ExifConfig, PhotoConfig};
-use crate::models::{
-    Category, CategoryKind, Photo, PhotoPath, Post, TagPhotos,
-};
+use crate::models::{Category, CategoryKind, PhotoPath, Post, TagPhotos};
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 
@@ -30,15 +28,6 @@ impl Blog {
         }
         self.add_post_categories(&p);
         self.posts.insert(p.path.clone(), p);
-    }
-
-    pub fn add_post_photos(&mut self, path: &String, photos: &mut Vec<Photo>) {
-        if photos.is_empty() {
-            return;
-        }
-        if let Some(post) = self.posts.get_mut(path) {
-            post.photos.append(photos);
-        }
     }
 
     /// Build root-relative post photo size URLs
@@ -78,7 +67,7 @@ impl Blog {
     pub fn needs_render_count(&self) -> usize {
         let mut total: usize = 0;
         for (_, p) in &self.posts {
-            if p.needs_render {
+            if p.files_changed() || p.sequence_changed() {
                 total += 1;
             }
         }
@@ -129,12 +118,7 @@ impl Blog {
     }
 
     /// Update post `prev_key` and `next_key` based on chronological ordering
-    /// and return paths to all posts that
-    ///
-    /// - had different values the last time they were loaded
-    /// - and are not already flagged to be rendered
-    ///
-    pub fn correlate_posts(&mut self) -> Vec<String> {
+    pub fn correlate_posts(&mut self) {
         let mut ordered: Vec<KeyTime> = Vec::new();
 
         for kt in self
@@ -168,30 +152,9 @@ impl Blog {
                         .and_then(|kt: &KeyTime| Some(kt.path.clone()));
                 }
             } else {
-                eprintln!("Post {} is not chronological", k);
+                eprintln!("   Post {} is not chronological", k);
             }
         }
-
-        self.sequence_changed_posts()
-    }
-
-    /// Return paths to all posts that have a different `prev_path` or
-    /// `next_path` than the last time they were loaded. These are posts that
-    /// may need to be re-rendered to show updated navigation HTML.
-    fn sequence_changed_posts(&mut self) -> Vec<String> {
-        let mut paths: Vec<String> = Vec::new();
-
-        for (path, p) in self.posts.iter_mut() {
-            if p.needs_render {
-                continue;
-            }
-
-            if p.changed() {
-                p.needs_render = true;
-                paths.push(path.clone());
-            }
-        }
-        paths
     }
 
     /// Sanitize camera informaton in all post photos. This will only affect

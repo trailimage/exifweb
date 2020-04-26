@@ -47,11 +47,17 @@ fn main() {
         return;
     }
 
-    let sequence_changed = blog.correlate_posts();
+    blog.correlate_posts();
 
-    // Previously loaded posts that haven't changed but have different previous
-    // or next posts need to be re-rendered to update navigation HTML
-    read::post_photos(root, &config, &mut blog, &sequence_changed);
+    for (_, p) in blog
+        .posts
+        .iter_mut()
+        .filter(|(_, p)| p.photos.is_empty() && p.sequence_changed())
+    {
+        // posts that changed order need to be re-rendered which requires all
+        // their photo data to be loaded
+        p.add_photos(read::load_photos(&root.join(&p.path), &config.photo));
+    }
 
     blog.build_photo_urls(&config.photo);
 

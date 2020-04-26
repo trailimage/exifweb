@@ -1,7 +1,8 @@
 use crate::{
     config::{BlogConfig, PhotoConfig, PostConfig, PostLog},
     json_ld,
-    models::{Category, Photo, TagPhotos},
+    models::{collate_tags, Category, Photo, TagPhotos},
+    tools::earliest_photo_date,
 };
 use chrono::{DateTime, FixedOffset, Utc};
 use core::cmp::Ordering;
@@ -99,13 +100,6 @@ pub struct Post {
     /// https://docs.mapbox.com/api/maps/#retrieve-a-static-map-from-a-style
     pub photo_locations: Vec<(f32, f32)>,
 
-    /// If post photos or configuration have changed, or an adjacent post has
-    /// changed, then the post should be re-rendered.
-    ///
-    /// Posts that haven't changed don't re-parse their photos so `photos` is
-    /// an empty vector.
-    pub needs_render: bool,
-
     /// Zero-based index of cover photo within vector of photos
     pub cover_photo_index: usize,
 
@@ -138,6 +132,41 @@ impl Post {
         }
 
         photo
+    }
+
+    pub fn add_photos(&mut self, photos: Vec<Photo>) {
+        let mut locations: Vec<(f32, f32)> = Vec::new();
+
+        for p in &photos {
+            if let Some(l) = &p.location {
+                locations.push(l.as_tuple());
+            }
+        }
+
+        locations.sort_by(|a, b| {
+            if a.0 > b.0 {
+                Ordering::Greater
+            } else if a.0 < b.0 {
+                Ordering::Less
+            } else {
+                if a.1 > b.1 {
+                    Ordering::Greater
+                } else if a.1 < b.1 {
+                    Ordering::Less
+                } else {
+                    Ordering::Equal
+                }
+            }
+        });
+
+        if self.chronological {
+            self.happened_on = earliest_photo_date(&photos)
+        }
+
+        self.tags = collate_tags(&photos);
+        self.photo_locations = locations;
+        self.photo_count = photos.len();
+        self.photos = photos;
     }
 
     pub fn has_video(&self) -> bool {
@@ -191,7 +220,6 @@ impl Default for Post {
 
             photo_count: 0,
             cover_photo_index: 0,
-            needs_render: true,
 
             tags: HashMap::new(),
             history: PostLog::empty(),
@@ -248,9 +276,19 @@ impl Post {
         }
     }
 
-    /// Whether post has changed since it was last loaded
-    pub fn changed(&self) -> bool {
-        self.history.differs(self)
+    /// Whether next or previous posts have changed
+    pub fn sequence_changed(&self) -> bool {
+        self.history.sequence_changed(self)
+    }
+
+    /// Whether photo GPS locations have changed
+    pub fn locations_changed(&self) -> bool {
+        self.history.locations_changed(self)
+    }
+
+    /// Whether photos or configuration have changed
+    pub fn files_changed(&self) -> bool {
+        self.history.files_changed
     }
 }
 

@@ -9,6 +9,7 @@ use crate::{
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 use regex::Regex;
+use reqwest;
 use serde_json;
 use std::{fs, path::Path};
 use yarte::Template;
@@ -18,115 +19,6 @@ use yarte::Template;
 /// Render template and write content to `path` file
 fn write_page(path: &Path, template: impl Template) {
     write_result(path, || template.call());
-}
-
-/// Helper methods for MapBox static maps
-struct StaticMap<'a> {
-    config: &'a BlogConfig,
-}
-impl<'a> StaticMap<'a> {
-    /// JSON serialized list of photo locations used to generate pins on map
-    /// image
-    fn locations(&self, post: &Post) -> String {
-        serde_json::to_string(&post.photo_locations).unwrap()
-    }
-
-    /// MapBox URL to static image source
-    fn url(&self, post: &Post, by_cover_photo: bool) -> String {
-        if post.photo_locations.is_empty() {
-            String::new()
-        } else {
-            let mut width: u16 = self.config.style.content_width;
-            let mut height: u16 = 200;
-
-            if by_cover_photo {
-                width = self.width_by_cover(post);
-                height = self.height_by_cover(post);
-            }
-
-            format!("https://api.mapbox.com/styles/v1/{}/static/-pins-/auto/{}x{}?access_token={}&attribution=false&logo=false",
-                self.config.mapbox.style.r#static,
-                width,
-                height,
-                self.config.mapbox.access_token)
-        }
-    }
-
-    /// Height of map image next to cover photo computed so map matches height
-    /// of landscape images but is less than height of portrait images
-    fn height_by_cover(&self, post: &Post) -> u16 {
-        let max_height = self.config.style.inline_map_height;
-
-        post.cover_photo().map_or(max_height, |p| {
-            if p.size.small.height > p.size.small.width {
-                // limit height next to portrait images
-                max_height
-            } else {
-                p.size.small.height
-            }
-        })
-    }
-
-    /// Width of map image next to cover computed so that side-by-side they fill
-    /// the `content_width`
-    fn width_by_cover(&self, post: &Post) -> u16 {
-        let width = self.config.style.content_width;
-
-        post.cover_photo()
-            .map_or(width, |p| width - p.size.small.width)
-    }
-}
-
-/// Context available to each render template
-struct CommonContext<'a> {
-    pub blog: &'a Blog,
-    pub categories: Vec<(CategoryKind, &'a Vec<Category>)>,
-    pub site_url: &'a str,
-    pub site_title: &'a str,
-    pub site_description: &'a str,
-    pub repo_url: &'a str,
-    pub author_name: &'a str,
-    pub featured_post: &'a Option<FeaturedPost>,
-    pub post_alias: &'a str,
-    pub facebook: &'a FacebookConfig,
-    pub content_width: u16,
-    pub contact_link: String,
-
-    mode_icons: HashMap<String, Regex>,
-    category_icons: &'a CategoryIcon,
-}
-
-impl<'a> CommonContext<'a> {
-    pub fn icon(&self, name: &str) -> String {
-        html::icon_tag(name)
-    }
-    pub fn tag_list(&self, list: &Vec<String>) -> String {
-        html::photo_tag_list(list)
-    }
-    pub fn date(&self, d: DateTime<FixedOffset>) -> String {
-        html::date_string(d)
-    }
-    pub fn travel_icon(&self, categories: &Vec<Category>) -> String {
-        match html::travel_mode_icon(categories, &self.mode_icons) {
-            Some(icon) => icon,
-            None => String::new(),
-        }
-    }
-    pub fn category_icon(&self, kind: &CategoryKind) -> String {
-        html::category_icon(kind, &self.category_icons)
-    }
-    pub fn fraction(&self, number: &str) -> String {
-        html::fraction(number)
-    }
-    pub fn plural(&self, word: &str, count: usize) -> String {
-        html::plural(word, count)
-    }
-    pub fn say_number(&self, number: usize) -> String {
-        html::say_number(number)
-    }
-    pub fn list_label<T>(&self, word: &str, list: &Vec<T>) -> String {
-        html::list_label(word, list)
-    }
 }
 
 /// Methods to render and write standard web pages with loaded configuration and
@@ -200,7 +92,7 @@ impl<'a> Writer<'a> {
 
     pub fn posts(&self) {
         for (_, p) in &self.context.blog.posts {
-            if p.needs_render {
+            if p.sequence_changed() || p.files_changed() {
                 self.post(&p);
                 // GOAL: spawn thread to write log
                 PostLog::write(self.root, &p);
@@ -231,6 +123,17 @@ impl<'a> Writer<'a> {
                 },
             },
         );
+
+        if post.locations_changed() {
+            // TODO: download maps
+            let mut response = reqwest::get("url");
+
+            // let fname = tmp_dir.path().join(fname);
+            // println!("will be located under: '{:?}'", fname);
+            // fs::File::create(fname);
+
+            // std::io::copy(&mut response, &mut dest)
+        }
     }
 
     pub fn categories(&self) {
@@ -365,6 +268,114 @@ impl<'a> Writer<'a> {
     }
 }
 
+/// Helper methods for MapBox static maps
+struct StaticMap<'a> {
+    config: &'a BlogConfig,
+}
+impl<'a> StaticMap<'a> {
+    /// JSON serialized list of photo locations used to generate pins on map
+    /// image
+    fn locations(&self, post: &Post) -> String {
+        serde_json::to_string(&post.photo_locations).unwrap()
+    }
+
+    /// MapBox URL to static image source
+    fn url(&self, post: &Post, by_cover_photo: bool) -> String {
+        if post.photo_locations.is_empty() {
+            String::new()
+        } else {
+            let mut width: u16 = self.config.style.content_width;
+            let mut height: u16 = 200;
+
+            if by_cover_photo {
+                width = self.width_by_cover(post);
+                height = self.height_by_cover(post);
+            }
+
+            format!("https://api.mapbox.com/styles/v1/{}/static/-pins-/auto/{}x{}?access_token={}&attribution=false&logo=false",
+                self.config.mapbox.style.r#static,
+                width,
+                height,
+                self.config.mapbox.access_token)
+        }
+    }
+
+    /// Height of map image next to cover photo computed so map matches height
+    /// of landscape images but is less than height of portrait images
+    fn height_by_cover(&self, post: &Post) -> u16 {
+        let max_height = self.config.style.inline_map_height;
+
+        post.cover_photo().map_or(max_height, |p| {
+            if p.size.small.height > p.size.small.width {
+                // limit height next to portrait images
+                max_height
+            } else {
+                p.size.small.height
+            }
+        })
+    }
+
+    /// Width of map image next to cover computed so that side-by-side they fill
+    /// the `content_width`
+    fn width_by_cover(&self, post: &Post) -> u16 {
+        let width = self.config.style.content_width;
+
+        post.cover_photo()
+            .map_or(width, |p| width - p.size.small.width)
+    }
+}
+
+/// Context available to each render template
+struct CommonContext<'a> {
+    pub blog: &'a Blog,
+    pub categories: Vec<(CategoryKind, &'a Vec<Category>)>,
+    pub site_url: &'a str,
+    pub site_title: &'a str,
+    pub site_description: &'a str,
+    pub repo_url: &'a str,
+    pub author_name: &'a str,
+    pub featured_post: &'a Option<FeaturedPost>,
+    pub post_alias: &'a str,
+    pub facebook: &'a FacebookConfig,
+    pub content_width: u16,
+    pub contact_link: String,
+
+    mode_icons: HashMap<String, Regex>,
+    category_icons: &'a CategoryIcon,
+}
+impl<'a> CommonContext<'a> {
+    pub fn icon(&self, name: &str) -> String {
+        html::icon_tag(name)
+    }
+    pub fn tag_list(&self, list: &Vec<String>) -> String {
+        html::photo_tag_list(list)
+    }
+    pub fn date(&self, d: DateTime<FixedOffset>) -> String {
+        html::date_string(d)
+    }
+    pub fn travel_icon(&self, categories: &Vec<Category>) -> String {
+        match html::travel_mode_icon(categories, &self.mode_icons) {
+            Some(icon) => icon,
+            None => String::new(),
+        }
+    }
+    pub fn category_icon(&self, kind: &CategoryKind) -> String {
+        html::category_icon(kind, &self.category_icons)
+    }
+    pub fn fraction(&self, number: &str) -> String {
+        html::fraction(number)
+    }
+    pub fn plural(&self, word: &str, count: usize) -> String {
+        html::plural(word, count)
+    }
+    pub fn say_number(&self, number: usize) -> String {
+        html::say_number(number)
+    }
+    pub fn list_label<T>(&self, word: &str, list: &Vec<T>) -> String {
+        html::list_label(word, list)
+    }
+}
+
 /// Page features
 struct Enable {
     /// If `true` then main navigation elements will scroll with the page,
@@ -373,7 +384,6 @@ struct Enable {
     /// Whether to load Facebook scripts
     pub facebook: bool,
 }
-
 impl Default for Enable {
     fn default() -> Self {
         Enable {
@@ -382,7 +392,6 @@ impl Default for Enable {
         }
     }
 }
-
 impl Enable {
     fn new(scroll_nav: bool, facebook: bool) -> Self {
         Enable {
