@@ -14,8 +14,6 @@ use std::{fs, path::Path};
 use yarte::Template;
 
 // TODO: render map page
-// TODO: create 404.html page
-// https://help.github.com/en/github/working-with-github-pages/creating-a-custom-404-page-for-your-github-pages-site
 
 /// Render template and write content to `path` file
 fn write_page(path: &Path, template: impl Template) {
@@ -301,7 +299,7 @@ impl<'a> Writer<'a> {
             "about",
             AboutContext {
                 ctx: &self.context,
-                enable: Enable::new(true, false),
+                enable: Enable::default(),
                 // TODO: render JSON-LD for about page
                 json_ld: None,
                 title: format!("About {}", self.context.site_title),
@@ -352,6 +350,19 @@ impl<'a> Writer<'a> {
             SitemapContext { ctx: &self.context },
         );
     }
+
+    // TODO: restore 404 image of Jeremy
+    // https://help.github.com/en/github/working-with-github-pages/creating-a-custom-404-page-for-your-github-pages-site
+    pub fn error_pages(&self) {
+        write_page(
+            &self.root.join("404.html"),
+            NotFoundContext {
+                ctx: &self.context,
+                enable: Enable::default(),
+                json_ld: None,
+            },
+        );
+    }
 }
 
 /// Page features
@@ -366,8 +377,8 @@ struct Enable {
 impl Default for Enable {
     fn default() -> Self {
         Enable {
-            scroll_nav: false,
-            facebook: true,
+            scroll_nav: true,
+            facebook: false,
         }
     }
 }
@@ -462,4 +473,12 @@ struct MobileMenuContext<'c> {
 #[template(path = "sitemap_xml.hbs")]
 struct SitemapContext<'c> {
     pub ctx: &'c CommonContext<'c>,
+}
+
+#[derive(Template)]
+#[template(path = "404.hbs")]
+struct NotFoundContext<'c> {
+    pub ctx: &'c CommonContext<'c>,
+    pub enable: Enable,
+    pub json_ld: Option<String>,
 }

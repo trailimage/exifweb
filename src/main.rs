@@ -90,6 +90,7 @@ fn main() {
         write.mobile_menu();
         write.photo_tags();
         write.about_page();
+        write.error_pages();
 
         write.categories();
 
