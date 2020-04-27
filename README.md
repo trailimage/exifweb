@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/trailimage/static-from-exif.svg?branch=master)](https://travis-ci.org/trailimage/static-from-exif)
+
 # Overview
 
 Create static photo blog pages by reading photo EXIF and TOML configuration files.
