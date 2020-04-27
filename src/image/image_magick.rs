@@ -21,6 +21,8 @@ macro_rules! string_vec {
     ($($x:expr),*) => (vec![$($x.to_string()),*]);
 }
 
+// TODO: inevistigate posterization in Bruneau Dune images
+
 // magic convert 001.jpg test.webp
 // magick convert *.tif -quiet
 //  ( +clone -resize 2048x -write *-large.webp +delete )
