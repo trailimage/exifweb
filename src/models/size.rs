@@ -13,7 +13,7 @@ pub mod suffix {
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct SizeCollection {
     #[serde(skip)]
-    original: Size,
+    pub original: Size,
 
     /// Size shown when image is enlarged
     pub large: Size,
@@ -56,6 +56,16 @@ impl SizeCollection {
         self.small.build_url(post_path, photo_index, config);
         self.thumb.build_url(post_path, photo_index, config);
     }
+
+    /// Whether photo is in portrait orientation (taller than wide)
+    pub fn is_portrait(&self) -> bool {
+        self.original.width < self.original.height
+    }
+
+    /// Whether photo is in landscape orientation (wider than tall)
+    pub fn is_landscape(&self) -> bool {
+        self.original.width > self.original.height
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq)]
@@ -89,6 +99,18 @@ impl Size {
             "{}/{:03}_{}{}",
             &post_path, photo_index, self.suffix, config.output_ext
         );
+    }
+
+    /// Find coordinates necessary to crop a center square
+    ///  - *returns* x, y, edge length
+    pub fn center_square(&self) -> (u16, u16, u16) {
+        if self.width > self.height {
+            // crop left and right
+            ((self.width - self.height) / 2, 0, self.height)
+        } else {
+            // crop top and bottom
+            (0, (self.height - self.width) / 2, self.width)
+        }
     }
 
     /// Update dimensions so long edge does not exceed `long_edge`. This will

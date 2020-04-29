@@ -44,6 +44,9 @@ pub struct PhotoConfig {
     pub source_ext: String,
     /// Extension (*with* leading period) applied to resized photos
     pub output_ext: String,
+    /// Maximum edge size of source image. This may be used to determine if a
+    /// resize is required for the largest photo.
+    pub source_size: u16,
 }
 
 #[derive(Deserialize, Debug)]

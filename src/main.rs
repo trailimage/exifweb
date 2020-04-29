@@ -14,7 +14,7 @@ mod tools;
 
 use colored::*;
 use config::{BlogConfig, BlogLog, FeaturedPost};
-use image::image_magick;
+use image::cwebp;
 use io::{read, Writer};
 use models::{Blog, Photo};
 use std::{
@@ -114,7 +114,7 @@ fn main() {
             for p in post.photos {
                 if p.file.created > last_render {
                     print!("{}, ", p.index);
-                    image_magick::create_sizes(&full_path, &p, &config.photo)
+                    cwebp::create_sizes(&full_path, &p, &config.photo)
                 }
             }
             print!("done!\n");

@@ -21,16 +21,20 @@ macro_rules! string_vec {
     ($($x:expr),*) => (vec![$($x.to_string()),*]);
 }
 
-// TODO: inevistigate posterization in Bruneau Dune images
-
 // magic convert 001.jpg test.webp
-// magick convert *.tif -quiet
-//  ( +clone -resize 2048x -write *-large.webp +delete )
+// magick convert 028.tif -quiet -define webp:method=6 webp:thread-level=true
+//  ( +clone -write *-large.webp +delete )
 //  ( +clone -resize 1024x -write *-regular.webp +delete )
 //  ( +clone -resize 320x -write *-small.webp +delete )
 //  -resize 256x256^ -gravity center -extent 256x256 001-thumb.webp
 
+// magick convert 028.jpg -define webp:method=6 -define webp:thread-level=4 -resize 2048x 028_l.webp
+// magick convert 028.tif -quiet -quality 100 -unsharp 0x1+1+0.05 -define webp:method=6 -define webp:thread-level=1 -define webp:lossless=true 028_test.webp
+// cwebp
+
 /// https://imagemagick.org/script/webp.php
+// https://imagemagick.org/script/command-line-options.php#unsharp
+// readl webp config https://github.com/ImageMagick/webp/blob/master/src/webp/encode.h#L98
 pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
     // Generate file name from photo index and configured extenstion
     let file_name = |suffix: &'static str| {
@@ -50,6 +54,13 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
         ]
     };
 
+    let setting =
+        |key: &str, value: &str| string_vec![format!("-{}", key), value];
+
+    let webp_setting = |key: &str, value: &str| {
+        setting("define", &format!("webp:{}={}", key, value))
+    };
+
     let thumb_command = string_vec![
         "-resize",
         format!("{px}x{px}^", px = config.size.thumb),
@@ -65,6 +76,11 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
         .arg("convert")
         .arg(&photo.file.name)
         .arg("-quiet")
+        .args(setting("quality", "100"))
+        .args(setting("unsharp", "0x1+1+0.05"))
+        .args(webp_setting("thread-level", "1"))    // any non-zero value enables multi-threading
+        .args(webp_setting("lossless", "true"))
+        .args(webp_setting("method", "6"))          // most time, best quality
         .args(sub_command(config.size.large, suffix::LARGE))
         .args(sub_command(config.size.medium, suffix::MEDIUM))
         .args(sub_command(config.size.small, suffix::SMALL))
