@@ -151,6 +151,16 @@ pub struct FeaturedPost {
     pub title: String,
 }
 
+#[derive(Deserialize, Debug, Default)]
+pub struct ForceItems {
+    /// Re-render all pages
+    pub html: bool,
+    /// Re-download all static maps
+    pub maps: bool,
+    /// Re-generate resized photos
+    pub photos: bool,
+}
+
 #[derive(Deserialize, Debug)]
 pub struct BlogConfig {
     pub author_name: String,
@@ -161,11 +171,9 @@ pub struct BlogConfig {
     /// Folders known not to contain posts
     pub ignore_folders: Vec<String>,
 
-    /// Whether to render post pages even if there have been no changes since
-    /// the last render. This is set with a `--force` argument rather than
-    /// configuration.
-    #[serde(skip)]
-    pub force_rerender: bool,
+    /// Whether to force some files to re-render
+    #[serde(skip, default)]
+    pub force: ForceItems,
 
     /// Redirect source slug to target
     pub redirects: Option<Pairs>,

@@ -14,7 +14,6 @@ macro_rules! string_vec {
 
 //cwebp -near_lossless 0 -mt -m 6 -noalpha -sharp_yuv -metadata icc 028.tif -o 028_test.webp
 
-///
 /// https://developers.google.com/speed/webp/docs/cwebp
 pub fn create_sizes(path: &str, p: &Photo, c: &PhotoConfig) {
     create_size(path, p, c, c.size.large, suffix::LARGE, false);
@@ -46,7 +45,7 @@ fn create_size(
             // crop always occurs before resize
             let (x, y, size) = photo.size.original.center_square();
 
-            string_vec!["-resize", max, max, "-crop", x, y, size, size]
+            string_vec!["-crop", x, y, size, size, "-resize", max, 0]
         } else {
             if photo.size.is_landscape() {
                 string_vec!["-resize", max, 0]

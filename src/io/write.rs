@@ -3,14 +3,13 @@
 use crate::{
     config::{BlogConfig, CategoryIcon, FacebookConfig, FeaturedPost, PostLog},
     html,
+    image::MapBox,
     models::{Blog, Category, CategoryKind, PhotoPath, Post},
     tools::{config_regex, path_slice, rot13, write_result},
 };
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 use regex::Regex;
-use reqwest;
-use serde_json;
 use std::{fs, path::Path};
 use yarte::Template;
 
@@ -100,6 +99,17 @@ impl<'a> Writer<'a> {
         }
     }
 
+    /// Download and save map images for each post
+    pub fn post_maps(&self) {
+        for (_, p) in &self.context.blog.posts {
+            if p.locations_changed() || self.config.force.maps {
+                println!("Downloading {} map images", p.title);
+                MapBox::save_static(&p, self.root, self.config);
+            }
+        }
+    }
+
+    // TODO: render redirects for photo series root
     fn post(&self, post: &Post) {
         let mut title = post.title.clone();
         let mut sub_title = String::new();
@@ -118,22 +128,8 @@ impl<'a> Writer<'a> {
                 json_ld: Some(post.json_ld(&self.config).to_string()),
                 title,
                 sub_title,
-                map_image: StaticMap {
-                    config: self.config,
-                },
             },
         );
-
-        if post.locations_changed() {
-            // TODO: download maps
-            let mut response = reqwest::get("url");
-
-            // let fname = tmp_dir.path().join(fname);
-            // println!("will be located under: '{:?}'", fname);
-            // fs::File::create(fname);
-
-            // std::io::copy(&mut response, &mut dest)
-        }
     }
 
     pub fn categories(&self) {
@@ -159,9 +155,6 @@ impl<'a> Writer<'a> {
                 json_ld: Some(
                     category.json_ld(&self.config, home_page).to_string(),
                 ),
-                map_image: StaticMap {
-                    config: self.config,
-                },
             },
         );
     }
@@ -268,63 +261,6 @@ impl<'a> Writer<'a> {
     }
 }
 
-/// Helper methods for MapBox static maps
-struct StaticMap<'a> {
-    config: &'a BlogConfig,
-}
-impl<'a> StaticMap<'a> {
-    /// JSON serialized list of photo locations used to generate pins on map
-    /// image
-    fn locations(&self, post: &Post) -> String {
-        serde_json::to_string(&post.photo_locations).unwrap()
-    }
-
-    /// MapBox URL to static image source
-    fn url(&self, post: &Post, by_cover_photo: bool) -> String {
-        if post.photo_locations.is_empty() {
-            String::new()
-        } else {
-            let mut width: u16 = self.config.style.content_width;
-            let mut height: u16 = 200;
-
-            if by_cover_photo {
-                width = self.width_by_cover(post);
-                height = self.height_by_cover(post);
-            }
-
-            format!("https://api.mapbox.com/styles/v1/{}/static/-pins-/auto/{}x{}?access_token={}&attribution=false&logo=false",
-                self.config.mapbox.style.r#static,
-                width,
-                height,
-                self.config.mapbox.access_token)
-        }
-    }
-
-    /// Height of map image next to cover photo computed so map matches height
-    /// of landscape images but is less than height of portrait images
-    fn height_by_cover(&self, post: &Post) -> u16 {
-        let max_height = self.config.style.inline_map_height;
-
-        post.cover_photo().map_or(max_height, |p| {
-            if p.size.small.height > p.size.small.width {
-                // limit height next to portrait images
-                max_height
-            } else {
-                p.size.small.height
-            }
-        })
-    }
-
-    /// Width of map image next to cover computed so that side-by-side they fill
-    /// the `content_width`
-    fn width_by_cover(&self, post: &Post) -> u16 {
-        let width = self.config.style.content_width;
-
-        post.cover_photo()
-            .map_or(width, |p| width - p.size.small.width)
-    }
-}
-
 /// Context available to each render template
 struct CommonContext<'a> {
     pub blog: &'a Blog,
@@ -419,7 +355,6 @@ struct PostContext<'c> {
     pub json_ld: Option<String>,
     pub title: String,
     pub sub_title: String,
-    pub map_image: StaticMap<'c>,
 }
 
 // TODO: update template with actual image thumbnails
@@ -443,7 +378,6 @@ struct CategoryContext<'c> {
     pub enable: Enable,
     pub sub_title: String,
     pub json_ld: Option<String>,
-    pub map_image: StaticMap<'c>,
 }
 
 #[derive(Template)]

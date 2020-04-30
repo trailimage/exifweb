@@ -1,8 +1,5 @@
-use super::{env_or_empty, load_config, ReadsEnv};
-use crate::{deserialize::regex_string, models::Location, tools::Pairs};
-use regex::Regex;
+use super::{env_or_empty, ReadsEnv};
 use serde::Deserialize;
-use std::path::Path;
 
 // https://developers.facebook.com/docs/reference/plugins/like/
 // https://developers.facebook.com/apps/110860435668134/summary
@@ -28,6 +25,8 @@ pub struct MapBoxConfig {
     /// Maximum number of photo markers to show on static map
     pub max_static_markers: u16,
     pub style: MapBoxStyles,
+    /// Root-relative path to image used to render pins on static map
+    pub pin_image: String,
 }
 impl ReadsEnv for MapBoxConfig {
     fn from_env(&mut self) {

@@ -45,11 +45,7 @@
 
                 {{~#unless post.photo_locations.is_empty() }}
                 <a class="map" title="View story" href="/{{{ post.path }}}">
-                    <img src="/img/blank.png" class="static-map"
-                        width="{{ super::map_image.width_by_cover(post) }}"
-                        height="{{ super::map_image.height_by_cover(post) }}"
-                        data-locations="{{ super::map_image.locations(post) }}"
-                        data-href="{{{ super::map_image.url(post, true) }}}" />
+                    <img src="/img/blank.png" class="static-map"/>
                 </a>
                 {{~/unless }}
 

@@ -126,7 +126,7 @@ fn create_post(
     let post_path = path_slice(path, if is_series { 2 } else { 1 });
     let log = load_post_log(path, config);
 
-    if !(log.files_changed || config.force_rerender) {
+    if !(log.files_changed || config.force.html) {
         // no files have changed and re-render NOT forced
         assert_index(
             post_config.cover_photo_index,

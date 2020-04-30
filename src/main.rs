@@ -62,10 +62,11 @@ fn main() {
     blog.build_photo_urls(&config.photo);
 
     let render_count = blog.needs_render_count();
+    let render_html = render_count > 0 || config.force.html;
 
     success_metric(render_count, "posts need rendered");
 
-    if render_count > 0 {
+    if render_html || config.force.maps || config.force.photos {
         blog.collate_tags();
         blog.sanitize_exif(&config.photo.exif);
 
@@ -89,35 +90,42 @@ fn main() {
 
         let write = Writer::new(root, &config, &blog);
 
-        write.posts();
-        write.home_page();
-        write.sitemap();
-        write.category_menu();
-        write.mobile_menu();
-        write.photo_tags();
-        write.about_page();
-        write.error_pages();
+        if render_html {
+            write.posts();
+            write.home_page();
+            write.sitemap();
+            write.category_menu();
+            write.mobile_menu();
+            write.photo_tags();
+            write.about_page();
+            write.error_pages();
+            write.categories();
+        }
 
-        write.categories();
+        write.post_maps();
 
         for (path, post) in blog.posts {
             let last_render = post.history.as_of;
             let full_path = root.join(&path).to_string_lossy().to_string();
+            let mut count: usize = 0;
 
             println!(
-                "\nRendering {} photos to {}",
+                "\nExamining {} photos in {}",
                 post.title.yellow(),
                 full_path.cyan()
             );
-            print!("   ");
 
             for p in post.photos {
                 if p.file.created > last_render {
-                    print!("{}, ", p.index);
-                    cwebp::create_sizes(&full_path, &p, &config.photo)
+                    count = count + 1;
+                    cwebp::create_sizes(&full_path, &p, &config.photo);
                 }
             }
-            print!("done!\n");
+            if count > 0 {
+                println!("   Resized {} photo(s)", count);
+            } else {
+                println!("   All photos are current");
+            }
         }
     }
 }
@@ -148,15 +156,19 @@ fn load_config(root: &Path) -> BlogConfig {
         }
     };
     let args: Vec<String> = env::args().collect();
+    let has_arg = |arg: &str| args.contains(&arg.to_owned());
+    let notify = |label: &str, force: bool| {
+        println!("{}", format!("Force {}: {}", label, force).cyan().bold())
+    };
 
-    config.force_rerender = args.contains(&"force".to_owned());
+    config.force.html = has_arg("force_html");
+    config.force.maps = has_arg("force_maps");
+    config.force.photos = has_arg("force_photos");
 
-    println!(
-        "{}",
-        format!("\nForce re-render: {}", config.force_rerender)
-            .cyan()
-            .bold()
-    );
+    println!("");
+    notify("HTML re-render", config.force.html);
+    notify("static map re-download", config.force.maps);
+    notify("photo resizing", config.force.photos);
 
     config
 }

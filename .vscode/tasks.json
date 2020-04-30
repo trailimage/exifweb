@@ -31,10 +31,22 @@
       "problemMatcher": []
     },
     {
-      "label": "Run (force re-render)",
+      "label": "Run (force HTML render)",
       "type": "shell",
       "command": "cargo",
-      "args": ["run", "force"],
+      "args": ["run", "force_html"],
+      "presentation": {
+        "echo": false,
+        "clear": true
+      },
+      "dependsOn": ["Clean"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Run (force map download)",
+      "type": "shell",
+      "command": "cargo",
+      "args": ["run", "force_maps"],
       "presentation": {
         "echo": false,
         "clear": true
