@@ -1,0 +1,85 @@
+@import 'elements';
+@import 'settings';
+
+#mobile-menu-button {
+   position: absolute;
+   z-index: 300;
+   top: 10px;
+   right: 10px;
+   width: 50px;
+   display: none;
+
+   .material-icons {
+      padding: 2px 0;
+      font-size: 40px;
+      color: @mobileTextColor;
+   }
+   @media @mobile {
+      display: block;
+   }
+}
+
+#mobile-menu {
+   @selectColor: #333;
+
+   position: fixed;
+   top: 0;
+   bottom: 0;
+   width: 100%;
+   font-family: @sanSerifFont;
+   font-size: 18px;
+   line-height: 1em;
+   color: @mobileTextColor;
+   background-color: #222;
+   z-index: 800;
+   margin: 0;
+   display: none;
+
+   .material-icons.close {
+      position: absolute;
+      left: 1em;
+      top: 1em;
+   }
+
+   ul {
+      margin: 1em 1em 0 0;
+
+      li {
+         width: 100%;
+         padding: 14px 0;
+         cursor: pointer;
+         text-align: right;
+
+         a {
+            color: @mobileTextColor;
+            text-decoration: none;
+            &:active {
+               color: @mobileActiveColor;
+            }
+         }
+
+         .material-icons {
+            vertical-align: middle;
+            font-size: 28px;
+            padding: 0 10px 4px;
+            color: darken(@mobileTextColor, 50%);
+         }
+      }
+   }
+
+   .menu-categories {
+      text-align: center;
+      margin: 0 1em;
+
+      p,
+      select {
+         margin-bottom: 1em;
+      }
+
+      select {
+         display: block;
+         width: 100%;
+         font-size: 18px;
+      }
+   }
+}

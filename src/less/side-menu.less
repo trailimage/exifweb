@@ -1,0 +1,80 @@
+@import 'elements';
+@import 'settings';
+
+@padding: 20px;
+@centerOffset: (@contentWidth / 2) + @padding;
+
+#links,
+#category-menu {
+   position: absolute;
+   font-family: @sanSerifFont;
+   top: @padding;
+   color: @trimColor;
+   padding: 0;
+
+   @media @mobile {
+      display: none;
+   }
+}
+
+#links {
+   right: 50%;
+   margin-right: @centerOffset;
+   text-align: right;
+
+   a {
+      display: block;
+      color: @trimColor;
+      text-decoration: none;
+      font-size: 17px;
+      padding-bottom: 8px;
+      text-rendering: optimizeLegibility;
+
+      &:hover,
+      &:active {
+         text-decoration: underline;
+         color: desaturate(lighten(@hoverColor, 40%), 20%);
+      }
+   }
+}
+
+#category-menu {
+   color: @lightColor;
+   left: 50%;
+   margin-left: @centerOffset;
+   font-size: 17px;
+
+   p {
+      color: @trimColor;
+      padding-bottom: 10px;
+      font-weight: 600;
+   }
+
+   select {
+      display: block;
+      font-size: 15px;
+      margin: 4px 0 10px;
+      border: none;
+      background-color: #555;
+      color: @lightColor;
+      appearance: none;
+      padding: 3px;
+      cursor: pointer;
+
+      option {
+         cursor: pointer;
+
+         &.label {
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            background-color: #333;
+            font-size: 13px;
+            text-align: right;
+         }
+      }
+
+      &:focus {
+         border: none;
+      }
+   }
+}

@@ -15,7 +15,7 @@ interface JQuery {
  *
  * @see http://www.appelsiini.net/projects/lazyload
  */
-$(function() {
+$(function () {
    const $photos = $('figure')
    const $lb = $('#light-box')
 
@@ -25,18 +25,15 @@ $(function() {
    })
 
    // clicking an image opens it in a lightbox
-   $photos
-      .find('img')
-      .on('click touchstart', lightBox)
-      .lazyload()
+   $photos.find('img').on('click touchstart', lightBox).lazyload()
 
    // hovering photo info button loads camera detail
-   $photos.find('.info-button').one('mouseover', function(this: Element) {
+   $photos.find('.info-button').one('mouseover', function (this: Element) {
       const $button = $(this)
       $button
          .addClass('loading')
          .html(iconHtml('cloud_download', 'Loading …'))
-         .load($button.parent().data('exif'), function() {
+         .load($button.parent().data('exif'), function () {
             $button.removeClass('loading').addClass('loaded')
          })
    })
@@ -154,7 +151,7 @@ $(function() {
          $big.attr('src', $img.data('src'))
          // load photo in detached element
          $('<img />')
-            .bind('load', function(this: HTMLImageElement) {
+            .bind('load', function (this: HTMLImageElement) {
                // assign big image to light box once it's loaded
                $big.attr('src', this.src)
                $img.data('big-loaded', true)

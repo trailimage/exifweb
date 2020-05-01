@@ -3,7 +3,7 @@
 /// <reference path="./browser.d.ts"/>
 /// <reference path="./util.ts"/>
 
-$(function() {
+$(function () {
    const $button = $('#mobile-menu-button')
    const $menu = $('#mobile-menu')
    const $body = $('body')
@@ -36,7 +36,7 @@ $(function() {
 
       $menu.find('.close').click(close)
 
-      $menu.find('.menu-categories').on('change', 'select', e => {
+      $menu.find('.menu-categories').on('change', 'select', (e) => {
          close()
          window.location.assign($(e.target).val() as string)
       })

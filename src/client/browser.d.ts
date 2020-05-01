@@ -67,12 +67,12 @@ interface MapPost {
        * Southwest corner as lon, lat. For the U.S. this is the smallest
        * longitude and latitude values.
        */
-      sw: number[]
+      sw: [number, number]
       /**
        * Northeast corner as lon, lat. For the U.S. this is the largest
        * longitude and latitude values.
        */
-      ne: number[]
+      ne: [number, number]
    }
 }
 
@@ -81,9 +81,9 @@ interface PointCluster {
 }
 
 interface UrlPosition {
-   [key: string]: number | number[]
+   [key: string]: number | [number, number]
    /** longitude, latitude */
-   center?: number[]
+   center?: [number, number]
    lon?: number
    lat?: number
    zoom?: number

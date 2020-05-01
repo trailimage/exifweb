@@ -1,0 +1,222 @@
+@import 'elements';
+@import 'settings';
+
+header.page {
+   #top-bar {
+      .site-description {
+         position: absolute;
+         text-align: right;
+         top: 20px;
+         right: 10px;
+         color: @trimColor;
+         width: 28%;
+      }
+
+      @media @mobile {
+         .site-description {
+            color: @lightTrimColor;
+            top: 10px;
+            // room for menu icon
+            right: 75px;
+         }
+      }
+
+      @media @phone {
+         .site-description {
+            display: none;
+         }
+      }
+   }
+}
+
+div.root-category {
+   .material-icons {
+      font-size: 150px;
+      float: right;
+      color: @lightColor;
+      padding: 30px;
+   }
+   ul {
+      font-size: 20px;
+      padding: 10px 0 20px 20px;
+      li {
+         line-height: 1.5em;
+         color: @lightTrimColor;
+
+         a {
+            font-size: 25px;
+            padding-right: 5px;
+            text-decoration: none;
+            font-weight: bold;
+         }
+      }
+   }
+}
+
+div.category {
+   background: none;
+
+   section.posts {
+      padding: 0;
+      margin: 0;
+      font-family: @sanSerifFont;
+      background: none;
+
+      article.summary {
+         font-weight: normal;
+         clear: left;
+         text-shadow: none;
+         padding: 0;
+         margin: 20px 0 0 0;
+         background-color: @backgroundColor;
+         border-radius: @borderRadius;
+         overflow: hidden;
+
+         @media @mobile {
+            border-radius: 0;
+            margin-top: 30px;
+         }
+
+         &:first-of-type {
+            margin-top: 10px;
+         }
+
+         header.post {
+            background-color: #fff;
+            margin-top: 0;
+            padding: 13px 13px 10px 15px;
+
+            .mode-icon {
+               float: right;
+               margin: 1px 10px 0 0;
+            }
+
+            @media @phone {
+               .mode-icon {
+                  display: none;
+               }
+            }
+
+            ul.info {
+               margin-top: -1px;
+               float: right;
+               list-style: none;
+               li {
+                  text-align: right;
+                  font-size: 13px;
+                  line-height: 1em;
+               }
+               li.date-taken {
+                  font-weight: bold;
+               }
+               li.photo-count {
+                  color: @trimColor;
+               }
+            }
+
+            a.title {
+               clear: both;
+               display: inline-block;
+               padding-top: 3px;
+               color: @boldColor;
+               letter-spacing: -0.5;
+               font-size: 23px;
+               font-weight: bold;
+               text-decoration: none;
+
+               .subtitle {
+                  padding-top: 4px;
+                  display: block;
+                  font-size: 18px;
+
+                  .part {
+                     font-weight: normal;
+                     padding-right: 4px;
+                  }
+               }
+
+               &:hover {
+                  color: @hoverColor;
+               }
+
+               @media @mobile {
+                  line-height: 1em;
+               }
+            }
+         }
+
+         a.thumb {
+            margin: 0 20px 0 0;
+            float: left;
+
+            @media @phone {
+               // thumb image updated in responsive.ts to take full width
+               float: none;
+               margin: 0;
+            }
+         }
+
+         a.map {
+            margin-left: -20px;
+            @media @phone {
+               display: none;
+            }
+         }
+
+         p.summary {
+            margin: 2em 2em 2.5em;
+            font-family: @serifFont;
+            font-size: 17px;
+            line-height: 1.2em;
+            color: #000;
+         }
+
+         // category tags
+         ul.categories {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            list-style: none;
+            margin: 0;
+            background-color: @trimColor;
+            padding: 5px;
+            clear: both;
+
+            li {
+               position: relative;
+               font-size: 16px;
+               font-weight: normal;
+
+               display: block;
+               padding: 3px 4px;
+               margin-left: 3px;
+               line-height: 1em;
+               white-space: nowrap;
+
+               span {
+                  // pound sign
+                  color: @lightTrimColor;
+                  padding-right: 1px;
+               }
+
+               a {
+                  color: @lightColor;
+                  text-decoration: none;
+                  letter-spacing: -0.5px;
+
+                  &:hover {
+                     text-decoration: underline;
+                  }
+               }
+            }
+
+            @media @mobile {
+               li {
+                  font-size: 20px;
+                  padding: 6px 8px;
+               }
+            }
+         }
+      }
+   }
+}

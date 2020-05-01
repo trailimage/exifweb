@@ -1,0 +1,15 @@
+{
+   "extends": "@toba/develop/tsconfig.cjs",
+   "compilerOptions": {
+      "target": "es5",
+      "module": "none",
+      "outDir": "./docs/js",
+      "baseUrl": "./src/client",
+      "noEmitOnError": true,
+      "alwaysStrict": true,
+      "declaration": false,
+      "lib": ["es2017", "dom"]
+   },
+   "include": ["./src/client/*.ts"],
+   "exclude": ["./src/types/", "node_modules"]
+}

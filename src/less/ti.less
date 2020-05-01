@@ -1,0 +1,233 @@
+@import 'reset';
+@import 'elements';
+@import 'settings';
+@import 'post-menu';
+@import 'mobile-menu';
+@import 'side-menu';
+@import 'facebook';
+@import 'about-page';
+@import 'post-page';
+@import 'category-page';
+@import 'photo-tag-page';
+
+html {
+   overflow-y: scroll;
+   overflow: -moz-scrollbars-vertical;
+}
+
+body {
+   margin: 0;
+   padding: 0;
+   position: relative;
+   font-size: small;
+   color: #333;
+   line-height: 1.3em;
+   background: #222 url(/img/topo-map-tile.jpg) repeat;
+}
+
+*:focus {
+   outline: none;
+}
+
+.content {
+   font-family: @sanSerifFont;
+   font-weight: normal;
+   text-align: left;
+   margin: 0 auto;
+   padding: 0;
+   background-color: @backgroundColor;
+   width: @contentWidth;
+
+   @media @mobile {
+      background: none;
+      width: 100%;
+   }
+}
+
+.clear {
+   clear: both;
+}
+
+header.page {
+   position: relative;
+   background: none;
+
+   #top-bar {
+      z-index: 500;
+      position: relative;
+      background: none;
+
+      h1 {
+         font-family: @headerFont;
+         color: @lightColor;
+         margin: 0 0 0 @borderRadius;
+         padding: 12px 0;
+         font-size: 45px;
+         line-height: 1em;
+         letter-spacing: 0;
+      }
+      // subtitle
+      h4 {
+         margin: -6px 0 0 @borderRadius;
+         color: @lightTrimColor;
+         font-size: 14px;
+         font-family: @sanSerifFont;
+         font-weight: 400;
+         letter-spacing: 8px;
+         text-transform: uppercase;
+      }
+   }
+
+   @media @mobile {
+      z-index: 500;
+
+      #top-bar {
+         // place subtitle above title since it's always shorter which prevents
+         // overlap with mobile menu icon
+         width: 100%;
+         z-index: 200;
+
+         h1 {
+            padding-top: 50px;
+         }
+         h4 {
+            position: absolute;
+            padding: 0;
+            // main title must fall below the mobile menu icon
+            top: 35px;
+            left: 2px;
+         }
+      }
+   }
+}
+
+div.authorize {
+   margin-top: 20px;
+
+   h4 {
+      font-family: @sanSerifFont;
+      font-size: 36pt;
+      margin: 0 0 0 20px;
+      line-height: 1em;
+      padding: 0;
+      color: @trimColor;
+   }
+
+   div {
+      font-family: @sanSerifFont;
+      font-size: 22pt;
+      margin-left: 30px;
+   }
+}
+
+.not-ready {
+   p {
+      font-size: 24pt;
+      text-align: center;
+      line-height: 1.5em;
+      padding: 0.5em 0;
+      color: #fff;
+   }
+}
+
+.not-found {
+   height: @contentWidth;
+   background-image: url('https://farm3.staticflickr.com/2911/14343924188_3eb2a469f0_b.jpg');
+
+   p {
+      font-size: 45px;
+      text-align: center;
+      line-height: 1.5em;
+      padding: 1em;
+      color: #fff;
+      text-shadow: 0 0 8px rgba(0, 0, 0, 1);
+   }
+}
+
+.internal-error {
+   height: @contentWidth;
+   background-image: url('https://farm4.staticflickr.com/3797/10001205193_e5cd88c09d_b.jpg');
+   background-position: -270px 0;
+
+   p {
+      font-size: 40px;
+      text-align: center;
+      line-height: 1.5em;
+      padding: 4em 1em 0;
+      color: #fff;
+      text-shadow: 0 0 8px rgba(0, 0, 0, 1);
+   }
+}
+
+footer.page {
+   position: relative;
+   padding: 0;
+   margin: 2em auto 1em;
+   width: @contentWidth;
+   text-align: center;
+   background: none;
+
+   @media @mobile {
+      width: 100%;
+   }
+
+   a.repo {
+      // GitHub version badge
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+      text-decoration: none;
+
+      @media @phone {
+         display: none;
+      }
+
+      span.icon {
+         // GitHub icon
+         height: 25px;
+         width: 25px;
+         margin-right: 6px;
+      }
+   }
+
+   aside {
+      // footer block
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 1em;
+      border-radius: @borderRadius;
+
+      p {
+         text-align: center;
+         color: @lightTrimColor;
+         font-family: @sanSerifFont;
+         font-size: 14px;
+         text-indent: 0;
+         padding: 0;
+         margin: 2px;
+
+         a {
+            color: @lightColor;
+         }
+
+         &.rights {
+            font-size: 14px;
+         }
+      }
+
+      @media @mobile {
+         border-radius: 0;
+         padding: 1em @borderRadius;
+         background-color: @mobileBackgroundColor;
+
+         p {
+            font-size: 10px;
+            line-height: 1em;
+
+            &.rights {
+               font-size: 10px;
+            }
+         }
+      }
+   }
+}

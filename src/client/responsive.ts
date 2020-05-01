@@ -11,7 +11,7 @@ declare const pageFeatures: PageFeature
 /**
  * Only load scripts and data for the current view port and features.
  */
-$(function() {
+$(function () {
    /** Whether mobile resources have been loaded */
    let mobileLoaded = false
    /** Whether desktop resources have been loaded */
@@ -23,7 +23,7 @@ $(function() {
    // default features
    const feature: PageFeature = {
       facebook: false,
-      timestamp: 0
+      timestamp: 0,
    }
 
    // incorporate features set by page
@@ -72,11 +72,8 @@ $(function() {
       })
 
       // make post images fill width
-      $('figure, .category.content a.thumb').each(function(this: HTMLElement) {
-         $(this)
-            .css(imageStyle)
-            .find('img')
-            .css(imageStyle)
+      $('figure, .category.content a.thumb').each(function (this: HTMLElement) {
+         $(this).css(imageStyle).find('img').css(imageStyle)
       })
 
       mobileLoaded = true
@@ -93,7 +90,7 @@ $(function() {
       // could be optimized into a lazy-load
       $('#category-menu')
          .load('/category-menu?t=' + feature.timestamp)
-         .on('change', 'select', e => {
+         .on('change', 'select', (e) => {
             window.location.assign($(e.target).val() as string)
          })
 

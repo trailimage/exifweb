@@ -236,6 +236,7 @@ impl<'a> Writer<'a> {
     }
 
     // TODO: update photo tag CSS
+    // TODO: create photo tag alphabet pages
     pub fn photo_tags(&self) {
         for (slug, tag_photos) in
             self.context.blog.tags.iter().filter(|(_, tag_photos)| {

@@ -1,3 +1,4 @@
+node_modules
 docs/**/*.tif
 docs/**/???.jpg
 docs/**/log.ron

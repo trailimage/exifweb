@@ -1,6 +1,6 @@
 /// <reference types="jquery" />
 /// <reference path="../types/jquery/index.d.ts" />
-/// <reference path="./client/browser.d.ts"/>
+/// <reference path="./browser.d.ts"/>
 
 interface LazyLoadOptions {
    src: string
@@ -20,7 +20,7 @@ const defaultOptions: LazyLoadOptions = {
    root: null,
    rootMargin: '0px',
    threshold: 0,
-   delayLoad: 300
+   delayLoad: 300,
 }
 
 const timerKey = 'timerid'
@@ -87,8 +87,8 @@ class LazyLoad {
 
    observe() {
       this.observer = new IntersectionObserver(
-         entries => {
-            entries.forEach(e => {
+         (entries) => {
+            entries.forEach((e) => {
                const el = e.target as HTMLElement
                if (e.isIntersecting) {
                   this.delayLoad(el)
@@ -100,7 +100,7 @@ class LazyLoad {
          {
             root: this.options.root,
             rootMargin: this.options.rootMargin,
-            threshold: this.options.threshold
+            threshold: this.options.threshold,
          }
       )
       this.images.forEach((el: Element) => this.observer.observe(el))
@@ -123,7 +123,7 @@ class LazyLoad {
 
 if (jQuery) {
    const $ = jQuery
-   $.fn.lazyload = function(options: LazyLoadOptions) {
+   $.fn.lazyload = function (options: LazyLoadOptions) {
       new LazyLoad($.makeArray(this), options)
       return this
    }

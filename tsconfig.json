@@ -1,0 +1,6 @@
+{
+  "extends": "@toba/develop/tsconfig.test",
+  "compilerOptions": {
+    "esModuleInterop": true
+  }
+}

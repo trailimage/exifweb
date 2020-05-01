@@ -1,93 +1,101 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Build",
-      "type": "shell",
-      "command": "cargo",
-      "args": ["build"],
-      "presentation": {
-        "echo": false,
-        "clear": true
+   "version": "2.0.0",
+   "tasks": [
+      {
+         "label": "Build",
+         "type": "shell",
+         "command": "cargo",
+         "args": ["build"],
+         "presentation": {
+            "echo": false,
+            "clear": true
+         },
+         "problemMatcher": []
       },
-      "problemMatcher": []
-    },
-    {
-      "label": "Test",
-      "type": "shell",
-      "command": "cargo",
-      "args": ["test"],
-      "problemMatcher": []
-    },
-    {
-      "label": "Run",
-      "type": "shell",
-      "command": "cargo",
-      "args": ["run", "noforce"],
-      "presentation": {
-        "echo": false,
-        "clear": true
+      {
+         "label": "Build Client JavaScript",
+         "command": "node_modules/.bin/gulp",
+         "args": ["js"],
+         "group": "build",
+         "type": "shell",
+         "problemMatcher": ["$gulp-tsc"]
       },
-      "problemMatcher": []
-    },
-    {
-      "label": "Run (re-render all post and root pages)",
-      "type": "shell",
-      "command": "cargo",
-      "args": ["run", "force_html"],
-      "presentation": {
-        "echo": false,
-        "clear": true
+      {
+         "label": "Test",
+         "type": "shell",
+         "command": "cargo",
+         "args": ["test"],
+         "problemMatcher": []
       },
-      "dependsOn": ["Clean"],
-      "problemMatcher": []
-    },
-    {
-      "label": "Run (re-download all maps)",
-      "type": "shell",
-      "command": "cargo",
-      "args": ["run", "force_maps"],
-      "presentation": {
-        "echo": false,
-        "clear": true
+      {
+         "label": "Run",
+         "type": "shell",
+         "command": "cargo",
+         "args": ["run", "noforce"],
+         "presentation": {
+            "echo": false,
+            "clear": true
+         },
+         "problemMatcher": []
       },
-      "dependsOn": ["Clean"],
-      "problemMatcher": []
-    },
-    {
-      "label": "Run (re-render all tag pages)",
-      "type": "shell",
-      "command": "cargo",
-      "args": ["run", "force_tags"],
-      "presentation": {
-        "echo": false,
-        "clear": true
+      {
+         "label": "Run (re-render all post and root pages)",
+         "type": "shell",
+         "command": "cargo",
+         "args": ["run", "force_html"],
+         "presentation": {
+            "echo": false,
+            "clear": true
+         },
+         "dependsOn": ["Clean"],
+         "problemMatcher": []
       },
-      "dependsOn": ["Clean"],
-      "problemMatcher": []
-    },
-    {
-      "label": "Clean",
-      "type": "shell",
-      "command": "cargo",
-      "args": ["clean", "--package", "static-from-exif"],
-      "presentation": {
-        "echo": false,
-        "clear": true
+      {
+         "label": "Run (re-download all maps)",
+         "type": "shell",
+         "command": "cargo",
+         "args": ["run", "force_maps"],
+         "presentation": {
+            "echo": false,
+            "clear": true
+         },
+         "dependsOn": ["Clean"],
+         "problemMatcher": []
       },
-      "problemMatcher": []
-    },
-    {
-      "label": "Clean Run",
-      "problemMatcher": [],
-      "dependsOn": ["Clean", "Run"],
-      "dependsOrder": "sequence"
-    },
-    {
-      "label": "Clean Build",
-      "problemMatcher": [],
-      "dependsOn": ["Clean", "Build"],
-      "dependsOrder": "sequence"
-    }
-  ]
+      {
+         "label": "Run (re-render all tag pages)",
+         "type": "shell",
+         "command": "cargo",
+         "args": ["run", "force_tags"],
+         "presentation": {
+            "echo": false,
+            "clear": true
+         },
+         "dependsOn": ["Clean"],
+         "problemMatcher": []
+      },
+      {
+         "label": "Clean",
+         "type": "shell",
+         "command": "cargo",
+         "args": ["clean", "--package", "static-from-exif"],
+         "presentation": {
+            "echo": false,
+            "clear": true
+         },
+         "problemMatcher": []
+      },
+      {
+         "label": "Clean Run",
+         "problemMatcher": [],
+         "dependsOn": ["Clean", "Run"],
+         "dependsOrder": "sequence"
+      },
+      {
+         "label": "Clean Build",
+         "problemMatcher": [],
+         "dependsOn": ["Clean", "Build"],
+         "dependsOrder": "sequence"
+      }
+   ]
 }

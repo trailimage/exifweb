@@ -25,8 +25,7 @@ use std::{
 use tools::folder_name;
 
 // TODO: read and process GPX files
-// TODO: compile TypeScript
-// TODO: compile LESS
+// GOAL: compile JS and LESS with Rust instead of Gulp
 
 fn main() {
     // GitHub pages feature requires root at / or /docs

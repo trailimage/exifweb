@@ -1,5 +1,4 @@
 /// <reference types="jquery" />
-/// <reference types="google.analytics" />
 /// <reference path="../types/mapbox-gl/index.d.ts" />
 /// <reference path="../types/jquery/index.d.ts"/>
 
@@ -47,7 +46,7 @@ const util = {
       get menuCategory(): (string | null)[] | null {
          const value = util.setting.load('menu')
          return value === null ? null : value[1].split(',')
-      }
+      },
    },
    html: {
       /**
@@ -63,6 +62,6 @@ const util = {
          if (handler !== undefined) $icon.click(handler)
 
          return $icon
-      }
-   }
+      },
+   },
 }
