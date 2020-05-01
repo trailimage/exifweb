@@ -113,6 +113,7 @@ impl<'a> Writer<'a> {
         }
     }
 
+    // TODO: format photo anchor tag to match links
     fn post(&self, post: &Post) {
         let mut title = post.title.clone();
         let mut sub_title = String::new();
@@ -234,13 +235,12 @@ impl<'a> Writer<'a> {
         );
     }
 
+    // TODO: update photo tag CSS
     pub fn photo_tags(&self) {
-        for (slug, tag_photos) in self
-            .context
-            .blog
-            .tags
-            .iter()
-            .filter(|(_, tag_photos)| tag_photos.changed)
+        for (slug, tag_photos) in
+            self.context.blog.tags.iter().filter(|(_, tag_photos)| {
+                tag_photos.changed || self.config.force.tags
+            })
         {
             // only render tags that have changes
             self.default_page(
@@ -252,6 +252,7 @@ impl<'a> Writer<'a> {
                     name: &tag_photos.name,
                     photos: &tag_photos.photos,
                     sub_title: html::list_label("Photo", &tag_photos.photos),
+                    ext: &self.config.photo.output_ext,
                 },
             );
         }
@@ -386,6 +387,7 @@ struct PhotoTagContext<'c> {
     pub name: &'c str,
     pub photos: &'c Vec<PhotoPath>,
     pub sub_title: String,
+    pub ext: &'c str,
 }
 
 // TODO: re-use partials/category for post category list

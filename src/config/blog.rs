@@ -152,13 +152,15 @@ pub struct FeaturedPost {
 }
 
 #[derive(Deserialize, Debug, Default)]
-pub struct ForceItems {
-    /// Re-render all pages
+pub struct Overrides {
+    /// Re-render all post and root pages
     pub html: bool,
     /// Re-download all static maps
     pub maps: bool,
     /// Re-generate resized photos
     pub photos: bool,
+    /// Re-render all photo tag pages
+    pub tags: bool,
 }
 
 #[derive(Deserialize, Debug)]
@@ -171,9 +173,9 @@ pub struct BlogConfig {
     /// Folders known not to contain posts
     pub ignore_folders: Vec<String>,
 
-    /// Whether to force some files to re-render
+    /// Whether to force writing operations even if source files haven't changed
     #[serde(skip, default)]
-    pub force: ForceItems,
+    pub force: Overrides,
 
     /// Redirect source slug to target
     pub redirects: Option<Pairs>,

@@ -55,3 +55,16 @@ The URL will be converted to an activel link with the form
 so the footnote looks like
 
 > ¹ Source of information, "Article": [somedomain.com/.../page](#)
+
+## Removing image history
+
+https://rtyley.github.io/bfg-repo-cleaner/
+
+```
+git clone --mirror https://github.com/trailimage/static-from-exif.git
+java -jar bfg.jar --delete-files *.webp static-from-exif.git
+cd static-from-exif.git
+git reflog expire --expire=now --all && git gc --prune=now --aggressive
+git push
+
+```

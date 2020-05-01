@@ -1,5 +1,5 @@
 use super::{Camera, Location, SizeCollection};
-use crate::{config::ExifConfig, tools::replace_pairs};
+use crate::{config::ExifConfig, models::size, tools::replace_pairs};
 use chrono::{DateTime, FixedOffset};
 use core::cmp::Ordering;
 use serde::{Deserialize, Serialize};
@@ -12,8 +12,18 @@ pub struct PhotoPath {
 }
 
 impl PhotoPath {
-    pub fn url(&self) -> String {
-        format!("{}/{:03}", self.post_path, self.photo_index)
+    pub fn post_url(&self) -> String {
+        format!("{}#{:03}", self.post_path, self.photo_index)
+    }
+
+    pub fn thumb_url(&self, ext: &str) -> String {
+        format!(
+            "{}/{:03}_{}{}",
+            self.post_path,
+            self.photo_index,
+            size::suffix::THUMB,
+            ext
+        )
     }
 }
 

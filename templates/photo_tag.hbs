@@ -7,11 +7,11 @@
         <aside class="site-description">{{ ctx.site_description }}</aside>
     {{~/header }}
 
-    <ul>
+    <div class="thumbs">
     {{~#each photos }}
-        <li><a href="/{{{ this.url() }}}">{{ this.post_path }}</a></li>
+        <a href="/{{{ this.post_url() }}}"><img src="/{{{ this.thumb_url(super::ext) }}}"/></a>
     {{~/each }}
-    </ul>
+    </div>
 
     {{> footer }}
 </body>

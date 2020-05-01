@@ -64,7 +64,8 @@ fn main() {
     blog.build_photo_urls(&config);
 
     let render_count = blog.needs_render_count();
-    let render_html = render_count > 0 || config.force.html;
+    let render_html =
+        render_count > 0 || config.force.html || config.force.tags;
 
     success_metric(render_count, "posts need rendered");
 
@@ -166,11 +167,13 @@ fn load_config(root: &Path) -> BlogConfig {
     config.force.html = has_arg("force_html");
     config.force.maps = has_arg("force_maps");
     config.force.photos = has_arg("force_photos");
+    config.force.tags = has_arg("force_tags");
 
     println!("");
     notify("HTML re-render", config.force.html);
     notify("static map re-download", config.force.maps);
     notify("photo resizing", config.force.photos);
+    notify("tag page re-render", config.force.tags);
 
     config
 }

@@ -31,7 +31,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Run (force HTML render)",
+      "label": "Run (re-render all post and root pages)",
       "type": "shell",
       "command": "cargo",
       "args": ["run", "force_html"],
@@ -43,10 +43,22 @@
       "problemMatcher": []
     },
     {
-      "label": "Run (force map download)",
+      "label": "Run (re-download all maps)",
       "type": "shell",
       "command": "cargo",
       "args": ["run", "force_maps"],
+      "presentation": {
+        "echo": false,
+        "clear": true
+      },
+      "dependsOn": ["Clean"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Run (re-render all tag pages)",
+      "type": "shell",
+      "command": "cargo",
+      "args": ["run", "force_tags"],
       "presentation": {
         "echo": false,
         "clear": true
