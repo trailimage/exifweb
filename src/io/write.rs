@@ -92,7 +92,10 @@ impl<'a> Writer<'a> {
 
     pub fn posts(&self) {
         for (_, p) in &self.context.blog.posts {
-            if p.sequence_changed() || p.files_changed() {
+            if p.sequence_changed()
+                || p.files_changed()
+                || self.config.force.html
+            {
                 self.post(&p);
                 // GOAL: spawn thread to write log
                 PostLog::write(self.root, &p);
@@ -110,7 +113,6 @@ impl<'a> Writer<'a> {
         }
     }
 
-    // TODO: render redirects for photo series root
     fn post(&self, post: &Post) {
         let mut title = post.title.clone();
         let mut sub_title = String::new();
@@ -131,6 +133,20 @@ impl<'a> Writer<'a> {
                 sub_title,
             },
         );
+
+        if let Some(series) = &post.series {
+            if series.part == 1 {
+                // render page at series path that redirects to first post in
+                // the series
+                self.default_page(
+                    &series.path,
+                    SeriesContext {
+                        title: &series.title,
+                        path: &post.path,
+                    },
+                )
+            }
+        }
     }
 
     pub fn categories(&self) {
@@ -300,6 +316,7 @@ impl<'a> CommonContext<'a> {
     pub fn category_icon(&self, kind: &CategoryKind) -> String {
         html::category_icon(kind, &self.category_icons)
     }
+    // TODO: format shutter speed as fraction
     pub fn fraction(&self, number: &str) -> String {
         html::fraction(number)
     }
@@ -426,4 +443,11 @@ struct NotFoundContext<'c> {
     pub ctx: &'c CommonContext<'c>,
     pub enable: Enable,
     pub json_ld: Option<String>,
+}
+
+#[derive(Template)]
+#[template(path = "series.hbs")]
+struct SeriesContext<'c> {
+    pub path: &'c str,
+    pub title: &'c str,
 }

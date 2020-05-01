@@ -25,6 +25,8 @@ use std::{
 use tools::folder_name;
 
 // TODO: read and process GPX files
+// TODO: compile TypeScript
+// TODO: compile LESS
 
 fn main() {
     // GitHub pages feature requires root at / or /docs

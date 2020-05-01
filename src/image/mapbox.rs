@@ -72,6 +72,7 @@ impl<'a> MapBox<'a> {
             height,
             self.config.mapbox.access_token);
 
+        // GOAL: refactor match nesting
         match reqwest::blocking::get(&url) {
             Ok(mut res) => {
                 if res.status().is_success() {
