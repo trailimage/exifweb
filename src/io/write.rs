@@ -61,6 +61,7 @@ impl<'a> Writer<'a> {
                 mode_icons: config_regex(&config.category.what_regex),
                 category_icons: &config.category.icon,
                 content_width: config.style.content_width,
+                map_image_height: config.style.inline_map_height,
                 contact_link: config
                     .owner
                     .email
@@ -274,6 +275,7 @@ struct CommonContext<'a> {
     pub post_alias: &'a str,
     pub facebook: &'a FacebookConfig,
     pub content_width: u16,
+    pub map_image_height: u16,
     pub contact_link: String,
 
     mode_icons: HashMap<String, Regex>,

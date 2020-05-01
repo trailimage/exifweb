@@ -107,6 +107,11 @@ impl Photo {
             "height": size.height
         })
     }
+
+    /// Whether photo is in portrait orientation (taller than wide)
+    pub fn is_portrait(&self) -> bool {
+        self.size.is_portrait()
+    }
 }
 
 impl PartialOrd for Photo {

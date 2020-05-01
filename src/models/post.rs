@@ -1,5 +1,5 @@
 use crate::{
-    config::{BlogConfig, PhotoConfig, PostConfig, PostLog},
+    config::{BlogConfig, PostConfig, PostLog},
     json_ld,
     models::{collate_tags, Category, Photo, TagPhotos},
     tools::earliest_photo_date,
@@ -107,6 +107,9 @@ pub struct Post {
 
     /// Record of previous post photos and configuration
     pub history: PostLog,
+
+    /// Width/height of cover map
+    pub cover_map_size: (u16, u16),
 }
 
 impl Post {
@@ -220,6 +223,7 @@ impl Default for Post {
 
             photo_count: 0,
             cover_photo_index: 0,
+            cover_map_size: (0, 0),
 
             tags: HashMap::new(),
             history: PostLog::empty(),
@@ -232,12 +236,14 @@ impl Default for Post {
 
 impl Post {
     pub fn from_config(config: PostConfig, log: PostLog) -> Self {
+        // one-based index of cover photo
         let i = config.cover_photo_index;
 
         Post {
             categories: config.categories(),
             title: config.title,
             summary: config.summary,
+            // convert to zero-based index
             cover_photo_index: if i > 0 { i - 1 } else { 0 },
             chronological: config.chronological,
             history: log,
@@ -269,10 +275,27 @@ impl Post {
         })
     }
 
-    /// Build root-relative URLs for all post photo sizes
-    pub fn build_photo_urls(&mut self, config: &PhotoConfig) {
+    /// Build root-relative URLs for all post photo sizes and compute cover map
+    /// dimensions to fit next to small image within content width
+    pub fn build_photo_urls(&mut self, config: &BlogConfig) {
         for p in self.photos.iter_mut() {
-            p.size.build_urls(&self.path, p.index, config);
+            p.size.build_urls(&self.path, p.index, &config.photo);
+        }
+        let max_height = config.style.inline_map_height;
+        let max_width = config.style.content_width;
+
+        if let Some(p) = self.cover_photo() {
+            let height = if p.is_portrait() {
+                // limit height next to portrait images
+                max_height
+            } else {
+                p.size.small.height
+            };
+            let width = max_width - p.size.small.width;
+
+            self.cover_map_size = (width, height);
+        } else {
+            self.cover_map_size = (max_width, max_height);
         }
     }
 

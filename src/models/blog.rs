@@ -1,4 +1,4 @@
-use crate::config::{BlogLog, ExifConfig, PhotoConfig};
+use crate::config::{BlogConfig, BlogLog, ExifConfig};
 use crate::models::{Category, CategoryKind, PhotoPath, Post, TagPhotos};
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
@@ -30,8 +30,8 @@ impl Blog {
         self.posts.insert(p.path.clone(), p);
     }
 
-    /// Build root-relative post photo size URLs
-    pub fn build_photo_urls(&mut self, config: &PhotoConfig) {
+    /// Build root-relative post photo URLs for each size
+    pub fn build_photo_urls(&mut self, config: &BlogConfig) {
         for (_, p) in self.posts.iter_mut() {
             p.build_photo_urls(config);
         }

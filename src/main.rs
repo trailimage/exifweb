@@ -59,7 +59,7 @@ fn main() {
         p.add_photos(read::load_photos(&root.join(&p.path), &config.photo));
     }
 
-    blog.build_photo_urls(&config.photo);
+    blog.build_photo_urls(&config);
 
     let render_count = blog.needs_render_count();
     let render_html = render_count > 0 || config.force.html;

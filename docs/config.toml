@@ -156,7 +156,7 @@ author_url = "https://www.facebook.com/jason.e.abbott"
 
 [mapbox]
 max_static_markers = 70
-pin_image = "p.png"
+pin_image = "https://www.trailimage.com/p.png"
 
     [mapbox.style]
     # used for interactive maps

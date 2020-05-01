@@ -25,7 +25,7 @@ pub struct MapBoxConfig {
     /// Maximum number of photo markers to show on static map
     pub max_static_markers: u16,
     pub style: MapBoxStyles,
-    /// Root-relative path to image used to render pins on static map
+    /// Fully qualified path to image used to render pins on static map
     pub pin_image: String,
 }
 impl ReadsEnv for MapBoxConfig {

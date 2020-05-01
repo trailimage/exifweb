@@ -1,32 +1,37 @@
+//! Methods to interact with MapBox services
+
 use crate::config::BlogConfig;
 use crate::models::Post;
 use reqwest;
 use std::{fs::File, io, path::Path};
+use url::form_urlencoded::byte_serialize;
 
 pub struct MapBox<'a> {
     root: &'a Path,
     config: &'a BlogConfig,
-    pin_url: &'a str,
 }
 impl<'a> MapBox<'a> {
     /// Retrieve and save MapBox static map image for post photo locations
+    ///
+    /// https://docs.mapbox.com/help/how-mapbox-works/static-maps/
+    /// https://docs.mapbox.com/api/maps/#static-images
+    ///
     pub fn save_static(post: &'a Post, root: &'a Path, config: &'a BlogConfig) {
-        let mapbox = MapBox {
-            root,
-            config,
-            pin_url: &format!(
-                "{}/{}",
-                config.site.url, config.mapbox.pin_image
-            ),
-        };
+        let mapbox = MapBox { root, config };
 
         mapbox.download_maps(post);
     }
 
+    /// Generate markers as `url-{url}({lon},{lat})`
+    ///
+    /// https://docs.mapbox.com/api/maps/#marker
+    ///
     fn pin_list(&self, post: &Post) -> Vec<String> {
         post.photo_locations
             .iter()
-            .map(|(lon, lat)| format!("url-{}({}{})", self.pin_url, lat, lon))
+            .map(|(lon, lat)| {
+                format!("url-{}({},{})", self.config.mapbox.pin_image, lon, lat)
+            })
             .collect()
     }
 
@@ -45,12 +50,11 @@ impl<'a> MapBox<'a> {
             post,
             "map_small.png",
             &pins,
-            self.width_by_cover(post),
-            self.height_by_cover(post),
+            post.cover_map_size.0,
+            post.cover_map_size.1,
         );
     }
 
-    /// https://rust-lang-nursery.github.io/rust-cookbook/web/clients/download.html
     fn download_static_map(
         &self,
         post: &Post,
@@ -59,54 +63,40 @@ impl<'a> MapBox<'a> {
         width: u16,
         height: u16,
     ) {
-        let url = format!("https://api.mapbox.com/styles/v1/{}/static/{}/auto/{}x{}?access_token={}&attribution=false&logo=false",
+        let pins: String = byte_serialize(pins.join(",").as_bytes()).collect();
+
+        let url = format!("https://api.mapbox.com/styles/v1/{}/static/{}/auto/{}x{}@2x?access_token={}&attribution=false&logo=false",
             self.config.mapbox.style.r#static,
-            pins.join(","),
+            pins,
             width,
             height,
             self.config.mapbox.access_token);
 
         match reqwest::blocking::get(&url) {
             Ok(mut res) => {
-                match File::create(self.root.join(&post.path).join(name)) {
-                    Ok(mut dest) => match io::copy(&mut res, &mut dest) {
-                        Ok(_bytes_copied) => (),
+                if res.status().is_success() {
+                    match File::create(self.root.join(&post.path).join(name)) {
+                        Ok(mut dest) => match io::copy(&mut res, &mut dest) {
+                            Ok(_bytes_copied) => (),
+                            Err(e) => {
+                                println!("{:?}", e);
+                            }
+                        },
                         Err(e) => {
                             println!("{:?}", e);
                         }
-                    },
-                    Err(e) => {
-                        println!("{:?}", e);
                     }
+                } else {
+                    println!(
+                        "Failed to download {} {}",
+                        url,
+                        res.text().unwrap_or(String::new())
+                    );
                 }
             }
             Err(e) => {
                 println!("{:?}", e);
             }
         };
-    }
-
-    /// Height of map image next to cover photo computed so map matches height
-    /// of landscape images but is less than height of portrait images
-    fn height_by_cover(&self, post: &Post) -> u16 {
-        let max_height = self.config.style.inline_map_height;
-
-        post.cover_photo().map_or(max_height, |p| {
-            if p.size.small.height > p.size.small.width {
-                // limit height next to portrait images
-                max_height
-            } else {
-                p.size.small.height
-            }
-        })
-    }
-
-    /// Width of map image next to cover computed so that side-by-side they fill
-    /// the `content_width`
-    fn width_by_cover(&self, post: &Post) -> u16 {
-        let width = self.config.style.content_width;
-
-        post.cover_photo()
-            .map_or(width, |p| width - p.size.small.width)
     }
 }

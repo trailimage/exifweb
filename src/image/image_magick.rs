@@ -111,8 +111,6 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
     };
 }
 
-// GOAL: use image magick for EXIF
-
 // https://www.awaresystems.be/imaging/tiff/tifftags/private.html
 #[derive(Deserialize, Debug)]
 struct ImageProperties {
