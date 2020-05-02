@@ -1,0 +1,35 @@
+
+$headerHeight: 65px;
+$borderRadius: 8px;
+$imageWidth: 1034px; /* 1034px includes borders */
+$contentWidth: 650px;
+$mobileHeaderHeight: 60px;
+$phoneWidth: 768px;
+$mobileWidth: 1024px;
+
+/*
+   Pixel density media queries shouldn't be needed since mobile devices report
+   virtual pixel dimensions as if their screens were 72 or 96dpi so it's enough
+   to target smaller pixel widths.
+
+   http://codepen.io/ericrasch/pen/HzoEx
+   http://blog.scur.pl/2012/06/variable-media-queries-less-css/
+*/
+
+@mixin phone {
+   @media (max-width: #{$phoneWidth - 1}) { @content; }
+}
+
+@mixin tablet {
+  @media (min-width: #{$phoneWidth}) and (max-width: #{$mobileWidth}) {
+    @content;
+  }
+}
+
+@mixin mobile {
+   @media (max-width: #{$mobileWidth}) { @content; }
+}
+
+@mixin desktop {
+   @media (min-width: #{$mobileWidth + 1}) { @content; }
+}

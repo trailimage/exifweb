@@ -1,5 +1,7 @@
-@import 'elements';
-@import 'settings';
+@use 'color';
+@use 'font';
+@use 'size';
+@use 'style';
 
 header {
    #post-menu-button {
@@ -11,16 +13,14 @@ header {
       left: 6px;
    }
 
-   @media $mobile {
-      #post-menu-button {
-         display: none;
-      }
+   @include size.mobile {
+      #post-menu-button { display: none; }
    }
 }
 
 #post-menu-button {
    position: absolute;
-   font-family: $sanSerifFont;
+   font-family: font.$sanSerif;
    font-size: 16px;
    font-weight: bold;
    display: block;
@@ -29,14 +29,12 @@ header {
    color: #4e584c;
    line-height: 20px;
    padding: 2px 28px 1px 12px;
-   border: 1px solid $trimColor;
+   border: 1px solid color.$trim;
    text-decoration: none;
    z-index: 205;
-   @include rounded(3px);
+   border-radius: 3px;
 
-   &:hover {
-      color: $hoverColor;
-   }
+   &:hover { color: color.$hover; }
 
    .material-icons {
       position: absolute;
@@ -45,22 +43,19 @@ header {
       margin: 0;
       vertical-align: text-bottom;
 
-      @media $mobile {
-         top: 8px;
-      }
+      @include size.mobile { top: 8px; }
 
       &.expand_less {
          display: none;
          top: -1px;
-         @media $mobile {
-            top: 5px;
-         }
+
+         @include size.mobile { top: 5px; }
       }
    }
 
    &.selected {
       border-bottom-color: #fff;
-      @include border-radius(3px, 0, 0, 3px);
+      @include style.borderRadius(3px, 0, 0, 3px);
    }
 }
 
@@ -69,17 +64,15 @@ header {
    position: absolute;
    display: none;
    z-index: 200;
-   width: $contentWidth - 16;
+   width: size.$contentWidth - 16;
    padding: 0;
    background-color: #fff;
-   border: 1px solid $trimColor;
-   font-family: $sanSerifFont;
-   @include drop-shadow(0, 4px, 6px, 0.5);
-   @include border-radius(3px, 3px, 3px, 0);
+   border: 1px solid color.$trim;
+   font-family: font.$sanSerif;
+   @include style.dropShadow(0, 4px, 6px, 0.5);
+   @include style.borderRadius(3px, 3px, 3px, 0);
 
-   #menu-roots,
-   #menu-categories,
-   #menu-posts {
+   #menu-roots, #menu-categories, #menu-posts {
       float: left;
       display: block;
       list-style-type: none;
@@ -88,7 +81,8 @@ header {
       max-height: 275px;
       overflow-y: auto;
       overflow-x: hidden;
-      @media $mobile {
+
+      @include size.mobile {
          font-weight: bold;
          max-height: 400px;
          padding: 0;
@@ -99,14 +93,12 @@ header {
          display: block;
          font-size: 16px;
          padding: 0 6px;
-         @media $mobile {
-            padding: 10px 6px;
-         }
+
+         @include size.mobile { padding: 10px 6px; }
       }
    }
 
-   #menu-roots li,
-   #menu-categories li {
+   #menu-roots li, #menu-categories li {
       line-height: $itemHeight;
       height: $itemHeight;
       margin-right: $itemHeight / 2;
@@ -125,55 +117,44 @@ header {
          border-color: rgba(0, 0, 0, 0);
          border-width: $itemHeight / 2;
          margin-top: $itemHeight / -2;
-         @media $mobile {
-            display: none;
-         }
+
+         @include size.mobile { display: none; }
       }
 
       &:hover {
          background-color: yellow;
-         @media $mobile {
-            @include rounded(15px);
-         }
-         &::after {
-            border-left-color: yellow;
-         }
+         &::after { border-left-color: yellow; }
+
+         @include size.mobile { border-radius: 15px; }
       }
 
       &.selected {
          color: #fff;
-         background-color: $boldColor;
-         @media $mobile {
-            @include rounded(15px);
-         }
-         &::after {
-            border-left-color: $boldColor;
-         }
+         background-color: color.$bold;
+
+         @include size.mobile { border-radius: 15px; }
+
+         &::after { border-left-color: color.$bold; }
       }
    }
 
-   #menu-roots {
-      width: 15%;
-   }
-   #menu-categories {
-      width: 30%;
-   }
+   #menu-roots      { width: 15%; }
+   #menu-categories { width: 30%; }
    #menu-posts {
       width: 55%;
 
       .mode-icon {
          margin-right: 5px;
-         @include opacity(0.7);
-         @media $mobile {
-            display: none;
-         }
+         opacity: 0.7;
+
+         @include size.mobile { display: none; }
       }
 
       li {
          padding-left: 27px;
          text-indent: -27px;
 
-         @media $mobile {
+         @include size.mobile {
             padding-left: 15px;
             text-indent: -10px;
          }
@@ -198,26 +179,24 @@ header {
          &.post {
             cursor: pointer;
             &:hover {
-               color: $hoverColor;
+               color: color.$hover;
                text-decoration: underline;
             }
          }
          &:hover {
-            .mode-icon {
-               @include opacity(1);
-            }
+            .mode-icon { opacity: 1; }
          }
       }
    }
 
    #post-description {
       clear: left;
-      border-top: 1px solid $lightTrimColor;
+      border-top: 1px solid color.$lightTrim;
       min-height: 10px;
       padding: 2px 10px;
       font-size: 13px;
       color: #000;
       background-color: #eee;
-      @include border-radius(0, 4px, 4px, 0);
+      @include style.borderRadius(0, 4px, 4px, 0);
    }
 }

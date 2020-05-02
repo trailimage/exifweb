@@ -1,0 +1,15 @@
+@mixin borderRadius(
+   $topRight: 0,
+   $bottomRight: 0,
+   $bottomLeft: 0,
+   $topLeft: 0
+) {
+   border-top-right-radius: $topRight;
+   border-bottom-right-radius: $bottomRight;
+   border-bottom-left-radius: $bottomLeft;
+   border-top-left-radius: $topLeft;
+}
+
+@mixin dropShadow($x-axis: 0, $y-axis: 1px, $blur: 2px, $alpha: 0.1) {
+   box-shadow: $x-axis $y-axis $blur rgba(0, 0, 0, $alpha);
+}

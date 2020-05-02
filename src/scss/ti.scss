@@ -1,19 +1,18 @@
-@import 'reset';
-@import 'elements';
-@import 'settings';
-@import 'post-menu';
-@import 'mobile-menu';
-@import 'side-menu';
-@import 'facebook';
-@import 'about-page';
-@import 'post-page';
-@import 'category-page';
-@import 'photo-tag-page';
+@use 'color';
+@use 'font';
+@use 'size';
+@use 'reset';
+@use 'post-menu';
+@use 'mobile-menu';
+@use 'side-menu';
+@use 'facebook';
+@use 'about-page';
+@use 'post-page';
+@use 'category-page';
+@use 'photo-tag-page';
+@use '../../public/fonts/webfont.css';
 
-html {
-   overflow-y: scroll;
-   overflow: -moz-scrollbars-vertical;
-}
+html { overflow-y: scroll; }
 
 body {
    margin: 0;
@@ -25,20 +24,18 @@ body {
    background: #222 url(/img/topo-map-tile.jpg) repeat;
 }
 
-*:focus {
-   outline: none;
-}
+*:focus { outline: none; }
 
 .content {
-   font-family: $sanSerifFont;
+   font-family: font.$sanSerif;
    font-weight: normal;
    text-align: left;
    margin: 0 auto;
    padding: 0;
-   background-color: $backgroundColor;
-   width: $contentWidth;
+   background-color: color.$background;
+   width: size.$contentWidth;
 
-   @media $mobile {
+   @include size.mobile {
       background: none;
       width: 100%;
    }
@@ -58,9 +55,9 @@ header.page {
       background: none;
 
       h1 {
-         font-family: $headerFont;
-         color: $lightColor;
-         margin: 0 0 0 $borderRadius;
+         font-family: font.$header;
+         color: color.$light;
+         margin: 0 0 0 size.$borderRadius;
          padding: 12px 0;
          font-size: 45px;
          line-height: 1em;
@@ -68,17 +65,17 @@ header.page {
       }
       // subtitle
       h4 {
-         margin: -6px 0 0 $borderRadius;
-         color: $lightTrimColor;
+         margin: -6px 0 0 size.$borderRadius;
+         color: color.$lightTrim;
          font-size: 14px;
-         font-family: $sanSerifFont;
+         font-family: font.$sanSerif;
          font-weight: 400;
          letter-spacing: 8px;
          text-transform: uppercase;
       }
    }
 
-   @media $mobile {
+   @include size.mobile {
       z-index: 500;
 
       #top-bar {
@@ -87,9 +84,7 @@ header.page {
          width: 100%;
          z-index: 200;
 
-         h1 {
-            padding-top: 50px;
-         }
+         h1 { padding-top: 50px; }
          h4 {
             position: absolute;
             padding: 0;
@@ -105,16 +100,16 @@ div.authorize {
    margin-top: 20px;
 
    h4 {
-      font-family: $sanSerifFont;
+      font-family: font.$sanSerif;
       font-size: 36pt;
       margin: 0 0 0 20px;
       line-height: 1em;
       padding: 0;
-      color: $trimColor;
+      color: color.$trim;
    }
 
    div {
-      font-family: $sanSerifFont;
+      font-family: font.$sanSerif;
       font-size: 22pt;
       margin-left: 30px;
    }
@@ -131,7 +126,7 @@ div.authorize {
 }
 
 .not-found {
-   height: $contentWidth;
+   height: size.$contentWidth;
    background-image: url('https://farm3.staticflickr.com/2911/14343924188_3eb2a469f0_b.jpg');
 
    p {
@@ -145,7 +140,7 @@ div.authorize {
 }
 
 .internal-error {
-   height: $contentWidth;
+   height: size.$contentWidth;
    background-image: url('https://farm4.staticflickr.com/3797/10001205193_e5cd88c09d_b.jpg');
    background-position: -270px 0;
 
@@ -163,13 +158,11 @@ footer.page {
    position: relative;
    padding: 0;
    margin: 2em auto 1em;
-   width: $contentWidth;
+   width: size.$contentWidth;
    text-align: center;
    background: none;
 
-   @media $mobile {
-      width: 100%;
-   }
+   @include size.mobile { width: 100%; }
 
    a.repo {
       // GitHub version badge
@@ -179,9 +172,7 @@ footer.page {
       margin-bottom: 10px;
       text-decoration: none;
 
-      @media $phone {
-         display: none;
-      }
+      @include size.phone { display: none; }
 
       span.icon {
          // GitHub icon
@@ -195,39 +186,67 @@ footer.page {
       // footer block
       background-color: rgba(255, 255, 255, 0.1);
       padding: 1em;
-      border-radius: $borderRadius;
+      border-radius: size.$borderRadius;
 
       p {
          text-align: center;
-         color: $lightTrimColor;
-         font-family: $sanSerifFont;
+         color: color.$lightTrim;
+         font-family: font.$sanSerif;
          font-size: 14px;
          text-indent: 0;
          padding: 0;
          margin: 2px;
 
-         a {
-            color: $lightColor;
-         }
-
-         &.rights {
-            font-size: 14px;
-         }
+         a { color: color.$light; }
+         &.rights { font-size: 14px; }
       }
 
-      @media $mobile {
+      @include size.mobile {
          border-radius: 0;
-         padding: 1em $borderRadius;
-         background-color: $mobileBackgroundColor;
+         padding: 1em size.$borderRadius;
+         background-color: color.$mobileBackground;
 
          p {
             font-size: 10px;
             line-height: 1em;
 
-            &.rights {
-               font-size: 10px;
-            }
+            &.rights { font-size: 10px; }
          }
       }
    }
+}
+
+.icon {
+   display: inline-block;
+   background-size: 100%;
+   background-repeat: no-repeat;
+}
+
+.icon-github-circle {
+   background-color: transparent;
+   background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE2LjAuNCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8IURPQ1RZUEUgc3ZnIFBVQkxJQyAiLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4iICJodHRwOi8vd3d3LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHdpZHRoPSIxNTRweCIgaGVpZ2h0PSIxNTJweCIgdmlld0JveD0iMCAwIDE1NCAxNTIiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDE1NCAxNTIiIHhtbDpzcGFjZT0icHJlc2VydmUiPgo8cGF0aCBmaWxsPSIjODE4MTgxIiBkPSJNMCw3Ni45YzAtMTMuOTM0LDMuNDMzLTI2Ljc4NCwxMC4zLTM4LjU1UzI2LjQ4MywxNy4yNjcsMzguMjUsMTAuNFM2Mi44NjcsMC4xLDc2LjgsMC4xCgljMTMuOTM0LDAsMjYuNzg0LDMuNDMzLDM4LjU1LDEwLjNjMTEuNzY4LDYuODY3LDIxLjA4NCwxNi4xODQsMjcuOTUsMjcuOTVzMTAuMywyNC42MTcsMTAuMywzOC41NQoJYzAsMTYuNzMyLTQuODgzLDMxLjc4My0xNC42NDksNDUuMTQ5cy0yMi4zODQsMjIuNjE2LTM3Ljg1MSwyNy43NWMtMS44LDAuMzMzLTMuMTE2LDAuMTAxLTMuOTQ5LTAuN2MtMC44MzQtMC44LTEuMjUtMS44LTEuMjUtMwoJVjEyNWMwLTYuNDY3LTEuNzM0LTExLjItNS4yLTE0LjJjMy44LTAuMzk5LDcuMjE2LTEsMTAuMjUtMS44YzMuMDMzLTAuOCw2LjE2Ny0yLjEsOS4zOTktMy45YzMuMjM0LTEuOCw1LjkzNC00LjAxNiw4LjEwMS02LjY0OQoJczMuOTMzLTYuMTM0LDUuMy0xMC41czIuMDUtOS4zODQsMi4wNS0xNS4wNWMwLTguMDY2LTIuNjM0LTE0LjkzMy03Ljg5OS0yMC42YzIuNDY3LTYuMDY2LDIuMTk5LTEyLjg2Ni0wLjgwMS0yMC40CgljLTEuODY2LTAuNi00LjU2Ni0wLjIzMy04LjEsMS4xcy02LjYsMi44LTkuMiw0LjRMOTYsMzkuOGMtNi4yLTEuNzMzLTEyLjYtMi42LTE5LjItMi42Yy02LjYsMC0xMywwLjg2Ny0xOS4yLDIuNgoJYy0xLjA2Ny0wLjczMy0yLjQ4My0xLjYzMy00LjI1LTIuN2MtMS43NjctMS4wNjctNC41NS0yLjM1LTguMzUtMy44NXMtNi42NjctMS45NS04LjYtMS4zNWMtMi45MzMsNy41MzQtMy4xNjcsMTQuMzMzLTAuNywyMC40CgljLTUuMjY3LDUuNjY3LTcuOSwxMi41MzQtNy45LDIwLjZjMCw1LjY2NywwLjY4NCwxMC42NjcsMi4wNSwxNWMxLjM2Nyw0LjMzMywzLjExNyw3LjgzMyw1LjI1LDEwLjUKCWMyLjEzMywyLjY2Niw0LjgxNiw0Ljg5OSw4LjA1LDYuNjk5YzMuMjMzLDEuODAxLDYuMzY3LDMuMTAxLDkuNCwzLjljMy4wMzQsMC44LDYuNDUsMS40LDEwLjI1LDEuOGMtMi42NjcsMi40LTQuMyw1LjgzMy00LjksMTAuMwoJYy0xLjQsMC42NjctMi45LDEuMTY3LTQuNSwxLjVjLTEuNiwwLjMzNC0zLjUsMC41LTUuNywwLjVjLTIuMiwwLTQuMzgzLTAuNzE3LTYuNTUtMi4xNDljLTIuMTY3LTEuNDM0LTQuMDE3LTMuNTE3LTUuNTUtNi4yNQoJYy0xLjI2Ny0yLjEzNC0yLjg4My0zLjg2Ni00Ljg1LTUuMnMtMy42MTctMi4xMzMtNC45NS0yLjRsLTItMC4zYy0xLjQsMC0yLjM2NywwLjE1LTIuOSwwLjQ1cy0wLjcsMC42ODQtMC41LDEuMTUKCWMwLjIsMC40NjcsMC41LDAuOTM0LDAuOSwxLjM5OWMwLjQsMC40NjcsMC44MzMsMC44NjYsMS4zLDEuMmwwLjcsMC41YzEuNDY3LDAuNjY2LDIuOTE3LDEuOTM0LDQuMzUsMy44CgljMS40MzQsMS44NjYsMi40ODMsMy41NjcsMy4xNSw1LjEwMWwxLDIuM2MwLjg2NywyLjUzMywyLjMzMyw0LjU4Myw0LjQsNi4xNDljMi4wNjYsMS41NjYsNC4zLDIuNTY2LDYuNywzczQuNzE3LDAuNjY3LDYuOTUsMC43CgljMi4yMzMsMC4wMzQsNC4wODMtMC4wODMsNS41NS0wLjM1bDIuMy0wLjRjMCwyLjUzNCwwLjAxNyw1LjUsMC4wNSw4LjljMC4wMzMsMy4zOTksMC4wNSw1LjIsMC4wNSw1LjM5OWMwLDEuMi0wLjQzMywyLjItMS4zLDMKCWMtMC44NjcsMC44MDEtMi4yLDEuMDMzLTQsMC43Yy0xNS40NjctNS4xMzQtMjguMDgzLTE0LjM4NC0zNy44NS0yNy43NVMwLDkzLjYzMywwLDc2Ljl6Ii8+Cjwvc3ZnPgo=);
+}
+
+a {
+   text-decoration: underline;
+   &:link    { color: #453; }
+   &:visited { color: #453; }
+   &:hover   { color: color.$hover; }
+   &:active  { color: #964; }
+}
+
+.mode-icon {
+   $modeSize: 20px;
+
+   width: $modeSize;
+   height: $modeSize;
+   background-image: url('/img/modes-small.png');
+   background-repeat: no-repeat;
+   background-position: 0 0;
+   display: inline-block;
+
+   &.hike       { background-position: 0 0; }
+   &.bicycle    { background-position: $modeSize * -1, 0; }
+   &.motorcycle { background-position: $modeSize * -2, 0; }
+   &.jeep       { background-position: $modeSize * -3, 0; }
 }

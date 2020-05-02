@@ -1,6 +1,6 @@
 {
    "compilerOptions": {
-      "target": "es5",
+      "target": "es2017",
       "module": "none",
       "outDir": "./public/js",
       "baseUrl": "./src/js",
@@ -19,6 +19,7 @@
       "strictNullChecks": true,
       "strictBindCallApply": true,
       "skipLibCheck": true,
+      "listEmittedFiles": true,
       "lib": [
          "es2017",
          "dom"

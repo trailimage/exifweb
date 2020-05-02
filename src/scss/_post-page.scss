@@ -1,5 +1,7 @@
-@import 'elements';
-@import 'settings';
+@use 'color';
+@use 'font';
+@use 'size';
+@use 'style';
 
 $mobileButtonSize: 30px;
 $mobileButtonMargin: 5px;
@@ -10,15 +12,15 @@ $mobileButtonAlpha: 0.3;
 header.page {
    #top-bar {
       .subtitle {
-         color: $lightTrimColor;
+         color: color.$lightTrim;
          display: flex;
-         font-family: $sanSerifFont;
+         font-family: font.$sanSerif;
          font-size: 22px;
-         margin: -4px 0 0 $borderRadius;
+         margin: -4px 0 0 size.$borderRadius;
 
          .parts {
             display: block;
-            color: $trimColor;
+            color: color.$trim;
             padding-right: 6px;
          }
       }
@@ -26,15 +28,15 @@ header.page {
          position: absolute;
          bottom: 0;
          font-size: 15px;
-         right: $borderRadius;
-         font-family: $sanSerifFont;
-         color: $lightColor;
+         right: size.$borderRadius;
+         font-family: font.$sanSerif;
+         color: color.$light;
       }
 
-      @media $mobile {
+      @include size.mobile {
          // place date above title, matching cagegory page count text
          #post-date {
-            left: $borderRadius;
+            left: size.$borderRadius;
             top: 30px;
             margin-left: 2px;
          }
@@ -44,42 +46,35 @@ header.page {
 
 .synopsis.content {
    // post description
-   border-radius: $borderRadius;
-   background-color: $lightTrimColor;
+   border-radius: size.$borderRadius;
+   background-color: color.$lightTrim;
    font-weight: normal;
    line-height: 1.2em;
-   font-family: $serifFont;
+   font-family: font.$serif;
    font-size: 18px;
    text-align: center;
    text-rendering: optimizeLegibility;
    margin: 15px auto;
 
-   p {
-      padding: 1.6em 2em;
-   }
+   p { padding: 1.6em 2em; }
 
-   @media $mobile {
-      border-radius: 0;
-   }
+   @include size.mobile { border-radius: 0; }
 }
 
 .post.content {
-   border-radius: $borderRadius;
-
-   @media $mobile {
-      border-radius: 0;
-   }
+   border-radius: size.$borderRadius;
+   @include size.mobile { border-radius: 0; }
 
    div.map {
       position: relative;
       background-color: rgb(210, 216, 172);
-      border-top: 1px solid $trimColor;
+      border-top: 1px solid color.$trim;
       text-align: center;
       width: 100%;
       padding: 0;
       margin: 0;
 
-      @media $tablet {
+      @include size.tablet {
          img {
             width: 100%;
             height: auto;
@@ -87,9 +82,7 @@ header.page {
          margin-bottom: 15px;
       }
 
-      @media $phone {
-         display: none;
-      }
+      @include size.phone { display: none; }
    }
 }
 
@@ -97,7 +90,7 @@ header.page {
 
 #nav-top,
 #nav-bottom {
-   @media $mobile {
+   @include size.mobile {
       div.next,
       div.previous {
          font-size: 14px;
@@ -118,14 +111,13 @@ header.page {
    }
 }
 
-div.next,
-div.previous {
-   width: ($imageWidth - $contentWidth) / 2;
+div.next, div.previous {
+   width: (size.$imageWidth - size.$contentWidth) / 2;
    // this moves the navigation links up so they appear just above their div
    // so they don't overlap image shown immediately below
    margin-top: -4.5em;
    position: absolute;
-   font-family: $sanSerifFont;
+   font-family: font.$sanSerif;
    font-size: 16px;
    z-index: 250;
 
@@ -147,34 +139,29 @@ div.previous {
       color: #ddd;
       text-decoration: none;
 
-      @media $desktop {
-         &:hover {
-            color: desaturate(lighten($hoverColor, 30%), 20%);
-         }
+      @include size.desktop {
+         &:hover { color: desaturate(lighten(color.$hover, 30%), 20%); }
       }
    }
 
-   @media $mobile {
+   @include size.mobile {
       width: auto;
       font-size: 20px;
-      h4 .material-icons {
-         font-size: 20px;
-      }
+      h4 .material-icons { font-size: 20px; }
 
       a {
          line-height: 1.2em;
-         color: $mobileLinkColor;
-         &:active {
-            color: $mobileActiveColor;
-         }
+         color: color.$mobileLink;
+         &:active { color: color.$mobileActive; }
       }
    }
 }
 
 div.next {
    left: 50%;
-   margin-left: ($contentWidth / 2) + 15;
-   @media $mobile {
+   margin-left: (size.$contentWidth / 2) + 15;
+
+   @include size.mobile {
       right: 10px;
       margin: 0;
       text-align: right;
@@ -183,9 +170,10 @@ div.next {
 
 div.previous {
    right: 50%;
-   margin-right: ($contentWidth / 2) + 15;
+   margin-right: (size.$contentWidth / 2) + 15;
    text-align: right;
-   @media $mobile {
+
+   @include size.mobile {
       left: 10px;
       margin: 0;
       text-align: left;
@@ -193,12 +181,9 @@ div.previous {
 }
 
 #nav-bottom {
-   div.next,
-   div.previous {
-      margin-top: 0.5em;
-   }
+   div.next, div.previous { margin-top: 0.5em; }
 
-   @media $mobile {
+   @include size.mobile {
       width: 100%;
       margin: 0 0 20px;
    }
@@ -231,10 +216,10 @@ div.previous {
 nav.tag-wrapper {
    display: flex;
    border: none;
-   background-color: $trimColor;
-   font-family: $sanSerifFont;
-   border-top-left-radius: $borderRadius;
-   border-top-right-radius: $borderRadius;
+   background-color: color.$trim;
+   font-family: font.$sanSerif;
+   border-top-left-radius: size.$borderRadius;
+   border-top-right-radius: size.$borderRadius;
 
    ul.tags {
       width: 100%;
@@ -252,7 +237,7 @@ nav.tag-wrapper {
          text-rendering: optimizeLegibility;
 
          span {
-            color: $lightTrimColor;
+            color: color.$lightTrim;
             padding-right: 2px;
          }
 
@@ -260,14 +245,12 @@ nav.tag-wrapper {
             text-decoration: none;
             color: #fff;
 
-            &:hover {
-               text-decoration: underline;
-            }
+            &:hover { text-decoration: underline; }
          }
       }
    }
 
-   @media $mobile {
+   @include size.mobile {
       border-radius: 0;
       margin: 18px 0 20px 0;
       // hide category tags shown above post but retain those shown below
@@ -290,11 +273,11 @@ nav.tag-wrapper {
    nav.tag-wrapper {
       border-top-left-radius: 0;
       border-top-right-radius: 0;
-      border-bottom-left-radius: $borderRadius;
-      border-bottom-right-radius: $borderRadius;
+      border-bottom-left-radius: size.$borderRadius;
+      border-bottom-right-radius: size.$borderRadius;
       margin-bottom: 20px;
 
-      @media $mobile {
+      @include size.mobile {
          border-radius: 0;
          // those above post were hidden so re-display these
          display: block;
@@ -315,11 +298,11 @@ div.video {
    margin: 0 auto -4px;
 
    $maxWidth: 1032px;
-   $minWidth: 650px;
+   $minWidth: size.$contentWidth;
    $ratio: $minWidth / $maxWidth;
    $tooWide: ($maxWidth - $minWidth) / 2;
 
-   @media $mobile {
+   @include size.mobile {
       margin: -100px -$tooWide -70px -$tooWide;
       padding: 0;
       transform: scale(unit($ratio), unit($ratio));
@@ -346,28 +329,24 @@ figure {
       padding: 4px;
       margin: 0;
       cursor: zoom-in;
-      cursor: -webkit-zoom-in;
-      cursor: -moz-zoom-in;
       z-index: 20;
-      @include drop-shadow(0, 0, 10px, 0.4);
+      @include style.dropShadow(0, 0, 10px, 0.4);
    }
 
-   @media $mobile {
+   @include size.mobile {
       width: 100%;
       margin: 0 auto 20px;
       padding: 0;
 
-      &:first-of-type {
-         // make room for navigation
-         margin-top: 75px;
-      }
+      // make room for navigation
+      &:first-of-type { margin-top: 75px; }
 
       img {
          // width set by inline style so can't override
          border: none;
          padding: 0;
          cursor: default;
-         @include box-shadow(none);
+         box-shadow: none;
       }
    }
 
@@ -379,7 +358,7 @@ figure {
       background-color: #000;
       margin-right: 4px;
       padding: 5px 5px 5px 30px;
-      @include opacity(0.6);
+      opacity: 0.6;
       display: none;
       text-align: left;
       font-size: 15px;
@@ -387,7 +366,7 @@ figure {
       h4 {
          display: none;
          position: absolute;
-         font-family: $sanSerifFont;
+         font-family: font.$sanSerif;
          font-weight: normal;
          font-size: 10px;
          line-height: 10px;
@@ -406,7 +385,7 @@ figure {
 
       a {
          color: #fff;
-         font-family: $sanSerifFont;
+         font-family: font.$sanSerif;
          line-height: 22px;
          padding: 7px;
          text-decoration: none;
@@ -423,7 +402,7 @@ figure {
    div.mobile-button,
    div.mobile-info {
       position: absolute;
-      font-family: $sanSerifFont;
+      font-family: font.$sanSerif;
       .material-icons {
          position: absolute;
       }
@@ -449,12 +428,8 @@ figure {
                font-size: 12pt;
                line-height: 1em;
             }
-            &.iso {
-               margin-top: 10px;
-            }
-            &.software {
-               margin-top: 10px;
-            }
+            &.iso { margin-top: 10px; }
+            &.software { margin-top: 10px; }
          }
       }
    }
@@ -469,12 +444,9 @@ figure {
       font-size: 17px;
       font-weight: normal;
       text-align: center;
-      @include opacity(0.6);
+      opacity: 0.6;
 
-      p,
-      .material-icons {
-         cursor: progress;
-      }
+      p, .material-icons { cursor: progress; }
 
       p {
          display: inline;
@@ -485,14 +457,11 @@ figure {
       .material-icons {
          top: 6px;
          left: 10px;
-         color: $trimColor;
+         color: color.$trim;
          font-size: 21px;
          font-weight: normal;
 
-         &.cloud-download {
-            top: 5px;
-            //font-size: 17px;
-         }
+         &.cloud-download { top: 5px; }
       }
    }
 
@@ -501,15 +470,15 @@ figure {
       background-color: #fff;
       color: #000;
       padding: 0 26px 3px 5px;
-      font-family: $sanSerifFont;
+      font-family: font.$sanSerif;
       font-size: 20px;
       line-height: 17px;
       text-decoration: none;
       letter-spacing: -1px;
       position: absolute;
-      border: 1px solid $boldColor;
-      @include rounded(5px);
-      @include opacity(0.2);
+      border: 1px solid color.$bold;
+      border-radius: 5px;
+      opacity: 0.2;
       right: 11px;
       bottom: 12px;
       z-index: 30;
@@ -522,39 +491,29 @@ figure {
          color: rgba(0, 0, 0, 0.4);
       }
 
-      @media $mobile {
-         display: none;
-      }
+      @include size.mobile { display: none; }
    }
 
-   @media $desktop {
-      &:hover,
-      &:active {
+   @include size.desktop {
+      &:hover, &:active {
          a.map {
-            @include opacity(0.7);
-            .material-icons {
-               color: rgba(255, 0, 0, 0.5);
-            }
+            opacity: 0.7;
+            .material-icons { color: rgba(255, 0, 0, 0.5); }
 
-            &:hover,
-            &:active {
-               @include opacity(1);
-               .material-icons {
-                  color: rgba(255, 0, 0, 1);
-               }
+            &:hover, &:active {
+               opacity: 1;
+               .material-icons { color: rgba(255, 0, 0, 1); }
             }
          }
          div.info-button,
-         nav.tags {
-            display: block;
-         }
+         nav.tags { display: block; }
       }
    }
 
    a.source-link {
       display: none;
       text-align: left;
-      font-family: $sanSerifFont;
+      font-family: font.$sanSerif;
       font-size: 12px;
       letter-spacing: 0.5px;
       color: #555;
@@ -562,22 +521,18 @@ figure {
       position: absolute;
       bottom: -10px;
       right: -18px;
-      @include rotation(90deg);
+      transform: rotate(90deg);
       transform-origin: 100% 0;
 
-      &:hover {
-         color: #ff0;
-      }
+      &:hover { color: #ff0; }
 
-      @media $desktop {
-         display: block;
-      }
+      @include size.desktop { display: block; }
    }
 
    figcaption {
       // image title
       position: relative;
-      font-family: $sanSerifFont;
+      font-family: font.$sanSerif;
       font-size: 18px;
       font-weight: bold;
       z-index: 55;
@@ -589,12 +544,12 @@ figure {
          margin-top: -10px;
          background-color: #fff;
          white-space: nowrap;
-         border: 1px solid $boldColor;
+         border: 1px solid color.$bold;
          padding: 0 10px 1px;
-         color: $boldColor;
+         color: color.$bold;
       }
 
-      @media $mobile {
+      @include size.mobile {
          font-size: 16px;
          font-weight: normal;
          margin-top: 2px;
@@ -608,7 +563,7 @@ figure {
          }
       }
 
-      @media $tablet {
+      @include size.tablet {
          font-size: 20px;
          margin-top: 4px;
       }
@@ -625,15 +580,15 @@ div.caption {
    margin-top: 0;
    line-height: 1.3em;
    padding: 4px 0 0;
-   font-size: $fontSize;
+   font-size: font.$size;
    min-height: 1.5em;
    position: relative;
 
    sup {
-      color: $footnoteColor;
+      color: color.$footnote;
       vertical-align: top;
       line-height: 1em;
-      font-family: $sanSerifFont;
+      font-family: font.$sanSerif;
       font-size: 18px;
       cursor: help;
    }
@@ -648,7 +603,7 @@ div.caption {
       background-image: url(/img/left-quote.png);
       background-repeat: no-repeat;
       background-position: left top;
-      font-family: $serifFont;
+      font-family: font.$serif;
       margin: 1em 1em 0.5em;
 
       p {
@@ -662,7 +617,7 @@ div.caption {
       &.poem {
          background-image: url(/img/quote-ornament.png);
          background-position: left bottom;
-         font-family: $serifFont;
+         font-family: font.$serif;
          text-align: left;
          margin-top: 1.5em;
 
@@ -673,43 +628,29 @@ div.caption {
             padding: 0 0 1.4em 5em;
          }
 
-         .tab {
-            width: 1.5em;
-         }
+         .tab { width: 1.5em; }
       }
    }
 
-   > p,
-   > blockquote {
-      &:last-child {
-         padding-bottom: 2em;
-      }
+   > p, > blockquote {
+      &:last-child { padding-bottom: 2em; }
    }
 
-   > p:first-child {
-      padding-top: 2.5em;
-   }
+   > p:first-child { padding-top: 2.5em; }
 
-   > blockquote:first-child {
-      margin-top: 2.5em;
-   }
+   > blockquote:first-child { margin-top: 2.5em; }
 
    > p {
       text-indent: 2em;
-      font-family: $serifFont;
+      font-family: font.$serif;
       margin: 0;
       padding: 0 2.5em 0.5em;
 
       &:first-of-type,
-      &.first {
-         text-indent: 0;
-      }
-
+      &.first { text-indent: 0; }
       &.quip {
          &:first-child,
-         &.first {
-            text-indent: 2em;
-         }
+         &.first { text-indent: 2em; }
       }
 
       &.note {
@@ -738,18 +679,16 @@ div.caption {
          //padding: 10px 0 15px 65px;
          line-height: 1.1em;
 
-         &:not(:last-child) {
-            padding-bottom: 1.5em;
-         }
+         &:not(:last-child) { padding-bottom: 1.5em; }
 
          .material-icons {
             display: block;
             position: absolute;
             top: 40px;
             right: 100px;
-            color: $trimColor;
+            color: color.$trim;
             font-size: 75px;
-            @include opacity(0.1);
+            opacity: 0.1;
          }
       }
    }
@@ -757,26 +696,22 @@ div.caption {
    ol.footnotes {
       list-style-type: decimal;
       position: relative;
-      border-top: 1px solid $trimColor;
-      background-color: darken($lightColor, 5%);
+      border-top: 1px solid color.$trim;
+      background-color: darken(color.$light, 5%);
       padding: 10px 20px 10px 40px;
-      font-family: $sanSerifFont;
+      font-family: font.$sanSerif;
       font-size: 13px;
       margin-top: 20px;
       cursor: help;
-      color: $footnoteColor;
+      color: color.$footnote;
 
       li {
          line-height: 1em;
          padding-bottom: 5px;
          counter-increment: note-counter;
 
-         span {
-            color: #444;
-         }
-         a:hover {
-            color: $hoverColor;
-         }
+         span { color: #444; }
+         a:hover { color: color.$hover; }
 
          // from asterisk in photo title to credit creator
          &.credit {
@@ -786,7 +721,7 @@ div.caption {
 
             .material-icons {
                font-size: 14px;
-               color: $footnoteColor;
+               color: color.$footnote;
                margin: 0;
                padding-right: 7px;
                vertical-align: text-top;
@@ -796,21 +731,17 @@ div.caption {
    }
 
    // mobile caption
-   @media $mobile {
+   @include size.mobile {
       padding: 0 0 15px;
-      font-size: $fontSize + 2;
+      font-size: font.$size + 2;
       line-height: 1.3em;
-      color: $mobileTextColor;
+      color: color.$mobileText;
 
       p {
          padding: 0 0.7em 0.3em;
          &:first-child,
-         &.first {
-            padding-top: 0;
-         }
-         &:last-child {
-            padding-bottom: 1em;
-         }
+         &.first { padding-top: 0; }
+         &:last-child { padding-bottom: 1em; }
       }
 
       blockquote {
@@ -818,15 +749,13 @@ div.caption {
          text-align: left;
          p {
             font-size: 17px;
-            color: $mobileTextColor;
+            color: color.$mobileText;
             line-height: 1.2em;
             padding: 0 3em 0.5em;
          }
       }
 
-      sup {
-         color: $mobileFootnoteColor;
-      }
+      sup { color: color.$mobileFootnote; }
 
       ol.footnotes {
          $indent: 30px;
@@ -834,14 +763,12 @@ div.caption {
          background-color: #333;
          margin: 6px 0 $indent;
          padding: 6px 5px 0 $indent;
-         color: $mobileFootnoteColor;
+         color: color.$mobileFootnote;
 
          li {
             padding-bottom: 8px;
             line-height: 1.5em;
-            span {
-               color: darken($mobileTextColor, 30%);
-            }
+            span { color: darken(color.$mobileText, 30%); }
             &.credit {
                text-indent: -8px;
                .material-icons {
@@ -851,47 +778,39 @@ div.caption {
             }
          }
 
-         @include opacity(1);
+         opacity: 1;
 
-         a {
-            color: $mobileLinkColor;
-         }
+         a { color: color.$mobileLink; }
       }
    }
 
-   @media $tablet {
-      font-size: $fontSize + 3;
-      p {
-         padding: 0 1.5em 0.3em 2em;
-      }
+   @include size.tablet {
+      font-size: font.$size + 3;
+      p { padding: 0 1.5em 0.3em 2em; }
    }
 }
 
 div.by-line {
    position: relative;
    text-align: right;
-   font-family: $serifFont;
+   font-family: font.$serif;
    font-size: 25px;
    font-style: italic;
    font-weight: normal;
-   color: $boldColor;
+   color: color.$bold;
    padding-top: 0.75em;
 
-   p {
-      padding: 0 2em 1em;
-   }
+   p { padding: 0 2em 1em; }
 
    &.feature {
-      border-bottom-left-radius: $borderRadius;
-      border-bottom-right-radius: $borderRadius;
+      border-bottom-left-radius: size.$borderRadius;
+      border-bottom-right-radius: size.$borderRadius;
       margin-bottom: 20px;
    }
 
-   @media $mobile {
-      p {
-         margin-top: 40px;
-      }
+   @include size.mobile {
+      p { margin-top: 40px; }
       text-align: center;
-      color: $mobileTextColor;
+      color: color.$mobileText;
    }
 }

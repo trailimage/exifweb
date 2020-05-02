@@ -17,11 +17,30 @@
       {
          "label": "Build JavaScript",
          "command": "tsc",
+         // "args": [
+         //    "-w"
+         // ],
+         "group": "build",
+         "type": "shell",
+         "problemMatcher": [
+            "$tsc"
+         ]
+      },
+      {
+         "label": "Build CSS",
+         "command": "sass",
          "args": [
-            "-w"
+            "--style=compressed",
+            "--no-source-map",
+            "./src/scss/ti.scss",
+            "./public/css/ti.css"
          ],
          "group": "build",
          "type": "shell",
+         "presentation": {
+            "echo": false,
+            "clear": true
+         },
          "problemMatcher": [
             "$tsc"
          ]

@@ -1,10 +1,11 @@
-@import 'elements';
-@import 'settings';
+@use 'font';
+@use 'color';
+@use 'size';
 
 .about {
    padding: 0;
    position: relative;
-   border-radius: $borderRadius;
+   border-radius: size.$borderRadius;
    overflow: hidden;
 
    .main-image {
@@ -13,62 +14,51 @@
       padding: 0 0 10px 1em;
 
       img {
-         border: 1px solid $trimColor;
+         border: 1px solid color.$trim;
          border-top: none;
          border-right: none;
-         border-bottom-left-radius: $borderRadius;
+         border-bottom-left-radius: size.$borderRadius;
       }
 
       &:hover {
-         img {
-            border-color: $hoverColor;
-         }
+         img { border-color: color.$hover; }
       }
    }
 
    p {
       padding: 0 2em;
-      font-family: $serifFont;
+      font-family: font.$serif;
       font-size: 18px;
       line-height: 1.2em;
       margin: 0 0 1em;
-      &.first {
-         padding-top: 2em;
-      }
+      &.first { padding-top: 2em; }
    }
 
    .by-line {
       text-align: right;
       font-size: 25px;
       padding: 1em 2em 1.5em 0;
-      font-family: $serifFont;
+      font-family: font.$serif;
       font-style: italic;
    }
 
-   @media $mobile {
-      .main-image img {
-         border: none;
-      }
+   @include size.mobile {
+      .main-image img { border: none; }
       p {
-         color: $lightColor;
+         color: color.$light;
          font-size: 20px;
 
-         a {
-            color: $mobileLinkColor;
-         }
+         a { color: color.$mobileLink; }
       }
    }
-   @media $tablet {
+   @include size.tablet {
       p {
-         padding: 0 $borderRadius;
-
-         &.first {
-            padding-top: 0;
-         }
+         padding: 0 size.$borderRadius;
+         &.first { padding-top: 0; }
       }
    }
 
-   @media $phone {
+   @include size.phone {
       .main-image {
          float: none;
          padding: 0;

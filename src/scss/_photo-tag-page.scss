@@ -1,32 +1,11 @@
-@import 'elements';
-@import 'settings';
+@use 'color';
+@use 'size';
 
 $thumbWidth: 150px;
 $tabWidth: 40px;
 $viewWidth: ($thumbWidth + 5) * 3;
 $mobileTabWidth: 28px;
 $mobileTagWidth: 150px;
-
-header.page.content {
-   #flickr-logo {
-      position: absolute;
-      top: 8px;
-      right: $borderRadius;
-      z-index: 200;
-      text-decoration: none;
-      display: block;
-      text-align: center;
-      color: $trimColor;
-
-      img {
-         padding-top: 6px;
-      }
-
-      @media $mobile {
-         display: none;
-      }
-   }
-}
 
 ul#letters {
    background: none;
@@ -47,10 +26,10 @@ ul#letters {
       color: #fff;
    }
 
-   @media $desktop {
+   @include size.desktop {
       li {
          &:hover {
-            background-color: $hoverColor;
+            background-color: color.$hover;
          }
          &.selected {
             color: #400;
@@ -60,22 +39,20 @@ ul#letters {
       }
    }
 
-   @media $mobile {
+   @include size.mobile {
       margin: 0;
       flex-wrap: wrap;
 
       li {
          width: $mobileTabWidth;
-         background-color: $mobileBackgroundColor;
+         background-color: color.$mobileBackground;
          padding: 25px 0;
          margin-top: 10px;
 
-         &:active {
-            background-color: $mobileActiveColor;
-         }
+         &:active { background-color: color.$mobileActive; }
          &.selected {
             color: #444;
-            background-color: $mobileActiveColor;
+            background-color: color.$mobileActive;
          }
       }
    }
@@ -93,7 +70,7 @@ ul#letters {
       margin: 4px 0 10px;
       border: none;
       background-color: #555;
-      color: $lightColor;
+      color: color.$light;
       appearance: none;
       padding: 3px;
       width: 50%;
@@ -111,46 +88,37 @@ ul#letters {
          }
       }
 
-      &:focus {
-         border: none;
-      }
+      &:focus { border: none; }
    }
 
    #status {
-      color: $lightTrimColor;
+      color: color.$lightTrim;
       padding: 0 0 5px 10px;
    }
 
-   @media $mobile {
+   @include size.mobile {
       margin-top: 1em;
 
       select {
          margin: 1em 0;
-
          font-size: 20px;
       }
    }
 
-   @media $tablet {
-      #status {
-         font-size: 20px;
-      }
-   }
+   @include size.tablet { #status { font-size: 20px; }}
 
-   @media $phone {
+   @include size.phone {
       select {
-         background-color: $lightColor;
-         color: $mobileBackgroundColor;
+         background-color: color.$light;
+         color: color.$mobileBackground;
          width: 100%;
 
          option {
             font-size: 20px;
-            background-color: $lightColor;
+            background-color: color.$light;
          }
       }
-      #status {
-         display: none;
-      }
+      #status { display: none; }
    }
 }
 
@@ -171,7 +139,7 @@ ul#letters {
       }
    }
 
-   @media $mobile {
+   @include size.mobile {
       width: auto;
       justify-content: space-around;
       left: $mobileTabWidth + $mobileTagWidth + 10;

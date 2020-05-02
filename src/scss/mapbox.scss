@@ -1,5 +1,5 @@
-@import 'elements';
-@import 'settings';
+@use 'elements';
+@use 'settings';
 
 $navWidth: 55px;
 $mobileNavWidth: 45px;
@@ -16,7 +16,7 @@ body {
       display: none;
    }
 
-   @media $mobile {
+   @include mobile {
       span.mobile-text {
          display: inline;
       }
@@ -121,7 +121,7 @@ body > nav {
       }
    }
 
-   @media $mobile {
+   @include mobile {
       width: $mobileNavWidth;
       padding-top: $mobileNavWidth;
       .logo {
@@ -180,7 +180,7 @@ body > nav {
    right: 0;
    position: absolute;
 
-   @media $mobile {
+   @include mobile {
       left: $mobileNavWidth;
    }
 }
@@ -326,12 +326,12 @@ body > nav {
          @include opacity(1);
       }
 
-      @media $mobile {
+      @include mobile {
          display: none;
       }
    }
 
-   @media $mobile {
+   @include mobile {
       bottom: 40px;
       li.toggle {
          display: none;
@@ -444,7 +444,7 @@ body > nav {
       left: 4px;
    }
 
-   @media $mobile {
+   @include mobile {
       width: 320px;
       text-align: center;
       figure {
@@ -486,8 +486,8 @@ body > nav {
    }
 }
 
-.keyframes(button-press; {
-   0% { color: #fff; }
-   50% { color: #ff0; }
-   100% { color: #fff; }
-});
+// .keyframes(button-press; {
+//    0% { color: #fff; }
+//    50% { color: #ff0; }
+//    100% { color: #fff; }
+// });
