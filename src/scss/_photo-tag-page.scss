@@ -1,28 +1,28 @@
 @import 'elements';
 @import 'settings';
 
-@thumbWidth: 150px;
-@tabWidth: 40px;
-@viewWidth: (@thumbWidth + 5) * 3;
-@mobileTabWidth: 28px;
-@mobileTagWidth: 150px;
+$thumbWidth: 150px;
+$tabWidth: 40px;
+$viewWidth: ($thumbWidth + 5) * 3;
+$mobileTabWidth: 28px;
+$mobileTagWidth: 150px;
 
 header.page.content {
    #flickr-logo {
       position: absolute;
       top: 8px;
-      right: @borderRadius;
+      right: $borderRadius;
       z-index: 200;
       text-decoration: none;
       display: block;
       text-align: center;
-      color: @trimColor;
+      color: $trimColor;
 
       img {
          padding-top: 6px;
       }
 
-      @media @mobile {
+      @media $mobile {
          display: none;
       }
    }
@@ -47,10 +47,10 @@ ul#letters {
       color: #fff;
    }
 
-   @media @desktop {
+   @media $desktop {
       li {
          &:hover {
-            background-color: @hoverColor;
+            background-color: $hoverColor;
          }
          &.selected {
             color: #400;
@@ -60,22 +60,22 @@ ul#letters {
       }
    }
 
-   @media @mobile {
+   @media $mobile {
       margin: 0;
       flex-wrap: wrap;
 
       li {
-         width: @mobileTabWidth;
-         background-color: @mobileBackgroundColor;
+         width: $mobileTabWidth;
+         background-color: $mobileBackgroundColor;
          padding: 25px 0;
          margin-top: 10px;
 
          &:active {
-            background-color: @mobileActiveColor;
+            background-color: $mobileActiveColor;
          }
          &.selected {
             color: #444;
-            background-color: @mobileActiveColor;
+            background-color: $mobileActiveColor;
          }
       }
    }
@@ -93,7 +93,7 @@ ul#letters {
       margin: 4px 0 10px;
       border: none;
       background-color: #555;
-      color: @lightColor;
+      color: $lightColor;
       appearance: none;
       padding: 3px;
       width: 50%;
@@ -117,11 +117,11 @@ ul#letters {
    }
 
    #status {
-      color: @lightTrimColor;
+      color: $lightTrimColor;
       padding: 0 0 5px 10px;
    }
 
-   @media @mobile {
+   @media $mobile {
       margin-top: 1em;
 
       select {
@@ -131,21 +131,21 @@ ul#letters {
       }
    }
 
-   @media @tablet {
+   @media $tablet {
       #status {
          font-size: 20px;
       }
    }
 
-   @media @phone {
+   @media $phone {
       select {
-         background-color: @lightColor;
-         color: @mobileBackgroundColor;
+         background-color: $lightColor;
+         color: $mobileBackgroundColor;
          width: 100%;
 
          option {
             font-size: 20px;
-            background-color: @lightColor;
+            background-color: $lightColor;
          }
       }
       #status {
@@ -171,10 +171,10 @@ ul#letters {
       }
    }
 
-   @media @mobile {
+   @media $mobile {
       width: auto;
       justify-content: space-around;
-      left: @mobileTabWidth + @mobileTagWidth + 10;
+      left: $mobileTabWidth + $mobileTagWidth + 10;
       right: 0;
       top: 0;
 

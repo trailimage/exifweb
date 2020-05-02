@@ -1,6 +1,35 @@
 {
-  "extends": "@toba/develop/tsconfig.test",
-  "compilerOptions": {
-    "esModuleInterop": true
-  }
+   "compilerOptions": {
+      "target": "es5",
+      "module": "none",
+      "outDir": "./public/js",
+      "baseUrl": "./src/js",
+      "newLine": "LF",
+      "noImplicitAny": true,
+      "noImplicitThis": true,
+      "noUnusedLocals": false,
+      "noUnusedParameters": false,
+      "sourceMap": false,
+      "allowJs": false,
+      "checkJs": false,
+      "removeComments": true,
+      "noEmitOnError": true,
+      "alwaysStrict": true,
+      "declaration": false,
+      "strictNullChecks": true,
+      "strictBindCallApply": true,
+      "skipLibCheck": true,
+      "lib": [
+         "es2017",
+         "dom"
+      ]
+   },
+   "include": [
+      "./src/js/post.ts",
+      "./src/js/responsive.ts"
+   ],
+   "exclude": [
+      "./src/types/",
+      "node_modules"
+   ]
 }

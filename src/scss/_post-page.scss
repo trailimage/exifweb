@@ -1,24 +1,24 @@
 @import 'elements';
 @import 'settings';
 
-@mobileButtonSize: 30px;
-@mobileButtonMargin: 5px;
-@mobileButtonColor: #fff;
-@mobileButtonBack: #000;
-@mobileButtonAlpha: 0.3;
+$mobileButtonSize: 30px;
+$mobileButtonMargin: 5px;
+$mobileButtonColor: #fff;
+$mobileButtonBack: #000;
+$mobileButtonAlpha: 0.3;
 
 header.page {
    #top-bar {
       .subtitle {
-         color: @lightTrimColor;
+         color: $lightTrimColor;
          display: flex;
-         font-family: @sanSerifFont;
+         font-family: $sanSerifFont;
          font-size: 22px;
-         margin: -4px 0 0 @borderRadius;
+         margin: -4px 0 0 $borderRadius;
 
          .parts {
             display: block;
-            color: @trimColor;
+            color: $trimColor;
             padding-right: 6px;
          }
       }
@@ -26,15 +26,15 @@ header.page {
          position: absolute;
          bottom: 0;
          font-size: 15px;
-         right: @borderRadius;
-         font-family: @sanSerifFont;
-         color: @lightColor;
+         right: $borderRadius;
+         font-family: $sanSerifFont;
+         color: $lightColor;
       }
 
-      @media @mobile {
+      @media $mobile {
          // place date above title, matching cagegory page count text
          #post-date {
-            left: @borderRadius;
+            left: $borderRadius;
             top: 30px;
             margin-left: 2px;
          }
@@ -44,11 +44,11 @@ header.page {
 
 .synopsis.content {
    // post description
-   border-radius: @borderRadius;
-   background-color: @lightTrimColor;
+   border-radius: $borderRadius;
+   background-color: $lightTrimColor;
    font-weight: normal;
    line-height: 1.2em;
-   font-family: @serifFont;
+   font-family: $serifFont;
    font-size: 18px;
    text-align: center;
    text-rendering: optimizeLegibility;
@@ -58,28 +58,28 @@ header.page {
       padding: 1.6em 2em;
    }
 
-   @media @mobile {
+   @media $mobile {
       border-radius: 0;
    }
 }
 
 .post.content {
-   border-radius: @borderRadius;
+   border-radius: $borderRadius;
 
-   @media @mobile {
+   @media $mobile {
       border-radius: 0;
    }
 
    div.map {
       position: relative;
       background-color: rgb(210, 216, 172);
-      border-top: 1px solid @trimColor;
+      border-top: 1px solid $trimColor;
       text-align: center;
       width: 100%;
       padding: 0;
       margin: 0;
 
-      @media @tablet {
+      @media $tablet {
          img {
             width: 100%;
             height: auto;
@@ -87,7 +87,7 @@ header.page {
          margin-bottom: 15px;
       }
 
-      @media @phone {
+      @media $phone {
          display: none;
       }
    }
@@ -97,7 +97,7 @@ header.page {
 
 #nav-top,
 #nav-bottom {
-   @media @mobile {
+   @media $mobile {
       div.next,
       div.previous {
          font-size: 14px;
@@ -120,12 +120,12 @@ header.page {
 
 div.next,
 div.previous {
-   width: (@imageWidth - @contentWidth) / 2;
+   width: ($imageWidth - $contentWidth) / 2;
    // this moves the navigation links up so they appear just above their div
    // so they don't overlap image shown immediately below
    margin-top: -4.5em;
    position: absolute;
-   font-family: @sanSerifFont;
+   font-family: $sanSerifFont;
    font-size: 16px;
    z-index: 250;
 
@@ -147,14 +147,14 @@ div.previous {
       color: #ddd;
       text-decoration: none;
 
-      @media @desktop {
+      @media $desktop {
          &:hover {
-            color: desaturate(lighten(@hoverColor, 30%), 20%);
+            color: desaturate(lighten($hoverColor, 30%), 20%);
          }
       }
    }
 
-   @media @mobile {
+   @media $mobile {
       width: auto;
       font-size: 20px;
       h4 .material-icons {
@@ -163,9 +163,9 @@ div.previous {
 
       a {
          line-height: 1.2em;
-         color: @mobileLinkColor;
+         color: $mobileLinkColor;
          &:active {
-            color: @mobileActiveColor;
+            color: $mobileActiveColor;
          }
       }
    }
@@ -173,8 +173,8 @@ div.previous {
 
 div.next {
    left: 50%;
-   margin-left: (@contentWidth / 2) + 15;
-   @media @mobile {
+   margin-left: ($contentWidth / 2) + 15;
+   @media $mobile {
       right: 10px;
       margin: 0;
       text-align: right;
@@ -183,9 +183,9 @@ div.next {
 
 div.previous {
    right: 50%;
-   margin-right: (@contentWidth / 2) + 15;
+   margin-right: ($contentWidth / 2) + 15;
    text-align: right;
-   @media @mobile {
+   @media $mobile {
       left: 10px;
       margin: 0;
       text-align: left;
@@ -198,7 +198,7 @@ div.previous {
       margin-top: 0.5em;
    }
 
-   @media @mobile {
+   @media $mobile {
       width: 100%;
       margin: 0 0 20px;
    }
@@ -231,10 +231,10 @@ div.previous {
 nav.tag-wrapper {
    display: flex;
    border: none;
-   background-color: @trimColor;
-   font-family: @sanSerifFont;
-   border-top-left-radius: @borderRadius;
-   border-top-right-radius: @borderRadius;
+   background-color: $trimColor;
+   font-family: $sanSerifFont;
+   border-top-left-radius: $borderRadius;
+   border-top-right-radius: $borderRadius;
 
    ul.tags {
       width: 100%;
@@ -252,7 +252,7 @@ nav.tag-wrapper {
          text-rendering: optimizeLegibility;
 
          span {
-            color: @lightTrimColor;
+            color: $lightTrimColor;
             padding-right: 2px;
          }
 
@@ -267,7 +267,7 @@ nav.tag-wrapper {
       }
    }
 
-   @media @mobile {
+   @media $mobile {
       border-radius: 0;
       margin: 18px 0 20px 0;
       // hide category tags shown above post but retain those shown below
@@ -290,11 +290,11 @@ nav.tag-wrapper {
    nav.tag-wrapper {
       border-top-left-radius: 0;
       border-top-right-radius: 0;
-      border-bottom-left-radius: @borderRadius;
-      border-bottom-right-radius: @borderRadius;
+      border-bottom-left-radius: $borderRadius;
+      border-bottom-right-radius: $borderRadius;
       margin-bottom: 20px;
 
-      @media @mobile {
+      @media $mobile {
          border-radius: 0;
          // those above post were hidden so re-display these
          display: block;
@@ -314,15 +314,15 @@ div.gas {
 div.video {
    margin: 0 auto -4px;
 
-   @maxWidth: 1032px;
-   @minWidth: 650px;
-   @ratio: @minWidth / @maxWidth;
-   @tooWide: (@maxWidth - @minWidth) / 2;
+   $maxWidth: 1032px;
+   $minWidth: 650px;
+   $ratio: $minWidth / $maxWidth;
+   $tooWide: ($maxWidth - $minWidth) / 2;
 
-   @media @mobile {
-      margin: -100px -@tooWide -70px -@tooWide;
+   @media $mobile {
+      margin: -100px -$tooWide -70px -$tooWide;
       padding: 0;
-      transform: scale(unit(@ratio), unit(@ratio));
+      transform: scale(unit($ratio), unit($ratio));
    }
 
    iframe {
@@ -349,10 +349,10 @@ figure {
       cursor: -webkit-zoom-in;
       cursor: -moz-zoom-in;
       z-index: 20;
-      .drop-shadow(0, 0, 10px, 0.4);
+      @include drop-shadow(0, 0, 10px, 0.4);
    }
 
-   @media @mobile {
+   @media $mobile {
       width: 100%;
       margin: 0 auto 20px;
       padding: 0;
@@ -367,7 +367,7 @@ figure {
          border: none;
          padding: 0;
          cursor: default;
-         .box-shadow(none);
+         @include box-shadow(none);
       }
    }
 
@@ -379,7 +379,7 @@ figure {
       background-color: #000;
       margin-right: 4px;
       padding: 5px 5px 5px 30px;
-      .opacity(0.6);
+      @include opacity(0.6);
       display: none;
       text-align: left;
       font-size: 15px;
@@ -387,7 +387,7 @@ figure {
       h4 {
          display: none;
          position: absolute;
-         font-family: @sanSerifFont;
+         font-family: $sanSerifFont;
          font-weight: normal;
          font-size: 10px;
          line-height: 10px;
@@ -406,7 +406,7 @@ figure {
 
       a {
          color: #fff;
-         font-family: @sanSerifFont;
+         font-family: $sanSerifFont;
          line-height: 22px;
          padding: 7px;
          text-decoration: none;
@@ -423,7 +423,7 @@ figure {
    div.mobile-button,
    div.mobile-info {
       position: absolute;
-      font-family: @sanSerifFont;
+      font-family: $sanSerifFont;
       .material-icons {
          position: absolute;
       }
@@ -469,7 +469,7 @@ figure {
       font-size: 17px;
       font-weight: normal;
       text-align: center;
-      .opacity(0.6);
+      @include opacity(0.6);
 
       p,
       .material-icons {
@@ -485,7 +485,7 @@ figure {
       .material-icons {
          top: 6px;
          left: 10px;
-         color: @trimColor;
+         color: $trimColor;
          font-size: 21px;
          font-weight: normal;
 
@@ -501,15 +501,15 @@ figure {
       background-color: #fff;
       color: #000;
       padding: 0 26px 3px 5px;
-      font-family: @sanSerifFont;
+      font-family: $sanSerifFont;
       font-size: 20px;
       line-height: 17px;
       text-decoration: none;
       letter-spacing: -1px;
       position: absolute;
-      border: 1px solid @boldColor;
-      .rounded(5px);
-      .opacity(0.2);
+      border: 1px solid $boldColor;
+      @include rounded(5px);
+      @include opacity(0.2);
       right: 11px;
       bottom: 12px;
       z-index: 30;
@@ -522,23 +522,23 @@ figure {
          color: rgba(0, 0, 0, 0.4);
       }
 
-      @media @mobile {
+      @media $mobile {
          display: none;
       }
    }
 
-   @media @desktop {
+   @media $desktop {
       &:hover,
       &:active {
          a.map {
-            .opacity(0.7);
+            @include opacity(0.7);
             .material-icons {
                color: rgba(255, 0, 0, 0.5);
             }
 
             &:hover,
             &:active {
-               .opacity(1);
+               @include opacity(1);
                .material-icons {
                   color: rgba(255, 0, 0, 1);
                }
@@ -554,7 +554,7 @@ figure {
    a.source-link {
       display: none;
       text-align: left;
-      font-family: @sanSerifFont;
+      font-family: $sanSerifFont;
       font-size: 12px;
       letter-spacing: 0.5px;
       color: #555;
@@ -562,14 +562,14 @@ figure {
       position: absolute;
       bottom: -10px;
       right: -18px;
-      .rotation(90deg);
+      @include rotation(90deg);
       transform-origin: 100% 0;
 
       &:hover {
          color: #ff0;
       }
 
-      @media @desktop {
+      @media $desktop {
          display: block;
       }
    }
@@ -577,7 +577,7 @@ figure {
    figcaption {
       // image title
       position: relative;
-      font-family: @sanSerifFont;
+      font-family: $sanSerifFont;
       font-size: 18px;
       font-weight: bold;
       z-index: 55;
@@ -589,12 +589,12 @@ figure {
          margin-top: -10px;
          background-color: #fff;
          white-space: nowrap;
-         border: 1px solid @boldColor;
+         border: 1px solid $boldColor;
          padding: 0 10px 1px;
-         color: @boldColor;
+         color: $boldColor;
       }
 
-      @media @mobile {
+      @media $mobile {
          font-size: 16px;
          font-weight: normal;
          margin-top: 2px;
@@ -608,7 +608,7 @@ figure {
          }
       }
 
-      @media @tablet {
+      @media $tablet {
          font-size: 20px;
          margin-top: 4px;
       }
@@ -625,15 +625,15 @@ div.caption {
    margin-top: 0;
    line-height: 1.3em;
    padding: 4px 0 0;
-   font-size: @fontSize;
+   font-size: $fontSize;
    min-height: 1.5em;
    position: relative;
 
    sup {
-      color: @footnoteColor;
+      color: $footnoteColor;
       vertical-align: top;
       line-height: 1em;
-      font-family: @sanSerifFont;
+      font-family: $sanSerifFont;
       font-size: 18px;
       cursor: help;
    }
@@ -644,11 +644,11 @@ div.caption {
    }
 
    blockquote {
-      //font-size: @fontSize - 1;
+      //font-size: $fontSize - 1;
       background-image: url(/img/left-quote.png);
       background-repeat: no-repeat;
       background-position: left top;
-      font-family: @serifFont;
+      font-family: $serifFont;
       margin: 1em 1em 0.5em;
 
       p {
@@ -662,7 +662,7 @@ div.caption {
       &.poem {
          background-image: url(/img/quote-ornament.png);
          background-position: left bottom;
-         font-family: @serifFont;
+         font-family: $serifFont;
          text-align: left;
          margin-top: 1.5em;
 
@@ -696,7 +696,7 @@ div.caption {
 
    > p {
       text-indent: 2em;
-      font-family: @serifFont;
+      font-family: $serifFont;
       margin: 0;
       padding: 0 2.5em 0.5em;
 
@@ -747,9 +747,9 @@ div.caption {
             position: absolute;
             top: 40px;
             right: 100px;
-            color: @trimColor;
+            color: $trimColor;
             font-size: 75px;
-            .opacity(0.1);
+            @include opacity(0.1);
          }
       }
    }
@@ -757,14 +757,14 @@ div.caption {
    ol.footnotes {
       list-style-type: decimal;
       position: relative;
-      border-top: 1px solid @trimColor;
-      background-color: darken(@lightColor, 5%);
+      border-top: 1px solid $trimColor;
+      background-color: darken($lightColor, 5%);
       padding: 10px 20px 10px 40px;
-      font-family: @sanSerifFont;
+      font-family: $sanSerifFont;
       font-size: 13px;
       margin-top: 20px;
       cursor: help;
-      color: @footnoteColor;
+      color: $footnoteColor;
 
       li {
          line-height: 1em;
@@ -775,7 +775,7 @@ div.caption {
             color: #444;
          }
          a:hover {
-            color: @hoverColor;
+            color: $hoverColor;
          }
 
          // from asterisk in photo title to credit creator
@@ -786,7 +786,7 @@ div.caption {
 
             .material-icons {
                font-size: 14px;
-               color: @footnoteColor;
+               color: $footnoteColor;
                margin: 0;
                padding-right: 7px;
                vertical-align: text-top;
@@ -796,11 +796,11 @@ div.caption {
    }
 
    // mobile caption
-   @media @mobile {
+   @media $mobile {
       padding: 0 0 15px;
-      font-size: @fontSize + 2;
+      font-size: $fontSize + 2;
       line-height: 1.3em;
-      color: @mobileTextColor;
+      color: $mobileTextColor;
 
       p {
          padding: 0 0.7em 0.3em;
@@ -818,29 +818,29 @@ div.caption {
          text-align: left;
          p {
             font-size: 17px;
-            color: @mobileTextColor;
+            color: $mobileTextColor;
             line-height: 1.2em;
             padding: 0 3em 0.5em;
          }
       }
 
       sup {
-         color: @mobileFootnoteColor;
+         color: $mobileFootnoteColor;
       }
 
       ol.footnotes {
-         @indent: 30px;
+         $indent: 30px;
          border: none;
          background-color: #333;
-         margin: 6px 0 @indent;
-         padding: 6px 5px 0 @indent;
-         color: @mobileFootnoteColor;
+         margin: 6px 0 $indent;
+         padding: 6px 5px 0 $indent;
+         color: $mobileFootnoteColor;
 
          li {
             padding-bottom: 8px;
             line-height: 1.5em;
             span {
-               color: darken(@mobileTextColor, 30%);
+               color: darken($mobileTextColor, 30%);
             }
             &.credit {
                text-indent: -8px;
@@ -851,16 +851,16 @@ div.caption {
             }
          }
 
-         .opacity(1);
+         @include opacity(1);
 
          a {
-            color: @mobileLinkColor;
+            color: $mobileLinkColor;
          }
       }
    }
 
-   @media @tablet {
-      font-size: @fontSize + 3;
+   @media $tablet {
+      font-size: $fontSize + 3;
       p {
          padding: 0 1.5em 0.3em 2em;
       }
@@ -870,11 +870,11 @@ div.caption {
 div.by-line {
    position: relative;
    text-align: right;
-   font-family: @serifFont;
+   font-family: $serifFont;
    font-size: 25px;
    font-style: italic;
    font-weight: normal;
-   color: @boldColor;
+   color: $boldColor;
    padding-top: 0.75em;
 
    p {
@@ -882,16 +882,16 @@ div.by-line {
    }
 
    &.feature {
-      border-bottom-left-radius: @borderRadius;
-      border-bottom-right-radius: @borderRadius;
+      border-bottom-left-radius: $borderRadius;
+      border-bottom-right-radius: $borderRadius;
       margin-bottom: 20px;
    }
 
-   @media @mobile {
+   @media $mobile {
       p {
          margin-top: 40px;
       }
       text-align: center;
-      color: @mobileTextColor;
+      color: $mobileTextColor;
    }
 }

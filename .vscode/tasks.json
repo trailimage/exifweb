@@ -5,7 +5,9 @@
          "label": "Build",
          "type": "shell",
          "command": "cargo",
-         "args": ["build"],
+         "args": [
+            "build"
+         ],
          "presentation": {
             "echo": false,
             "clear": true
@@ -13,25 +15,34 @@
          "problemMatcher": []
       },
       {
-         "label": "Build Client JavaScript",
-         "command": "node_modules/.bin/gulp",
-         "args": ["js"],
+         "label": "Build JavaScript",
+         "command": "tsc",
+         "args": [
+            "-w"
+         ],
          "group": "build",
          "type": "shell",
-         "problemMatcher": ["$gulp-tsc"]
+         "problemMatcher": [
+            "$tsc"
+         ]
       },
       {
          "label": "Test",
          "type": "shell",
          "command": "cargo",
-         "args": ["test"],
+         "args": [
+            "test"
+         ],
          "problemMatcher": []
       },
       {
          "label": "Run",
          "type": "shell",
          "command": "cargo",
-         "args": ["run", "noforce"],
+         "args": [
+            "run",
+            "noforce"
+         ],
          "presentation": {
             "echo": false,
             "clear": true
@@ -42,43 +53,62 @@
          "label": "Run (re-render all post and root pages)",
          "type": "shell",
          "command": "cargo",
-         "args": ["run", "force_html"],
+         "args": [
+            "run",
+            "force_html"
+         ],
          "presentation": {
             "echo": false,
             "clear": true
          },
-         "dependsOn": ["Clean"],
+         "dependsOn": [
+            "Clean"
+         ],
          "problemMatcher": []
       },
       {
          "label": "Run (re-download all maps)",
          "type": "shell",
          "command": "cargo",
-         "args": ["run", "force_maps"],
+         "args": [
+            "run",
+            "force_maps"
+         ],
          "presentation": {
             "echo": false,
             "clear": true
          },
-         "dependsOn": ["Clean"],
+         "dependsOn": [
+            "Clean"
+         ],
          "problemMatcher": []
       },
       {
          "label": "Run (re-render all tag pages)",
          "type": "shell",
          "command": "cargo",
-         "args": ["run", "force_tags"],
+         "args": [
+            "run",
+            "force_tags"
+         ],
          "presentation": {
             "echo": false,
             "clear": true
          },
-         "dependsOn": ["Clean"],
+         "dependsOn": [
+            "Clean"
+         ],
          "problemMatcher": []
       },
       {
          "label": "Clean",
          "type": "shell",
          "command": "cargo",
-         "args": ["clean", "--package", "static-from-exif"],
+         "args": [
+            "clean",
+            "--package",
+            "static-from-exif"
+         ],
          "presentation": {
             "echo": false,
             "clear": true
@@ -88,13 +118,19 @@
       {
          "label": "Clean Run",
          "problemMatcher": [],
-         "dependsOn": ["Clean", "Run"],
+         "dependsOn": [
+            "Clean",
+            "Run"
+         ],
          "dependsOrder": "sequence"
       },
       {
          "label": "Clean Build",
          "problemMatcher": [],
-         "dependsOn": ["Clean", "Build"],
+         "dependsOn": [
+            "Clean",
+            "Build"
+         ],
          "dependsOrder": "sequence"
       }
    ]

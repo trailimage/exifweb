@@ -1,5 +1,8 @@
 {
-  "editor.tabSize": 4,
+  "editor.tabSize": 3,
+  "[rust]": {
+    "editor.tabSize": 4
+  },
   "editor.detectIndentation": false,
   "rust-analyzer.featureFlags": {
     // Show diagnostics produced by rust-analyzer itself.
@@ -27,5 +30,10 @@
   "html.format.enable": false,
   "liveServer.settings.donotShowInfoMsg": true,
   "liveServer.settings.donotVerifyTags": true,
-  "liveServer.settings.root": "/docs"
+  "liveServer.settings.root": "/public",
+  "typescript.format.semicolons": "remove",
+  "typescript.format.enable": true,
+  "javascript.format.semicolons": "remove",
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.preferences.quoteStyle": "single"
 }

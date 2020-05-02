@@ -1,30 +1,30 @@
 @import 'elements';
 @import 'settings';
 
-@padding: 20px;
-@centerOffset: (@contentWidth / 2) + @padding;
+$padding: 20px;
+$centerOffset: ($contentWidth / 2) + $padding;
 
 #links,
 #category-menu {
    position: absolute;
-   font-family: @sanSerifFont;
-   top: @padding;
-   color: @trimColor;
+   font-family: $sanSerifFont;
+   top: $padding;
+   color: $trimColor;
    padding: 0;
 
-   @media @mobile {
+   @media $mobile {
       display: none;
    }
 }
 
 #links {
    right: 50%;
-   margin-right: @centerOffset;
+   margin-right: $centerOffset;
    text-align: right;
 
    a {
       display: block;
-      color: @trimColor;
+      color: $trimColor;
       text-decoration: none;
       font-size: 17px;
       padding-bottom: 8px;
@@ -33,19 +33,19 @@
       &:hover,
       &:active {
          text-decoration: underline;
-         color: desaturate(lighten(@hoverColor, 40%), 20%);
+         color: desaturate(lighten($hoverColor, 40%), 20%);
       }
    }
 }
 
 #category-menu {
-   color: @lightColor;
+   color: $lightColor;
    left: 50%;
-   margin-left: @centerOffset;
+   margin-left: $centerOffset;
    font-size: 17px;
 
    p {
-      color: @trimColor;
+      color: $trimColor;
       padding-bottom: 10px;
       font-weight: 600;
    }
@@ -56,7 +56,7 @@
       margin: 4px 0 10px;
       border: none;
       background-color: #555;
-      color: @lightColor;
+      color: $lightColor;
       appearance: none;
       padding: 3px;
       cursor: pointer;

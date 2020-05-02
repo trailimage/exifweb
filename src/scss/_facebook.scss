@@ -1,9 +1,13 @@
-@import "elements";
-@import "settings";
+@import 'elements';
+@import 'settings';
 
-#fb-root { position: absolute; }
+#fb-root {
+   position: absolute;
+}
 
-.fb-script { position: absolute; }
+.fb-script {
+   position: absolute;
+}
 
 .fb-like {
    position: relative;
@@ -12,7 +16,9 @@
    /* overflow: hidden; */
    z-index: 20;
 
-   @media @mobile { display: none; }
+   @media $mobile {
+      display: none;
+   }
 }
 
 div.fb-comments {
@@ -25,17 +31,17 @@ div.fb-comments {
          }
       }
       form.mainContentForm {
-         img.viewerProfilePic { }
-         label.fbCommentButton { }
+         img.viewerProfilePic {
+         }
+         label.fbCommentButton {
+         }
       }
 
-      div.fbFooterBorder
-      {
-
+      div.fbFooterBorder {
       }
    }
 
-   @media @mobile {
-      background-color: @mobileTextColor;
+   @media $mobile {
+      background-color: $mobileTextColor;
    }
 }

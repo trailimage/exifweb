@@ -25,11 +25,9 @@ use std::{
 use tools::folder_name;
 
 // TODO: read and process GPX files
-// GOAL: compile JS and LESS with Rust instead of Gulp
 
 fn main() {
-    // GitHub pages feature requires root at / or /docs
-    let root = Path::new("./docs/");
+    let root = Path::new("./public/");
     let entries = load_root_directory(&root);
     let mut config = load_config(&root);
     let mut blog = Blog::default();

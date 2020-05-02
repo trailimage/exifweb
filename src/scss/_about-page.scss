@@ -4,7 +4,7 @@
 .about {
    padding: 0;
    position: relative;
-   border-radius: @borderRadius;
+   border-radius: $borderRadius;
    overflow: hidden;
 
    .main-image {
@@ -13,22 +13,22 @@
       padding: 0 0 10px 1em;
 
       img {
-         border: 1px solid @trimColor;
+         border: 1px solid $trimColor;
          border-top: none;
          border-right: none;
-         border-bottom-left-radius: @borderRadius;
+         border-bottom-left-radius: $borderRadius;
       }
 
       &:hover {
          img {
-            border-color: @hoverColor;
+            border-color: $hoverColor;
          }
       }
    }
 
    p {
       padding: 0 2em;
-      font-family: @serifFont;
+      font-family: $serifFont;
       font-size: 18px;
       line-height: 1.2em;
       margin: 0 0 1em;
@@ -41,26 +41,26 @@
       text-align: right;
       font-size: 25px;
       padding: 1em 2em 1.5em 0;
-      font-family: @serifFont;
+      font-family: $serifFont;
       font-style: italic;
    }
 
-   @media @mobile {
+   @media $mobile {
       .main-image img {
          border: none;
       }
       p {
-         color: @lightColor;
+         color: $lightColor;
          font-size: 20px;
 
          a {
-            color: @mobileLinkColor;
+            color: $mobileLinkColor;
          }
       }
    }
-   @media @tablet {
+   @media $tablet {
       p {
-         padding: 0 @borderRadius;
+         padding: 0 $borderRadius;
 
          &.first {
             padding-top: 0;
@@ -68,7 +68,7 @@
       }
    }
 
-   @media @phone {
+   @media $phone {
       .main-image {
          float: none;
          padding: 0;

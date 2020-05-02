@@ -30,15 +30,15 @@ body {
 }
 
 .content {
-   font-family: @sanSerifFont;
+   font-family: $sanSerifFont;
    font-weight: normal;
    text-align: left;
    margin: 0 auto;
    padding: 0;
-   background-color: @backgroundColor;
-   width: @contentWidth;
+   background-color: $backgroundColor;
+   width: $contentWidth;
 
-   @media @mobile {
+   @media $mobile {
       background: none;
       width: 100%;
    }
@@ -58,9 +58,9 @@ header.page {
       background: none;
 
       h1 {
-         font-family: @headerFont;
-         color: @lightColor;
-         margin: 0 0 0 @borderRadius;
+         font-family: $headerFont;
+         color: $lightColor;
+         margin: 0 0 0 $borderRadius;
          padding: 12px 0;
          font-size: 45px;
          line-height: 1em;
@@ -68,17 +68,17 @@ header.page {
       }
       // subtitle
       h4 {
-         margin: -6px 0 0 @borderRadius;
-         color: @lightTrimColor;
+         margin: -6px 0 0 $borderRadius;
+         color: $lightTrimColor;
          font-size: 14px;
-         font-family: @sanSerifFont;
+         font-family: $sanSerifFont;
          font-weight: 400;
          letter-spacing: 8px;
          text-transform: uppercase;
       }
    }
 
-   @media @mobile {
+   @media $mobile {
       z-index: 500;
 
       #top-bar {
@@ -105,16 +105,16 @@ div.authorize {
    margin-top: 20px;
 
    h4 {
-      font-family: @sanSerifFont;
+      font-family: $sanSerifFont;
       font-size: 36pt;
       margin: 0 0 0 20px;
       line-height: 1em;
       padding: 0;
-      color: @trimColor;
+      color: $trimColor;
    }
 
    div {
-      font-family: @sanSerifFont;
+      font-family: $sanSerifFont;
       font-size: 22pt;
       margin-left: 30px;
    }
@@ -131,7 +131,7 @@ div.authorize {
 }
 
 .not-found {
-   height: @contentWidth;
+   height: $contentWidth;
    background-image: url('https://farm3.staticflickr.com/2911/14343924188_3eb2a469f0_b.jpg');
 
    p {
@@ -145,7 +145,7 @@ div.authorize {
 }
 
 .internal-error {
-   height: @contentWidth;
+   height: $contentWidth;
    background-image: url('https://farm4.staticflickr.com/3797/10001205193_e5cd88c09d_b.jpg');
    background-position: -270px 0;
 
@@ -163,11 +163,11 @@ footer.page {
    position: relative;
    padding: 0;
    margin: 2em auto 1em;
-   width: @contentWidth;
+   width: $contentWidth;
    text-align: center;
    background: none;
 
-   @media @mobile {
+   @media $mobile {
       width: 100%;
    }
 
@@ -179,7 +179,7 @@ footer.page {
       margin-bottom: 10px;
       text-decoration: none;
 
-      @media @phone {
+      @media $phone {
          display: none;
       }
 
@@ -195,19 +195,19 @@ footer.page {
       // footer block
       background-color: rgba(255, 255, 255, 0.1);
       padding: 1em;
-      border-radius: @borderRadius;
+      border-radius: $borderRadius;
 
       p {
          text-align: center;
-         color: @lightTrimColor;
-         font-family: @sanSerifFont;
+         color: $lightTrimColor;
+         font-family: $sanSerifFont;
          font-size: 14px;
          text-indent: 0;
          padding: 0;
          margin: 2px;
 
          a {
-            color: @lightColor;
+            color: $lightColor;
          }
 
          &.rights {
@@ -215,10 +215,10 @@ footer.page {
          }
       }
 
-      @media @mobile {
+      @media $mobile {
          border-radius: 0;
-         padding: 1em @borderRadius;
-         background-color: @mobileBackgroundColor;
+         padding: 1em $borderRadius;
+         background-color: $mobileBackgroundColor;
 
          p {
             font-size: 10px;
