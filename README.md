@@ -68,3 +68,9 @@ git reflog expire --expire=now --all && git gc --prune=now --aggressive
 git push
 
 ```
+
+## Submodule
+
+```
+git submodule add https://github.com/trailimage/website.git public
+```

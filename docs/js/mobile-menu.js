@@ -1,2 +1,0 @@
-"use strict";$(function(){function i(){o.hide(0,function(){e=!1,c.css({position:"static"})})}var n=$("#mobile-menu-button"),o=$("#mobile-menu"),c=$("body"),t=!1,e=!1;function s(){e=!0,t||(o.find(".close").click(i),o.find(".menu-categories").on("change","select",function(n){i(),window.location.assign($(n.target).val())}),t=!0)}n.click(function(){e?i():(c.css({position:"fixed"}),o.show(0,s))})});
-//# sourceMappingURL=/js/maps/mobile-menu.js.map

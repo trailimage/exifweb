@@ -1,7 +1,6 @@
 /// <reference types="jquery" />
 /// <reference path="../types/jquery/index.d.ts"/>
 /// <reference path="./browser.d.ts"/>
-/// <reference path="./util.ts"/>
 
 /**
  * Defined in /views/photo-tag.hbs
