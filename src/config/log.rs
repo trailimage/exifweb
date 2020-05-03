@@ -53,7 +53,8 @@ pub struct PostLog {
     pub cover_photo: Option<Photo>,
 
     /// Photo tags keyed by their slug to the photos they were assigned to.
-    /// These are logged so that photo tag pages can be regenerated.
+    /// These are logged so that photo tag pages can be regenerated without
+    /// re-parsing every post photo.
     pub tags: HashMap<String, TagPhotos<u8>>,
 
     /// Whether post source files have changed since they were last read

@@ -6,6 +6,7 @@ use std::{
     hash::{Hash, Hasher},
 };
 
+/// The kind of category. Each category belongs to a kind.
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum CategoryKind {
     Who,

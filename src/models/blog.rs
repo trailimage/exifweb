@@ -14,8 +14,9 @@ struct KeyTime {
 pub struct Blog {
     /// Posts keyed to their path
     pub posts: HashMap<String, Post>,
+    /// Match list of post paths to a list of categories keyed to their kind
     pub categories: HashMap<CategoryKind, Vec<Category>>,
-    /// Tag slugs mapped to the original tag names and photos with the tag
+    /// Tag slugs matched to the original tag names and photos with the tag
     pub tags: HashMap<String, TagPhotos<PhotoPath>>,
     /// Record of previously loaded photo tags
     pub history: BlogLog,
@@ -37,27 +38,37 @@ impl Blog {
         }
     }
 
+    /// Add post categories to the global category list
     fn add_post_categories(&mut self, p: &Post) {
-        for c in &p.categories {
-            match self.categories.get_mut(&c.kind) {
-                Some(category_list) => {
-                    match category_list
-                        .iter_mut()
-                        .find(|cat: &'_ &mut Category| cat.name == c.name)
-                    {
-                        Some(cat) => cat.post_paths.push(p.path.clone()),
+        for post_category in &p.categories {
+            let post_path = p.path.clone();
+
+            match self.categories.get_mut(&post_category.kind) {
+                Some(existing_kind) => {
+                    // post category kind already exists
+                    match existing_kind.iter_mut().find(
+                        |c: &'_ &mut Category| c.name == post_category.name,
+                    ) {
+                        Some(existing) => {
+                            // post category already exists
+                            existing.post_paths.push(post_path);
+                            existing.post_paths.sort();
+                        }
                         None => {
-                            let mut copy = c.clone();
-                            copy.post_paths.push(p.path.clone());
-                            category_list.push(copy);
-                            category_list.sort();
+                            // category kind exists but not the category itself
+                            let mut copy = post_category.clone();
+                            copy.post_paths.push(post_path);
+                            existing_kind.push(copy);
+                            existing_kind.sort();
                         }
                     }
                 }
                 None => {
-                    let mut copy = c.clone();
-                    copy.post_paths.push(p.path.clone());
-                    self.categories.insert(c.kind, vec![copy]);
+                    // post contains a new category kind
+                    let mut copy = post_category.clone();
+                    // category in post had no post_paths since it was implicit
+                    copy.post_paths.push(post_path);
+                    self.categories.insert(post_category.kind, vec![copy]);
                 }
             };
         }

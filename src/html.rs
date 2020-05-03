@@ -88,12 +88,8 @@ pub fn say_number(n: usize) -> String {
     }
 }
 
-pub fn list_label<T>(word: &str, list: &Vec<T>) -> String {
+pub fn list_label(word: &str, list: impl ExactSizeIterator) -> String {
     format!("{} {}", say_number(list.len()), plural(word, list.len()))
-}
-
-pub fn hash_label<T, U>(word: &str, hash: &HashMap<T, U>) -> String {
-    format!("{} {}", say_number(hash.len()), plural(word, hash.len()))
 }
 
 /// Format English word to plural form if count != 1

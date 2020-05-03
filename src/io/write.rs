@@ -10,7 +10,7 @@ use crate::{
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 use regex::Regex;
-use std::{fs, path::Path};
+use std::{collections::BTreeMap, fmt::Display, fs, path::Path};
 use yarte::Template;
 
 // TODO: render map page
@@ -38,7 +38,7 @@ impl<'a> Writer<'a> {
             .display
             // iterate over category kinds in configured order
             .iter()
-            // get enum for name
+            // get enum for sorted name
             .filter_map(|name| CategoryKind::from_str(name))
             // get list of categories for kind
             .map(|kind| (kind, blog.categories.get(&kind)))
@@ -116,7 +116,6 @@ impl<'a> Writer<'a> {
         }
     }
 
-    // TODO: format photo anchor tag to match links
     fn post(&self, post: &Post) {
         let mut title = post.title.clone();
         let mut sub_title = String::new();
@@ -171,7 +170,7 @@ impl<'a> Writer<'a> {
                 enable: Enable::none(),
                 sub_title: html::list_label(
                     self.context.post_alias,
-                    &category.post_paths,
+                    category.post_paths.iter(),
                 ),
                 json_ld: Some(
                     category.json_ld(&self.config, home_page).to_string(),
@@ -192,7 +191,7 @@ impl<'a> Writer<'a> {
                 kind: category_kind,
                 categories,
                 enable: Enable::none(),
-                sub_title: html::list_label("Category", &categories),
+                sub_title: html::list_label("Category", categories.iter()),
                 json_ld: Some(category_kind.json_ld(self.config).to_string()),
             },
         );
@@ -238,12 +237,11 @@ impl<'a> Writer<'a> {
         );
     }
 
-    // TODO: alphabetize tags
     pub fn photo_tags(&self) {
         let local_path = "photo-tag";
-        // Map letters to every tag starting with that letter
-        let mut letter_map: HashMap<char, HashMap<String, String>> =
-            HashMap::new();
+        // Match letters to every tag (slug and label) starting with that letter
+        let mut letter_map: BTreeMap<char, BTreeMap<String, (String, usize)>> =
+            BTreeMap::new();
 
         for (slug, tag_photos) in self.context.blog.tags.iter() {
             let letter = tag_photos.name.chars().next().unwrap();
@@ -254,17 +252,14 @@ impl<'a> Writer<'a> {
             }
 
             if !letter_map.contains_key(&letter) {
-                letter_map.insert(letter, HashMap::new());
+                letter_map.insert(letter, BTreeMap::new());
             }
 
             if let Some(tag) = letter_map.get_mut(&letter) {
+                let photos = &tag_photos.photos;
                 tag.insert(
                     slug.clone(),
-                    format!(
-                        "{} <span>({})</span>",
-                        tag_photos.name,
-                        tag_photos.photos.len()
-                    ),
+                    (tag_photos.name.clone(), photos.len()),
                 );
             }
 
@@ -280,7 +275,7 @@ impl<'a> Writer<'a> {
                         photos: &tag_photos.photos,
                         sub_title: html::list_label(
                             "Photo",
-                            &tag_photos.photos,
+                            tag_photos.photos.iter(),
                         ),
                         image_ext: &self.config.photo.output_ext,
                         json_ld: None,
@@ -296,7 +291,7 @@ impl<'a> Writer<'a> {
                     ctx: &self.context,
                     enable: Enable::none(),
                     title: &format!("“{}” Tags", letter),
-                    sub_title: html::hash_label("Tag", &tags),
+                    sub_title: html::list_label("Tag", tags.iter()),
                     tags,
                     json_ld: None,
                 },
@@ -308,7 +303,6 @@ impl<'a> Writer<'a> {
             PhotoTagIndexContext {
                 ctx: &self.context,
                 enable: Enable::none(),
-                sub_title: html::hash_label("Letter", &letter_map),
                 letters: &letter_map,
                 json_ld: None,
             },
@@ -386,7 +380,10 @@ impl<'a> CommonContext<'a> {
         html::say_number(number)
     }
     pub fn list_label<T>(&self, word: &str, list: &Vec<T>) -> String {
-        html::list_label(word, list)
+        html::list_label(word, list.iter())
+    }
+    pub fn photo_id(&self, index: impl Display) -> String {
+        format!("{:03}", index)
     }
 }
 
@@ -455,7 +452,8 @@ struct PhotoTagLetterContext<'c> {
     pub enable: Enable,
     pub title: &'c str,
     pub sub_title: String,
-    pub tags: &'c HashMap<String, String>,
+    // use B-Tree so slugs are sorted
+    pub tags: &'c BTreeMap<String, (String, usize)>,
     pub json_ld: Option<String>,
 }
 
@@ -464,8 +462,8 @@ struct PhotoTagLetterContext<'c> {
 struct PhotoTagIndexContext<'c> {
     pub ctx: &'c CommonContext<'c>,
     pub enable: Enable,
-    pub sub_title: String,
-    pub letters: &'c HashMap<char, HashMap<String, String>>,
+    // use B-Tree so letters and tags are sorted
+    pub letters: &'c BTreeMap<char, BTreeMap<String, (String, usize)>>,
     pub json_ld: Option<String>,
 }
 
