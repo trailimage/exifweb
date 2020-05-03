@@ -1,5 +1,5 @@
 [package]
-name = "static-from-exif"
+name = "exifweb"
 version = "0.1.0"
 authors = ["Jason Abbott <you@example.com>"]
 edition = "2018"

@@ -1,8 +1,8 @@
 {{~#each ctx.categories }}
 <select class="category-selector">
-    <option class="label">{{ this.0.to_string() }}</option>
-    {{~#each this.1 }}
-    <option value="/{{{ this.path }}}">{{ this.name }} ({{ this.post_paths.len() }})</option>
-    {{~/each}}
+   <option class="label">{{ this.0.to_string() }}</option>
+   {{~#each this.1 }}
+   <option value="/{{{ this.path }}}">{{ this.name }} ({{ this.post_paths.len() }})</option>
+   {{~/each}}
 </select>
 {{~/each }}

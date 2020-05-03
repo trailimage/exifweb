@@ -282,7 +282,7 @@ impl<'a> Writer<'a> {
                             "Photo",
                             &tag_photos.photos,
                         ),
-                        ext: &self.config.photo.output_ext,
+                        image_ext: &self.config.photo.output_ext,
                     },
                 );
             }
@@ -441,7 +441,8 @@ struct PhotoTagContext<'c> {
     pub photos: &'c Vec<PhotoPath>,
     pub title: &'c str,
     pub sub_title: String,
-    pub ext: &'c str,
+    pub image_ext: &'c str,
+    pub json_ld: Option<String>,
 }
 
 #[derive(Template)]
@@ -452,6 +453,7 @@ struct PhotoTagLetterContext<'c> {
     pub title: &'c str,
     pub sub_title: String,
     pub tags: &'c HashMap<String, String>,
+    pub json_ld: Option<String>,
 }
 
 #[derive(Template)]
@@ -461,6 +463,7 @@ struct PhotoTagIndexContext<'c> {
     pub enable: Enable,
     pub sub_title: String,
     pub letters: &'c HashMap<char, HashMap<String, String>>,
+    pub json_ld: Option<String>,
 }
 
 // TODO: re-use partials/category for post category list
