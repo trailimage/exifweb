@@ -1,13 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-    {{#> html_head title="Page Not Found", description=ctx.site_description }}
-    {{~> json_ld ~}}
-    {{/html_head }}
-<body>
-    {{#> header title="Page Not Found", sub_title="" }}{{/header }}
-    <div class="not-found content">
-        <p>The page you were after<br/>could not be found.<br/>But all is not lost!<br />You can probably find it<br />in the menu.<br/>Or try searching, above.</p>
-    </div>
-    {{> footer }}
-</body>
-</html>
+{{#> layout title="Page Not Found", sub_title="" }}
+   <div class="not-found content">
+      <p>The page you were after<br/>could not be found.<br/>But all is not lost!<br />You can probably find it<br />in the menu.<br/>Or try searching, above.</p>
+   </div>
+{{/layout }}

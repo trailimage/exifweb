@@ -1,21 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-    {{~#> html_head title=kind.to_string(), description=ctx.site_description }}
-        {{> json_ld }}
-    {{~/html_head ~}}
-<body>
-    {{#> header title=kind.to_string(), sub_title=sub_title }}
-        <aside class="site-description">{{ ctx.site_description }}</aside>
-    {{~/header }}
-
-    <div class="root-category content">
-        {{{ ctx.category_icon(kind) }}}
-        <ul>
-            {{~#each categories }}
-            <li><a href="/{{{ path }}}" rel="tag">{{ name }}</a>({{ super::ctx.say_number(post_paths.len()).to_lowercase() }} {{ super::ctx.plural("post", post_paths.len()) }})</li>
-            {{~/each~}}
-        </ul>
-    </div>
-   {{> footer }}
-</body>
-</html>
+{{#> layout title=kind.to_string(), sub_title=sub_title }}
+   <div class="root-category content">
+      {{{ ctx.category_icon(kind) }}}
+      <ul>
+         {{~#each categories }}
+         <li><a href="/{{{ path }}}" rel="tag">{{ name }}</a>({{ super::ctx.say_number(post_paths.len()).to_lowercase() }} {{ super::ctx.plural("post", post_paths.len()) }})</li>
+         {{~/each~}}
+      </ul>
+   </div>
+{{/layout }}

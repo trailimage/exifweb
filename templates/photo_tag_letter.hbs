@@ -1,18 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-   {{~#> html_head title=title, description=ctx.site_description }}
-   {{~/html_head ~}}
-<body>
-   {{#> header title=title, sub_title="" }}
-      <aside class="site-description">{{ ctx.site_description }}</aside>
-   {{~/header }}
-
+{{#> layout title=title, sub_title="" }}
    <ul id="letters" class="content">
    {{~#each tags }}
       <li><a href="../{{ this.0 }}/">{{{ this.1 }}}</a></li>
    {{~/each }}
    </ul>
-
-   {{> footer }}
-</body>
-</html>
+{{/layout }}

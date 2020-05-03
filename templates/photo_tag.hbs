@@ -1,18 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-    {{~#> html_head title=title, description=ctx.site_description }}
-    {{~/html_head ~}}
-<body>
-    {{#> header title=title, sub_title=sub_title }}
-        <aside class="site-description">{{ ctx.site_description }}</aside>
-    {{~/header }}
-
-    <div id="thumbs" class="content">
-    {{~#each photos }}
-        <a href="/{{{ this.post_url() }}}"><img width="{{ super::ctx.thumb_size / 2 }}" height="{{ super::ctx.thumb_size / 2 }}" src="/{{{ this.thumb_url(super::ext) }}}"/></a>
-    {{~/each }}
-    </div>
-
-    {{> footer }}
-</body>
-</html>
+{{#> layout title=title, sub_title=sub_title }}
+   <div id="thumbs" class="content">
+   {{~#each photos }}
+      <a href="/{{{ this.post_url() }}}"><img width="{{ super::ctx.thumb_size / 2 }}" height="{{ super::ctx.thumb_size / 2 }}" src="/{{{ this.thumb_url(super::image_ext) }}}"/></a>
+   {{~/each }}
+   </div>
+{{/layout }}
