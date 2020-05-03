@@ -92,6 +92,10 @@ pub fn list_label<T>(word: &str, list: &Vec<T>) -> String {
     format!("{} {}", say_number(list.len()), plural(word, list.len()))
 }
 
+pub fn hash_label<T, U>(word: &str, hash: &HashMap<T, U>) -> String {
+    format!("{} {}", say_number(hash.len()), plural(word, hash.len()))
+}
+
 /// Format English word to plural form if count != 1
 pub fn plural(word: &str, count: usize) -> String {
     if count == 1 {

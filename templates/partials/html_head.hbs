@@ -1,4 +1,3 @@
-{{! head content common to all pages !}}
 <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb#">
     <title>{{ title }}</title>
     {{! https://developer.chrome.com/multidevice/android/installtohomescreen !}}
@@ -12,18 +11,14 @@
     <link rel="apple-touch-icon" sizes="114x114" href="/img/launch-icon-114x114.png"/>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
     <link href="/css/ti.css" rel="stylesheet" type="text/css" />
-    {{! other scripts are loaded dynamically by responsive.js !}}
     <script src="/js/responsive.js" type="text/javascript" defer></script>
     {{~> @partial-block }}
-    {{#unless enable.scroll_nav }}
+    {{~#unless enable.scroll_nav }}
     <style type="text/css">
         #bug, #links, #category-menu { position: fixed; }
     </style>
-    {{/unless }}
-    {{! features determine which scripts to load !}}
+    {{~/unless }}
     <script type="text/javascript">
-        var pageFeatures = {
-            facebook: {{#if enable.facebook }}true{{else}}false{{/if }}
-        };
+        var pageFeatures = { facebook: {{#if enable.facebook }}true{{else}}false{{/if }} };
     </script>
 </head>

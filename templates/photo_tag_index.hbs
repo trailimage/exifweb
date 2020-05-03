@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+    {{~#> html_head title="Photo Tags", description=ctx.site_description }}
+    {{~/html_head ~}}
+<body>
+    {{#> header title="Photo Tags", sub_title=sub_title }}
+        <aside class="site-description">{{ ctx.site_description }}</aside>
+    {{~/header }}
+
+    <ul id="letters" class="content">
+      {{~#each letters }}<li><a title="View photo tags starting with “{{ this.0 }}”" href="./{{ this.0 }}/">{{ this.0 }}</a></li>{{~/each }}
+    </ul>
+
+    {{> footer }}
+</body>
+</html>

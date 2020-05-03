@@ -15,6 +15,8 @@ use yarte::Template;
 
 // TODO: render map page
 
+const ALPHABET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
 /// Render template and write content to `path` file
 fn write_page(path: &Path, template: impl Template) {
     write_result(path, || template.call());
@@ -62,6 +64,7 @@ impl<'a> Writer<'a> {
                 category_icons: &config.category.icon,
                 content_width: config.style.content_width,
                 map_image_height: config.style.inline_map_height,
+                thumb_size: config.photo.size.thumb,
                 contact_link: config
                     .owner
                     .email
@@ -235,28 +238,78 @@ impl<'a> Writer<'a> {
         );
     }
 
-    // TODO: update photo tag CSS
-    // TODO: create photo tag alphabet pages
+    // TODO: alphabetize tags
     pub fn photo_tags(&self) {
-        for (slug, tag_photos) in
-            self.context.blog.tags.iter().filter(|(_, tag_photos)| {
-                tag_photos.changed || self.config.force.tags
-            })
-        {
-            // only render tags that have changes
+        let local_path = "photo-tag";
+        // Map letters to every tag starting with that letter
+        let mut letter_map: HashMap<char, HashMap<String, String>> =
+            HashMap::new();
+
+        for (slug, tag_photos) in self.context.blog.tags.iter() {
+            let letter = tag_photos.name.chars().next().unwrap();
+
+            if !ALPHABET.contains(letter) {
+                // ignore weird tags (like machine tags or hashes)
+                continue;
+            }
+
+            if !letter_map.contains_key(&letter) {
+                letter_map.insert(letter, HashMap::new());
+            }
+
+            if let Some(tag) = letter_map.get_mut(&letter) {
+                tag.insert(
+                    slug.clone(),
+                    format!(
+                        "{} <span>({})</span>",
+                        tag_photos.name,
+                        tag_photos.photos.len()
+                    ),
+                );
+            }
+
+            if tag_photos.changed || self.config.force.tags {
+                // only render tags that have changes
+                self.default_page(
+                    &format!("{}/{}", local_path, slug),
+                    PhotoTagContext {
+                        ctx: &self.context,
+                        enable: Enable::none(),
+                        slug,
+                        title: &tag_photos.name,
+                        photos: &tag_photos.photos,
+                        sub_title: html::list_label(
+                            "Photo",
+                            &tag_photos.photos,
+                        ),
+                        ext: &self.config.photo.output_ext,
+                    },
+                );
+            }
+        }
+
+        for (letter, tags) in letter_map.iter() {
             self.default_page(
-                &format!("photo-tag/{}", slug),
-                PhotoTagContext {
+                &format!("{}/{}", local_path, letter),
+                PhotoTagLetterContext {
                     ctx: &self.context,
                     enable: Enable::none(),
-                    slug,
-                    name: &tag_photos.name,
-                    photos: &tag_photos.photos,
-                    sub_title: html::list_label("Photo", &tag_photos.photos),
-                    ext: &self.config.photo.output_ext,
+                    title: &format!("“{}” Tags", letter),
+                    sub_title: html::hash_label("Tag", &tags),
+                    tags,
                 },
             );
         }
+
+        self.default_page(
+            local_path,
+            PhotoTagIndexContext {
+                ctx: &self.context,
+                enable: Enable::none(),
+                sub_title: html::hash_label("Letter", &letter_map),
+                letters: &letter_map,
+            },
+        );
     }
 
     pub fn sitemap(&self) {
@@ -294,6 +347,7 @@ struct CommonContext<'a> {
     pub facebook: &'a FacebookConfig,
     pub content_width: u16,
     pub map_image_height: u16,
+    pub thumb_size: u16,
     pub contact_link: String,
 
     mode_icons: HashMap<String, Regex>,
@@ -378,17 +432,35 @@ struct PostContext<'c> {
     pub sub_title: String,
 }
 
-// TODO: update template with actual image thumbnails
 #[derive(Template)]
 #[template(path = "photo_tag.hbs")]
 struct PhotoTagContext<'c> {
     pub ctx: &'c CommonContext<'c>,
     pub enable: Enable,
     pub slug: &'c str,
-    pub name: &'c str,
     pub photos: &'c Vec<PhotoPath>,
+    pub title: &'c str,
     pub sub_title: String,
     pub ext: &'c str,
+}
+
+#[derive(Template)]
+#[template(path = "photo_tag_letter.hbs")]
+struct PhotoTagLetterContext<'c> {
+    pub ctx: &'c CommonContext<'c>,
+    pub enable: Enable,
+    pub title: &'c str,
+    pub sub_title: String,
+    pub tags: &'c HashMap<String, String>,
+}
+
+#[derive(Template)]
+#[template(path = "photo_tag_index.hbs")]
+struct PhotoTagIndexContext<'c> {
+    pub ctx: &'c CommonContext<'c>,
+    pub enable: Enable,
+    pub sub_title: String,
+    pub letters: &'c HashMap<char, HashMap<String, String>>,
 }
 
 // TODO: re-use partials/category for post category list

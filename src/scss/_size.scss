@@ -1,11 +1,11 @@
 
 $headerHeight: 65px;
 $borderRadius: 8px;
-$imageWidth: 1034px; /* 1034px includes borders */
 $contentWidth: 650px;
 $mobileHeaderHeight: 60px;
 $phoneWidth: 768px;
 $mobileWidth: 1024px;
+$imageWidth: $mobileWidth + 10; /* includes borders */
 
 /*
    Pixel density media queries shouldn't be needed since mobile devices report

@@ -56,7 +56,7 @@
 
     {{~#each post.photos.as_slice() }}
 
-    <figure itemscope title="Click to enlarge image {{ index }}" data-exif="/exif/{{ index }}"
+    <figure itemscope title="Click to enlarge image {{ index }}"
         style="width: {{ size.medium.width }}px; height: {{ size.medium.height }}px;">
         <a name="{{ index }}"></a>
         {{! data-src attribute supports lazyload !}}
