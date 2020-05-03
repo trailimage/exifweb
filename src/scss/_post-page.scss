@@ -88,8 +88,7 @@ header.page {
 
 /* Main navigation ---------------------------------------------------------- */
 
-#nav-top,
-#nav-bottom {
+#nav-top, #nav-bottom {
    @include size.mobile {
       div.next,
       div.previous {
@@ -398,70 +397,51 @@ figure {
       }
    }
 
-   div.info-button,
-   div.mobile-button,
-   div.mobile-info {
+   div.info, div.mobile-button, div.mobile-info {
       position: absolute;
       font-family: font.$sanSerif;
-      .material-icons {
-         position: absolute;
-      }
    }
 
-   div.info-button {
+   div.info {
+      top: 5px;
+      display: none;
+      right: 5px;
+      color: color.$light;
+      background-color: #000;
+      padding: 5px;
+      font-size: 17px;
+      font-weight: normal;
+      opacity: 0.6;
+
       ul {
          list-style: none;
          margin: 4px 4px 6px 8px;
          padding: 0;
-         cursor: help;
 
          li {
             padding-top: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
 
             &.camera {
                font-size: 16pt;
                margin-bottom: 3px;
                font-weight: bold;
-               color: rgba(255, 255, 255, 0.6);
             }
             &.focal-length {
                font-size: 12pt;
                line-height: 1em;
             }
-            &.iso { margin-top: 10px; }
-            &.software { margin-top: 10px; }
+            &.iso, &.software { margin-top: 10px; }
+
+            .material-icons {
+               color: white;
+               font-size: 21px;
+               font-weight: normal;
+               margin-left: 4px;
+            }
          }
-      }
-   }
-
-   div.info-button {
-      top: 5px;
-      display: none;
-      right: 5px;
-      color: #fff;
-      background-color: #000;
-      padding: 5px;
-      font-size: 17px;
-      font-weight: normal;
-      text-align: center;
-      opacity: 0.6;
-
-      p, .material-icons { cursor: progress; }
-
-      p {
-         display: inline;
-         line-height: 1.3em;
-         padding: 0 4px 0 33px;
-      }
-
-      .material-icons {
-         top: 6px;
-         left: 10px;
-         color: color.$trim;
-         font-size: 21px;
-         font-weight: normal;
-
-         &.cloud-download { top: 5px; }
       }
    }
 
@@ -505,8 +485,7 @@ figure {
                .material-icons { color: rgba(255, 0, 0, 1); }
             }
          }
-         div.info-button,
-         nav.tags { display: block; }
+         div.info, nav.tags { display: block; }
       }
    }
 

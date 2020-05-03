@@ -40,24 +40,32 @@ pub struct Photo {
     /// Name of photographer recorded in EXIF
     #[serde(skip)]
     pub artist: Option<String>,
+
     /// Name of software used to process the photo
     #[serde(skip)]
     pub software: String,
+
     #[serde(skip)]
     pub title: Option<String>,
+
     #[serde(skip)]
     pub caption: Option<String>,
+
     /// Information about the camera used to make the photo
     #[serde(skip)]
     pub camera: Option<Camera>,
+
     /// Latitude and longitude where photo was taken
     #[serde(skip)]
     pub location: Option<Location>,
+
     /// One-based position of photo within post
     pub index: u8,
+
     /// Tags applied to the photo
     #[serde(skip)]
     pub tags: Vec<String>,
+
     /// When the photograph was taken per camera EXIF
     #[serde(skip)]
     pub date_taken: Option<DateTime<FixedOffset>>,
@@ -70,10 +78,6 @@ pub struct Photo {
     #[serde(skip)]
     pub outlier_date: bool,
 
-    /// Whether values have been formatted based on configuration
-    #[serde(skip)]
-    pub sanitized: bool,
-
     /// Sizes in which the photo is available
     pub size: SizeCollection,
 
@@ -84,9 +88,6 @@ pub struct Photo {
 impl Photo {
     /// Standardize EXIF data based on configuration and remove invalid values
     pub fn sanitize(&mut self, config: &ExifConfig) {
-        if self.sanitized {
-            return;
-        }
         self.software = replace_pairs(self.software.clone(), &config.software);
 
         if let Some(camera) = &mut self.camera {
@@ -103,8 +104,6 @@ impl Photo {
                 self.location = None;
             }
         }
-
-        self.sanitized = true;
     }
 
     pub fn json_ld(&self) -> serde_json::Value {
@@ -161,7 +160,6 @@ impl Default for Photo {
             tags: Vec::new(),
             date_taken: None,
             outlier_date: false,
-            sanitized: false,
             size: SizeCollection::default(),
         }
     }

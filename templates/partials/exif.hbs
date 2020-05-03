@@ -1,0 +1,27 @@
+{{! context object should be photo !}}
+         <ul>
+      {{~#if let Some(c) = &camera }}
+            <li class="camera">{{ c.name }}</li>
+
+         {{~#if let Some(v) = &c.lens }}
+            <li class="lens">{{ v }}</li>
+         {{~/if }}
+
+         {{~#if let Some(v) = &c.iso }}
+            <li class="iso"><span>ISO {{ v }}</span>{{{ ctx.icon("grain") }}}</li>
+         {{~/if }}
+
+         {{~#if let Some(v) = &c.shutter_speed }}
+            <li class="shutter"><span>{{{ ctx.fraction(v) }}} second</span>{{{ ctx.icon("shutter_speed") }}}</li>
+         {{~/if }}
+
+         {{~#if let Some(v) = &c.aperture }}
+            <li class="aperture"><span>ƒ{{ v }}</span>{{{ ctx.icon("camera") }}}</li>
+         {{~/if }}
+
+         {{~#if let Some(v) = &c.compensation }}
+            <li class="compensation"><span>{{{ ctx.fraction(v) }}} compensation</span>{{{ ctx.icon("iso") }}}</li>
+         {{~/if }}
+      {{~/if }}
+            <li class="software">{{ software }}</li>
+         </ul>

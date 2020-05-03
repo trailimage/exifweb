@@ -16,6 +16,7 @@ html_head_facebook = "./partials/head_facebook"
 json_ld = "./partials/json_ld"
 navigation = "./partials/navigation"
 side_menu = "./partials/side_menu"
+exif = "./partials/exif"
 
 [debug]
 theme = "zenburn"

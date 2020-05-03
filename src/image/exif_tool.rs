@@ -13,7 +13,7 @@ use chrono::{DateTime, FixedOffset};
 use colored::*;
 use serde::Deserialize;
 use serde_json;
-use std::{mem, path::Path, process::Command};
+use std::{path::Path, process::Command};
 
 #[derive(Deserialize, Debug)]
 pub struct ExifToolOutput {
@@ -210,13 +210,8 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
         };
 
         if let Some(make) = &i.camera_make {
-            let name = match &i.camera_model {
-                Some(model) => format!("{} {}", make, model),
-                _ => make.clone(),
-            };
-
-            let camera = Camera {
-                name,
+            photo.camera = Some(Camera {
+                name: i.camera_model.unwrap_or(make.clone()),
                 compensation: i.exposure_compensation,
                 shutter_speed: i.shutter_speed,
                 mode: i.exposure_mode,
@@ -224,9 +219,7 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
                 focal_length: i.focal_length,
                 iso: i.iso,
                 lens: i.lens,
-            };
-
-            photo.camera = Some(camera);
+            });
         }
 
         if i.latitude.is_some() && i.longitude.is_some() {

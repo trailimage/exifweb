@@ -32,7 +32,7 @@
          "args": [
             "--style=compressed",
             "--no-source-map",
-            "--watch",
+            //"--watch",
             "./src/scss/ti.scss",
             "./public/css/ti.css"
          ],

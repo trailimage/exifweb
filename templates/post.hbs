@@ -59,13 +59,12 @@
    <figure itemscope title="Click to enlarge image {{ index }}"
       style="width: {{ size.medium.width }}px; height: {{ size.medium.height }}px;">
       <a name="{{ super::ctx.photo_id(index) }}"></a>
-      {{! data-src attribute supports lazyload !}}
       <img src="/{{{ size.small.url }}}"
          {{~#if let Some(text) = &title }} alt="{{ text }}" {{/if ~}}
          style="width: {{ size.medium.width }}px; height: {{ size.medium.height }}px;" data-src="/{{{ size.medium.url }}}"
          data-big="/{{{ size.large.url }}}" data-big_width="{{ size.large.width }}" data-big_height="{{ size.large.height }}" />
-      <div class="info-button">{{{ super::ctx.icon("photo_camera") }}}
-         <p>Camera Settings</p>
+      <div class="info">
+         {{> exif this, ctx=super::ctx }}
       </div>
 
       {{~#if !tags.is_empty() }}

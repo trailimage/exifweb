@@ -55,7 +55,7 @@ pub fn path_slice(path: &Path, depth: usize) -> String {
 pub fn replace_pairs(text: String, pairs: &[(String, String)]) -> String {
     let mut clean = text;
     for (pattern, replacement) in pairs {
-        if clean.starts_with(pattern) {
+        if clean.contains(pattern) {
             clean = clean.replace(pattern, replacement);
         }
     }
