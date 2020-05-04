@@ -13,6 +13,9 @@ use std::{
 
 #[derive(Default)]
 pub struct MinifyConfig {
+    /// Whether attributes should always be double quoted or, if possible,
+    /// left unquoted
+    /// https://mathiasbynens.be/notes/unquoted-attribute-values
     quote_attributes: bool,
 }
 
@@ -187,24 +190,21 @@ impl<'a> Minifier<'a> {
 
         self.w.write_all(b"=")?;
 
-        let (mut unquoted, mut double, mut single) = (false, false, false);
+        // determine appropriate attribute quoting per HTML spec
+        let (unquoted, double, single) = value.chars().fold(
+            (true, false, false),
+            |(unquoted, double, single), c| {
+                let (double, single) =
+                    (double || c == '"', single || c == '\'');
+                let unquoted = unquoted
+                    && !double
+                    && !single
+                    && c != '='
+                    && !c.is_whitespace();
 
-        if !self.config.quote_attributes {
-            (unquoted, double, single) = value.chars().fold(
-                (true, false, false),
-                |(unquoted, double, single), c| {
-                    let (double, single) =
-                        (double || c == '"', single || c == '\'');
-                    let unquoted = unquoted
-                        && !double
-                        && !single
-                        && c != '='
-                        && !c.is_whitespace();
-
-                    (unquoted, double, single)
-                },
-            );
-        }
+                (unquoted, double, single)
+            },
+        );
 
         if unquoted {
             self.w.write_all(value.as_bytes())

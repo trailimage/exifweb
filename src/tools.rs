@@ -201,11 +201,7 @@ pub fn write_result<E: error::Error, F: FnOnce() -> Result<String, E>>(
     match to_string() {
         Ok(mut text) => {
             if html_minify {
-                text = text
-                    .minify(MinifyConfig {
-                        quote_attributes: true,
-                    })
-                    .unwrap();
+                text = text.minify(MinifyConfig::default()).unwrap();
             }
             match fs::write(path, &text) {
                 Ok(_) => (),
