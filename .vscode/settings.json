@@ -22,6 +22,7 @@
   "rust-analyzer.inlayHints.parameterHints": false,
   "rust-analyzer.highlightingOn": true,
   "files.associations": {
+    ".htmlhintrc": "jsonc",
     "**/templates/**/*.html": "handlebars",
     "**/templates/*": "handlebars"
   },

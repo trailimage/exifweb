@@ -369,7 +369,6 @@ impl<'a> CommonContext<'a> {
     pub fn category_icon(&self, kind: &CategoryKind) -> String {
         html::category_icon(kind, &self.category_icons)
     }
-    // TODO: format shutter speed as fraction
     pub fn fraction(&self, number: &str) -> String {
         html::fraction(number)
     }
@@ -420,7 +419,6 @@ impl Enable {
     }
 }
 
-// TODO: render EXIF data
 #[derive(Template)]
 #[template(path = "post.hbs")]
 struct PostContext<'c> {

@@ -35,8 +35,6 @@ window.addEventListener('DOMContentLoaded', () => {
    /** Light box container */
    const lb = document.getElementById('light-box')! as HTMLDivElement
 
-   // TODO: activate EXIF
-
    /**
     * Depends on page having a "light-box" element containing a simgle `img` tag
     *
@@ -281,6 +279,7 @@ window.addEventListener('DOMContentLoaded', () => {
       images: HTMLImageElement[]
       options: LazyLoadOptions
       observer: IntersectionObserver
+      largeImageKey: string
 
       private lazyTimer = 'timerid'
 
@@ -291,8 +290,10 @@ window.addEventListener('DOMContentLoaded', () => {
             threshold: 0,
             delayLoad: 300,
          }
-
          this.images = images
+         this.largeImageKey = window.devicePixelRatio > 1.7
+            ? LargeImage.URL
+            : MediumImage.URL
 
          if (window.IntersectionObserver) {
             this.observe()
@@ -361,8 +362,11 @@ window.addEventListener('DOMContentLoaded', () => {
          this.images.forEach((el: Element) => this.observer.observe(el))
       }
 
+      /**
+       * Load larger image per `window.devicePixelRatio`
+       */
       private loadImage(el: HTMLImageElement) {
-         el.src = el.dataset[MediumImage.URL]!
+         el.src = el.dataset[this.largeImageKey]!
       }
    }
 
