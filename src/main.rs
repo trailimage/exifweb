@@ -9,6 +9,7 @@ mod html;
 mod image;
 mod io;
 mod json_ld;
+mod minify;
 mod models;
 mod tools;
 

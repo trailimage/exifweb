@@ -9,6 +9,8 @@ colored = "1.9"
 encoding = "0.2"
 kamadak-exif = "0.5"
 hashbrown = { version = "0.7", features = ["serde"] }
+html5ever = "0.25"
+markup5ever_rcdom ="0.1"
 lazy_static = "1"
 chrono = { version = "0.4", features = ["serde"] }
 toml = "0.5"

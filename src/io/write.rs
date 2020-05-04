@@ -19,7 +19,7 @@ const ALPHABET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /// Render template and write content to `path` file
 fn write_page(path: &Path, template: impl Template) {
-    write_result(path, || template.call());
+    write_result(path, || template.call(), true);
 }
 
 /// Methods to render and write standard web pages with loaded configuration and
@@ -379,9 +379,9 @@ impl<'a> CommonContext<'a> {
     pub fn say_number(&self, number: usize) -> String {
         html::say_number(number)
     }
-    pub fn list_label<T>(&self, word: &str, list: &Vec<T>) -> String {
-        html::list_label(word, list.iter())
-    }
+    // pub fn list_label<T>(&self, word: &str, list: &Vec<T>) -> String {
+    //     html::list_label(word, list.iter())
+    // }
     pub fn photo_id(&self, index: impl Display) -> String {
         format!("{:03}", index)
     }

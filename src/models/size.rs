@@ -1,4 +1,4 @@
-use crate::config::{PhotoConfig, SizeConfig};
+use crate::config::PhotoConfig;
 use serde::{Deserialize, Serialize};
 
 /// Suffixes added to resized photo files

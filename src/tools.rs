@@ -1,12 +1,10 @@
+use crate::minify::{Minify, MinifyConfig};
 use crate::Photo;
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
 use lazy_static::*;
 use regex::Regex;
-use std::{
-    error, fs,
-    path::{Path, PathBuf},
-};
+use std::{error, fs, path::Path};
 
 /// Hash represented as vector of string tuples
 pub type Pairs = Vec<(String, String)>;
@@ -22,11 +20,6 @@ pub fn config_regex(pairs: &Option<Pairs>) -> HashMap<String, Regex> {
         }
     }
     h
-}
-
-/// Whether path ends with an extension
-pub fn has_ext(p: &PathBuf, ext: &str) -> bool {
-    folder_name(p).ends_with(ext)
 }
 
 /// Convert path end name to printable string (ignores errors)
@@ -60,11 +53,6 @@ pub fn replace_pairs(text: String, pairs: &[(String, String)]) -> String {
         }
     }
     clean
-}
-
-/// Use regex to capture position value from path (ignores errors)
-pub fn pos_from_path(re: &Regex, path: &Path) -> Option<u8> {
-    pos_from_name(re, folder_name(&path))
 }
 
 /// Use regex to capture position value from file name (ignores errors)
@@ -208,9 +196,17 @@ pub fn earliest_photo_date(
 pub fn write_result<E: error::Error, F: FnOnce() -> Result<String, E>>(
     path: &Path,
     to_string: F,
+    html_minify: bool,
 ) {
     match to_string() {
-        Ok(text) => {
+        Ok(mut text) => {
+            if html_minify {
+                text = text
+                    .minify(MinifyConfig {
+                        quote_attributes: true,
+                    })
+                    .unwrap();
+            }
             match fs::write(path, &text) {
                 Ok(_) => (),
                 Err(e) => {
@@ -228,8 +224,8 @@ pub fn write_result<E: error::Error, F: FnOnce() -> Result<String, E>>(
 pub fn rot13(text: &str) -> String {
     text.chars()
         .map(|c| match c {
-            'A'...'M' | 'a'...'m' => ((c as u8) + 13) as char,
-            'N'...'Z' | 'n'...'z' => ((c as u8) - 13) as char,
+            'A'..='M' | 'a'..='m' => ((c as u8) + 13) as char,
+            'N'..='Z' | 'n'..='z' => ((c as u8) - 13) as char,
             _ => c,
         })
         .collect()

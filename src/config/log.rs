@@ -81,7 +81,7 @@ impl PostLog {
             ..PrettyConfig::default()
         };
 
-        write_result(&path, || to_string_pretty(&log, pretty));
+        write_result(&path, || to_string_pretty(&log, pretty), false);
     }
 
     /// Load log file from path
@@ -157,7 +157,7 @@ impl BlogLog {
             ..PrettyConfig::default()
         };
 
-        write_result(&path, || to_string_pretty(&log, pretty));
+        write_result(&path, || to_string_pretty(&log, pretty), false);
     }
 
     pub fn empty() -> BlogLog {

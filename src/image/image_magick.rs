@@ -352,7 +352,7 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
 
     match serde_json::from_str::<Vec<ImageMagickInfo>>(&text) {
         Ok(info) => info,
-        Err(e) => {
+        Err() => {
             println!(
                 "   {} {}",
                 "Unable to parse EXIF JSON for".red(),
