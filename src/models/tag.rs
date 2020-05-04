@@ -1,7 +1,7 @@
 use crate::models::Photo;
 use crate::tools::slugify;
-use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 // FIX: tag "mccallidaho" in Ruminations photo 8 is wrong
 
@@ -21,8 +21,8 @@ pub struct TagPhotos<T> {
 
 /// Collect unique photo tag slugs as keys to the list of photos that applied
 /// those tags. These data are used to render tag search and results pages.
-pub fn collate_tags(photos: &Vec<Photo>) -> HashMap<String, TagPhotos<u8>> {
-    let mut tags: HashMap<String, TagPhotos<u8>> = HashMap::new();
+pub fn collate_tags(photos: &Vec<Photo>) -> BTreeMap<String, TagPhotos<u8>> {
+    let mut tags: BTreeMap<String, TagPhotos<u8>> = BTreeMap::new();
 
     for photo in photos.iter() {
         for tag in photo.tags.iter() {

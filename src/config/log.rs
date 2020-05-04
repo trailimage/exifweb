@@ -6,10 +6,9 @@ use crate::{
     tools::write_result,
 };
 use chrono::{DateTime, FixedOffset, Local};
-use hashbrown::HashMap;
 use ron::ser::{to_string_pretty, PrettyConfig};
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::{collections::BTreeMap, path::Path};
 
 /// File that stores photo tag information and last process time
 static LOG_FILE: &str = "log.ron";
@@ -55,7 +54,7 @@ pub struct PostLog {
     /// Photo tags keyed by their slug to the photos they were assigned to.
     /// These are logged so that photo tag pages can be regenerated without
     /// re-parsing every post photo.
-    pub tags: HashMap<String, TagPhotos<u8>>,
+    pub tags: BTreeMap<String, TagPhotos<u8>>,
 
     /// Whether post source files have changed since they were last read
     #[serde(skip)]
@@ -98,7 +97,7 @@ impl PostLog {
             as_of: 0,
             photo_count: 0,
             photo_locations: Vec::new(),
-            tags: HashMap::new(),
+            tags: BTreeMap::new(),
             files_changed: true,
             cover_photo: None,
         }
@@ -116,11 +115,11 @@ impl PostLog {
 
 impl Clone for PostLog {
     fn clone(&self) -> Self {
-        let mut tags: HashMap<String, TagPhotos<u8>> = HashMap::new();
+        // let mut tags: BTreeMap<String, TagPhotos<u8>> = HashMap::new();
 
-        for (slug, tag_photos) in self.tags.iter() {
-            tags.insert(slug.to_string(), tag_photos.clone());
-        }
+        // for (slug, tag_photos) in self.tags.iter() {
+        //     tags.insert(slug.to_string(), tag_photos.clone());
+        // }
 
         PostLog {
             next_path: self.next_path.clone(),
@@ -129,7 +128,7 @@ impl Clone for PostLog {
             as_of: self.as_of,
             photo_count: self.photo_count,
             photo_locations: self.photo_locations.clone(),
-            tags,
+            tags: self.tags.clone(),
             files_changed: self.files_changed,
             cover_photo: if let Some(p) = &self.cover_photo {
                 Some(p.clone())
@@ -142,7 +141,8 @@ impl Clone for PostLog {
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct BlogLog {
-    pub tags: HashMap<String, TagPhotos<PhotoPath>>,
+    // use B-Tree so that keys are sorted
+    pub tags: BTreeMap<String, TagPhotos<PhotoPath>>,
 }
 
 impl BlogLog {
@@ -162,7 +162,7 @@ impl BlogLog {
 
     pub fn empty() -> BlogLog {
         BlogLog {
-            tags: HashMap::new(),
+            tags: BTreeMap::new(),
         }
     }
 

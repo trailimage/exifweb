@@ -204,7 +204,7 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
             software: i.software,
             tags: i.tags,
             index,
-            size: SizeCollection::from(i.width, i.height, &config.size),
+            size: SizeCollection::from(i.width, i.height, index, config),
             date_taken: i.taken_on.or(i.created_on),
             ..Photo::default()
         };

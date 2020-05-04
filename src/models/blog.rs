@@ -2,6 +2,7 @@ use crate::config::{BlogConfig, BlogLog, ExifConfig};
 use crate::models::{Category, CategoryKind, PhotoPath, Post, TagPhotos};
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
+use std::collections::BTreeMap;
 
 /// Ephemeral struct to compute and capture chronological post order
 struct KeyTime {
@@ -13,11 +14,12 @@ struct KeyTime {
 #[derive(Default)]
 pub struct Blog {
     /// Posts keyed to their path
-    pub posts: HashMap<String, Post>,
+    pub posts: BTreeMap<String, Post>,
     /// Match list of post paths to a list of categories keyed to their kind
     pub categories: HashMap<CategoryKind, Vec<Category>>,
-    /// Tag slugs matched to the original tag names and photos with the tag
-    pub tags: HashMap<String, TagPhotos<PhotoPath>>,
+    /// Tag slugs matched to the original tag names and photos with the tag. Use
+    /// B-Tree so that keys are sorted.
+    pub tags: BTreeMap<String, TagPhotos<PhotoPath>>,
     /// Record of previously loaded photo tags
     pub history: BlogLog,
 }
@@ -31,10 +33,10 @@ impl Blog {
         self.posts.insert(p.path.clone(), p);
     }
 
-    /// Build root-relative post photo URLs for each size
-    pub fn build_photo_urls(&mut self, config: &BlogConfig) {
+    /// Calculate map image sizes based on cover image dimensions
+    pub fn prepare_maps(&mut self, config: &BlogConfig) {
         for (_, p) in self.posts.iter_mut() {
-            p.build_photo_urls(config);
+            p.prepare_maps(config);
         }
     }
 
@@ -182,7 +184,7 @@ impl Blog {
     /// Collect unique photo tags as keys to the list of photos that applied
     /// those tags
     pub fn collate_tags(&mut self) {
-        let mut tags: HashMap<String, TagPhotos<PhotoPath>> = HashMap::new();
+        let mut tags: BTreeMap<String, TagPhotos<PhotoPath>> = BTreeMap::new();
 
         for (_, p) in self.posts.iter() {
             for (slug, post_tag) in p.tags.iter() {

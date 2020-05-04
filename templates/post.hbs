@@ -59,10 +59,15 @@
    <figure itemscope title="Click to enlarge image {{ index }}"
       style="width: {{ size.medium.width }}px; height: {{ size.medium.height }}px;">
       <a name="{{ super::ctx.photo_id(index) }}"></a>
-      <img src="/{{{ size.small.url }}}"
-         {{~#if let Some(text) = &title }} alt="{{ text }}" {{/if ~}}
-         style="width: {{ size.medium.width }}px; height: {{ size.medium.height }}px;" data-src="/{{{ size.medium.url }}}"
-         data-big="/{{{ size.large.url }}}" data-big_width="{{ size.large.width }}" data-big_height="{{ size.large.height }}" />
+      <img src="./{{{ size.small.name }}}"
+      {{~#if let Some(text) = &title }}
+         alt="{{ text }}"
+      {{~/if }}
+         style="width: {{ size.medium.width }}px; height: {{ size.medium.height }}px;"
+         data-src="./{{{ size.medium.name }}}"
+         data-big="./{{{ size.large.name }}}"
+         data-big_width="{{ size.large.width }}"
+         data-big_height="{{ size.large.height }}" />
       <div class="info">
          {{> exif this, ctx=super::ctx }}
       </div>

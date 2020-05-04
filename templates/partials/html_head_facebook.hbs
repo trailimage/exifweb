@@ -7,7 +7,7 @@
    <meta property="fb:admins" content="{{ ctx.facebook.admin_id }}" />
    <meta property="og:url" content="{{{ ctx.site_url }}}/{{{ post.path }}}/" />
 {{~#if let Some(photo) = post.cover_photo() }}
-   <meta property="og:image" content="{{{ photo.size.medium.url }}}" />
+   <meta property="og:image" content="./{{{ photo.size.medium.name }}}" />
 {{~/if }}
    <meta property="og:type" content="article" />
 {{~#if let Some(d) = post.happened_on }}

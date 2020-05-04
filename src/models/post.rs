@@ -8,7 +8,7 @@ use chrono::{DateTime, FixedOffset, Utc};
 use core::cmp::Ordering;
 use hashbrown::HashMap;
 use serde_json;
-use std::time::SystemTime;
+use std::{collections::BTreeMap, time::SystemTime};
 
 /// Additional details for posts that are part of series
 #[derive(Debug)]
@@ -103,7 +103,7 @@ pub struct Post {
     /// Zero-based index of cover photo within vector of photos
     pub cover_photo_index: usize,
 
-    pub tags: HashMap<String, TagPhotos<u8>>,
+    pub tags: BTreeMap<String, TagPhotos<u8>>,
 
     /// Record of previous post photos and configuration
     pub history: PostLog,
@@ -225,7 +225,7 @@ impl Default for Post {
             cover_photo_index: 0,
             cover_map_size: (0, 0),
 
-            tags: HashMap::new(),
+            tags: BTreeMap::new(),
             history: PostLog::empty(),
             series: None,
 
@@ -277,10 +277,7 @@ impl Post {
 
     /// Build root-relative URLs for all post photo sizes and compute cover map
     /// dimensions to fit next to small image within content width
-    pub fn build_photo_urls(&mut self, config: &BlogConfig) {
-        for p in self.photos.iter_mut() {
-            p.size.build_urls(&self.path, p.index, &config.photo);
-        }
+    pub fn prepare_maps(&mut self, config: &BlogConfig) {
         let max_height = config.style.inline_map_height;
         let max_width = config.style.content_width;
 

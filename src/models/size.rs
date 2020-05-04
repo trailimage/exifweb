@@ -27,34 +27,28 @@ pub struct SizeCollection {
 
 impl SizeCollection {
     /// Create size collection from original size
-    pub fn from(width: u16, height: u16, config: &SizeConfig) -> Self {
-        let original = Size::new(width, height, suffix::ORIGINAL);
+    pub fn from(
+        width: u16,
+        height: u16,
+        index: u8,
+        config: &PhotoConfig,
+    ) -> Self {
+        let name = |end: &'static str| {
+            format!("{:03}_{}{}", index, end, config.output_ext)
+        };
+        let original = Size::new(width, height, name(suffix::ORIGINAL));
 
         SizeCollection {
-            large: original.limit_to(config.large, suffix::LARGE),
-            medium: original.limit_to(config.medium, suffix::MEDIUM),
-            small: original.limit_to(config.small, suffix::SMALL),
+            large: original.limit_to(config.size.large, name(suffix::LARGE)),
+            medium: original.limit_to(config.size.medium, name(suffix::MEDIUM)),
+            small: original.limit_to(config.size.small, name(suffix::SMALL)),
             thumb: Size {
-                width: config.thumb,
-                height: config.thumb,
-                suffix: suffix::THUMB,
-                url: String::new(),
+                width: config.size.thumb,
+                height: config.size.thumb,
+                name: name(suffix::THUMB),
             },
             original,
         }
-    }
-
-    /// Build root-relative URLs for all photo sizes
-    pub fn build_urls(
-        &mut self,
-        post_path: &str,
-        photo_index: u8,
-        config: &PhotoConfig,
-    ) {
-        self.large.build_url(post_path, photo_index, config);
-        self.medium.build_url(post_path, photo_index, config);
-        self.small.build_url(post_path, photo_index, config);
-        self.thumb.build_url(post_path, photo_index, config);
     }
 
     /// Whether photo is in portrait orientation (taller than wide)
@@ -72,33 +66,16 @@ impl SizeCollection {
 pub struct Size {
     pub width: u16,
     pub height: u16,
-    pub url: String,
-    /// Suffix added to image name for size
-    #[serde(skip)]
-    pub suffix: &'static str,
+    pub name: String,
 }
 
 impl Size {
-    pub fn new(width: u16, height: u16, suffix: &'static str) -> Self {
+    pub fn new(width: u16, height: u16, name: String) -> Self {
         Size {
             width,
             height,
-            suffix,
-            url: String::new(),
+            name,
         }
-    }
-
-    /// Build root-relative URL for photo size
-    pub fn build_url(
-        &mut self,
-        post_path: &str,
-        photo_index: u8,
-        config: &PhotoConfig,
-    ) {
-        self.url = format!(
-            "{}/{:03}_{}{}",
-            &post_path, photo_index, self.suffix, config.output_ext
-        );
     }
 
     /// Find coordinates necessary to crop a center square
@@ -115,21 +92,21 @@ impl Size {
 
     /// Update dimensions so long edge does not exceed `long_edge`. This will
     /// not enlarge the image.
-    pub fn limit_to(&self, long_edge: u16, suffix: &'static str) -> Size {
+    pub fn limit_to(&self, long_edge: u16, new_name: String) -> Size {
         if long_edge > self.width && long_edge > self.height {
             let mut copy = self.clone();
-            copy.suffix = suffix;
+            copy.name = new_name;
             copy
         } else if self.height > self.width {
             let width = (self.width as f32
                 * (long_edge as f32 / self.height as f32))
                 .round() as u16;
-            Size::new(width, long_edge, suffix)
+            Size::new(width, long_edge, new_name)
         } else {
             let height = (self.height as f32
                 * (long_edge as f32 / self.width as f32))
                 .round() as u16;
-            Size::new(long_edge, height, suffix)
+            Size::new(long_edge, height, new_name)
         }
     }
 }
@@ -140,14 +117,16 @@ mod tests {
 
     #[test]
     fn test_resize() {
-        let source = Size::new(1024, 768, suffix::LARGE);
-        let target = Size::new(800, 600, suffix::MEDIUM);
+        let name = |end: &'static str| format!("001_{}.wepb", end);
 
-        assert_eq!(source.limit_to(800, suffix::MEDIUM), target);
+        let source = Size::new(1024, 768, name(suffix::LARGE));
+        let target = Size::new(800, 600, name(suffix::MEDIUM));
 
-        let source = Size::new(768, 1024, suffix::LARGE);
-        let target = Size::new(600, 800, suffix::MEDIUM);
+        assert_eq!(source.limit_to(800, name(suffix::MEDIUM)), target);
 
-        assert_eq!(source.limit_to(800, suffix::MEDIUM), target);
+        let source = Size::new(768, 1024, name(suffix::LARGE));
+        let target = Size::new(600, 800, name(suffix::MEDIUM));
+
+        assert_eq!(source.limit_to(800, name(suffix::MEDIUM)), target);
     }
 }

@@ -262,7 +262,8 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
             size: SizeCollection::from(
                 i.geometry.width,
                 i.geometry.height,
-                &config.size,
+                index,
+                &config,
             ),
             date_taken: p.taken_on.or(p.created_on),
             ..Photo::default()

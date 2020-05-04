@@ -109,9 +109,10 @@ impl Photo {
     pub fn json_ld(&self) -> serde_json::Value {
         let size = &self.size.medium;
 
+        // TODO: needs full image path?
         serde_json::json!({
             "@type": "ImageObject",
-            "url": size.url,
+            "url": size.name,
             "width": size.width,
             "height": size.height
         })
