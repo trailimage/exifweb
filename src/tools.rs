@@ -1,4 +1,4 @@
-use crate::minify::{Minify, MinifyConfig};
+use crate::minify::Minify;
 use crate::Photo;
 use chrono::{DateTime, FixedOffset};
 use hashbrown::HashMap;
@@ -201,7 +201,7 @@ pub fn write_result<E: error::Error, F: FnOnce() -> Result<String, E>>(
     match to_string() {
         Ok(mut text) => {
             if html_minify {
-                text = text.minify(MinifyConfig::default()).unwrap();
+                text = text.minify().unwrap();
             }
             match fs::write(path, &text) {
                 Ok(_) => (),

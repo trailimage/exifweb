@@ -1,12 +1,12 @@
 {{#> layout title="Photo Tags", sub_title="" }}
-   <ul id="letters" class="content">
-   {{~#each letters }}
-      <li>
-         <a title="View photo tags starting with “{{ this.0 }}”" href="./{{ this.0 }}/">
-            <div class="label">{{ this.0 }}</div>
-            <div class="count">{{ this.1.len() }}</div>
-         </a>
-      </li>
-   {{~/each }}
-   </ul>
+<ul id="letters" class="content">
+{{#each letters }}
+   <li>
+      <a title="View photo tags starting with “{{ this.0 }}”" href="./{{ this.0 }}/">
+         <div class="label">{{ this.0 }}</div>
+         <div class="count">{{ this.1.len() }}</div>
+      </a>
+   </li>
+{{/each }}
+</ul>
 {{/layout }}

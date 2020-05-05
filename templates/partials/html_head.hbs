@@ -12,12 +12,12 @@
    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
    <link href="/css/ti.css" rel="stylesheet" type="text/css" />
    <script src="/js/responsive.js" type="text/javascript" defer></script>
-   {{~> @partial-block }}
-   {{~#unless enable.scroll_nav }}
+   {{> @partial-block }}
+   {{#unless enable.scroll_nav }}
    <style type="text/css">
       #bug, #links, #category-menu { position: fixed; }
    </style>
-   {{~/unless }}
+   {{/unless }}
    <script type="text/javascript">
       var pageFeatures = { facebook: {{#if enable.facebook }}true{{else}}false{{/if }} };
    </script>

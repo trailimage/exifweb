@@ -11,51 +11,39 @@ use std::{
     ops::Deref,
 };
 
-#[derive(Default)]
-pub struct MinifyConfig {
-    /// Whether attributes should always be double quoted or, if possible,
-    /// left unquoted
-    /// https://mathiasbynens.be/notes/unquoted-attribute-values
-    quote_attributes: bool,
-}
-
 /// Defines the minify trait
 pub trait Minify {
     /// Minifies the source returning the minified HTML5
-    fn minify(&self, config: MinifyConfig) -> Result<String, io::Error>;
+    fn minify(&self) -> Result<String, io::Error>;
 }
 
 /// Minifies the HTML input to the destination writer.
 /// Outputs HTML5; non-HTML5 input will be transformed to HTML5.
 #[inline]
-pub fn minify(
-    mut r: &mut dyn Read,
-    w: &mut dyn Write,
-    config: MinifyConfig,
-) -> io::Result<()> {
+pub fn minify(mut r: &mut dyn Read, w: &mut dyn Write) -> io::Result<()> {
     let dom = parse_document(RcDom::default(), Default::default())
         .from_utf8()
         .read_from(&mut r)?;
 
     w.write_all(b"<!doctype html>")?;
-    Minifier { w, config }.minify(&dom.document)
+    Minifier { w }.minify(&dom.document)
 }
 
 impl Minify for String {
-    fn minify(&self, config: MinifyConfig) -> Result<String, io::Error> {
+    fn minify(&self) -> Result<String, io::Error> {
         let mut minified = Vec::new();
 
-        minify(&mut self.as_bytes(), &mut minified, config)?;
+        minify(&mut self.as_bytes(), &mut minified)?;
 
         Ok(String::from_utf8_lossy(&minified).into())
     }
 }
 
 impl Minify for str {
-    fn minify(&self, config: MinifyConfig) -> Result<String, io::Error> {
+    fn minify(&self) -> Result<String, io::Error> {
         let mut minified = Vec::new();
 
-        minify(&mut self.as_bytes(), &mut minified, config)?;
+        minify(&mut self.as_bytes(), &mut minified)?;
 
         Ok(String::from_utf8_lossy(&minified).into())
     }
@@ -64,14 +52,10 @@ impl Minify for str {
 impl Minify for Node {
     /// This trait implementation doesn't add the HTML5 doctype on the
     /// assumption it could be used to minify interior nodes.
-    fn minify(&self, config: MinifyConfig) -> Result<String, io::Error> {
+    fn minify(&self) -> Result<String, io::Error> {
         let mut minified = Vec::new();
 
-        Minifier {
-            w: &mut minified,
-            config,
-        }
-        .minify(&self)?;
+        Minifier { w: &mut minified }.minify(&self)?;
 
         Ok(String::from_utf8_lossy(&minified).into())
     }
@@ -79,7 +63,6 @@ impl Minify for Node {
 
 struct Minifier<'a> {
     w: &'a mut dyn Write,
-    config: MinifyConfig,
 }
 
 impl<'a> Minifier<'a> {
@@ -278,6 +261,8 @@ fn is_inline_element(node: &Node) -> bool {
             | local_name!("ol")
             | local_name!("p")
             | local_name!("pre")
+            | local_name!("script")
+            | local_name!("style")
             | local_name!("section")
             | local_name!("table")
             | local_name!("title")
@@ -348,13 +333,9 @@ mod tests {
     #[test]
     fn test_minify() {
         const EXPECTED: &str =
-            "<!doctype html><link href=\"test.css\"><h2 id=\"id_one\">Hello</h2><p>World";
+            "<!doctype html><link href=test.css><h2 id=id_one>Hello</h2><p>World";
 
-        assert_eq!(
-            EXPECTED,
-            HTML.minify(MinifyConfig::default())
-                .expect("Failed to minify HTML")
-        );
+        assert_eq!(EXPECTED, HTML.minify().expect("Failed to minify HTML"));
     }
 
     // #[bench]

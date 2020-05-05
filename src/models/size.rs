@@ -10,6 +10,8 @@ pub mod suffix {
     pub static THUMB: &'static str = "t";
 }
 
+/// Photo display sizes. These values may be less than the rendered sizes to
+/// accomodate high density screens.
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct SizeCollection {
     #[serde(skip)]
@@ -37,14 +39,15 @@ impl SizeCollection {
             format!("{:03}_{}{}", index, end, config.output_ext)
         };
         let original = Size::new(width, height, name(suffix::ORIGINAL));
+        let size = &config.size.display;
 
         SizeCollection {
-            large: original.limit_to(config.size.large, name(suffix::LARGE)),
-            medium: original.limit_to(config.size.medium, name(suffix::MEDIUM)),
-            small: original.limit_to(config.size.small, name(suffix::SMALL)),
+            large: original.limit_to(size.large, name(suffix::LARGE)),
+            medium: original.limit_to(size.medium, name(suffix::MEDIUM)),
+            small: original.limit_to(size.small, name(suffix::SMALL)),
             thumb: Size {
-                width: config.size.thumb,
-                height: config.size.thumb,
+                width: size.thumb,
+                height: size.thumb,
                 name: name(suffix::THUMB),
             },
             original,

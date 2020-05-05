@@ -28,13 +28,21 @@ pub struct SizeConfig {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct SizeTypes {
+    /// Photo sizes to generate from original
+    pub render: SizeConfig,
+    /// Photo sizes to display (CSS pixel size)
+    pub display: SizeConfig,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct PhotoConfig {
     /// Regex pattern to extract photo index and count from file name
     ///
     /// *Exmaple* `(\\d{3})-of-(\\d{3})\\.jpg$` for `neat_place_012-of-015.jpg`
     #[serde(deserialize_with = "regex_string")]
     pub capture_index: Regex,
-    pub size: SizeConfig,
+    pub size: SizeTypes,
     /// EXIF normalization settings
     pub exif: ExifConfig,
     /// Tags to exclude from rendered views

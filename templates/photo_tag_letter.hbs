@@ -1,10 +1,10 @@
 {{#> layout title=title, sub_title="With photo count" }}
-   <ul id="tags" class="content">
-   {{~#each tags }}
-      <li><a href="../{{ this.0 }}/">
-         <div class="label">{{ (this.1).0 }}</div>
-         <div class="count">{{ (this.1).1.to_string() }}</div>
-      </a></li>
-   {{~/each }}
-   </ul>
+<ul id="tags" class="content">
+{{#each tags }}
+   <li><a href="../{{ this.0 }}/">
+      <div class="label">{{ (this.1).0 }}</div>
+      <div class="count">{{ (this.1).1.to_string() }}</div>
+   </a></li>
+{{/each }}
+</ul>
 {{/layout }}

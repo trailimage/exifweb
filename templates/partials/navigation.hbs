@@ -1,23 +1,23 @@
 {{! Next and Previous links displayed within a post !}}
-{{~#if let Some(prev) = ctx.blog.get_prev(&post) ~}}
+{{#if let Some(prev) = ctx.blog.get_prev(&post) ~}}
    {{ let label = post.next_label("Next") }}
-      <!--googleoff: index-->
-      <div class="previous">
-         <a href="/{{{ prev.path }}}">
-            <h4>{{{ ctx.icon("chevron_left") }}} {{ label }}</h4>
-            {{ prev.title }}
-         </a>
-      </div>
-      <!--googleon: index-->
-{{~/if}}
-{{~#if let Some(next) = ctx.blog.get_next(&post) ~}}
+   <!--googleoff: index-->
+   <div class="previous">
+      <a href="/{{{ prev.path }}}">
+         <h4>{{{ ctx.icon("chevron_left") }}} {{ label }}</h4>
+         {{ prev.title }}
+      </a>
+   </div>
+   <!--googleon: index-->
+{{/if}}
+{{#if let Some(next) = ctx.blog.get_next(&post) ~}}
    {{ let label = post.prev_label("Previous") }}
-      <!--googleoff: index-->
-      <div class="next">
-         <a href="/{{{ next.path }}}">
-            <h4>{{ label }} {{{ ctx.icon("chevron_right") }}}</h4>
-            {{ next.title }}
-         </a>
-      </div>
-      <!--googleon: index-->
+   <!--googleoff: index-->
+   <div class="next">
+      <a href="/{{{ next.path }}}">
+         <h4>{{ label }} {{{ ctx.icon("chevron_right") }}}</h4>
+         {{ next.title }}
+      </a>
+   </div>
+   <!--googleon: index-->
 {{/if }}

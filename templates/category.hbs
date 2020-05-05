@@ -1,60 +1,65 @@
 {{#> layout title=category.name, sub_title=sub_title }}
-   <div class="category content">
-      <section class="posts">
-      {{#each category.post_paths }}
-         {{ let post = super::ctx.blog.get(&this).unwrap() }}
-         {{ let photo = post.cover_photo().unwrap() }}
-         <article class="summary">
-            <header class="post">
-               <ul class="info">
-                  {{~#if let Some(d) = post.happened_on }}
-                  <li class="date-taken">{{ super::ctx.date(d) }}</li>
-                  {{~/if }}
-                  <li class="photo-count">{{ post.photo_count }} photos{{#if post.has_video() }} and a video{{/if }}</li>
-               </ul>
-               <a class="title" href="/{{{ post.path }}}">
-               {{~#if let Some(series) = &post.series }}
-                  {{ series.title }}
-                  <span class="subtitle">
-                     <span class="part">Part {{ series.part }}:</span>{{ post.title }}
-                  </span>
-               {{ else }}
-                  {{ post.title }}
-               {{~/if ~}}
-               </a>
-               <span class="mode-icon {{ super::ctx.travel_icon(post.categories.as_ref()) }}"></span>
-               <div class="clear"></div>
-            </header>
-
-            <a class="thumb" title="View story" href="/{{{ post.path }}}">
-               <img src="/{{{ post.path }}}/{{{ photo.size.small.name }}}" width="{{ photo.size.small.width }}"
-                    height="{{ photo.size.small.height }}"
-                    style="width: {{ photo.size.small.width }}px; height: {{ photo.size.small.height }}px;" />
+<div class="category content">
+   <section class="posts">
+   {{#each category.post_paths }}
+      {{ let post = super::ctx.blog.get(&this).unwrap() }}
+      {{ let photo = post.cover_photo().unwrap() }}
+      <article class="summary">
+         <header class="post">
+            <ul class="info">
+               {{~#if let Some(d) = post.happened_on }}
+               <li class="date-taken">{{ super::ctx.date(d) }}</li>
+               {{~/if }}
+               <li class="photo-count">{{ post.photo_count }} photos{{#if post.has_video() }} and a video{{/if }}</li>
+            </ul>
+            <a class="title" href="/{{{ post.path }}}">
+            {{~#if let Some(series) = &post.series }}
+               {{ series.title }}
+               <span class="subtitle">
+                  <span class="part">Part {{ series.part }}:</span>{{ post.title }}
+               </span>
+            {{ else }}
+               {{ post.title }}
+            {{~/if ~}}
             </a>
-
-            {{~#unless post.photo_locations.is_empty() }}
-            <a class="map" title="View story" href="/{{{ post.path }}}">
-               <img
-                  src="/{{{ post.path }}}/map_small.png"
-                  width="{{ post.cover_map_size.0 }}"
-                  height="{{ post.cover_map_size.1 }}"
-                  class="static-map"/>
-            </a>
-            {{~/unless }}
-
-            <section class="detail">
-               <p class="summary">{{ post.summary }}</p>
-               <ul class="categories">
-                  {{! TODO: this is the same as partials/categories.hbs !}}
-                  {{~#each post.categories.as_slice() }}
-                  <li><span>#</span><a href="/{{{ path }}}" rel="tag">{{ name }}</a></li>
-                  {{~/each }}
-               </ul>
-            </section>
-
+            <span class="mode-icon {{ super::ctx.travel_icon(post.categories.as_ref()) }}"></span>
             <div class="clear"></div>
-         </article>
-      {{/each }}
-      </section>
-   </div>
+         </header>
+
+         <a class="thumb" title="View story" href="/{{{ post.path }}}">
+            <img
+               src="/{{{ post.path }}}/{{{ photo.size.small.name }}}"
+               width="{{ photo.size.small.width }}"
+               height="{{ photo.size.small.height }}"
+               style="width: {{ photo.size.small.width }}px; height: {{ photo.size.small.height }}px;" />
+         </a>
+
+         {{~#unless post.photo_locations.is_empty() }}
+         <a class="map" title="View story" href="/{{{ post.path }}}">
+            <img
+               src="/{{{ post.path }}}/map_small.png"
+               width="{{ post.cover_map_size.0 }}"
+               height="{{ post.cover_map_size.1 }}"
+               class="static-map"/>
+         </a>
+         {{~/unless }}
+
+         <section class="detail">
+            <p class="summary">{{ post.summary }}</p>
+            <ul class="categories">
+               {{! TODO: this is the same as partials/categories.hbs !}}
+               {{~#each post.categories.as_slice() }}
+               <li>
+                  <span>#</span>
+                  <a href="/{{{ path }}}" rel="tag">{{ name }}</a>
+               </li>
+               {{~/each }}
+            </ul>
+         </section>
+
+         <div class="clear"></div>
+      </article>
+   {{/each }}
+   </section>
+</div>
 {{/layout }}

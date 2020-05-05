@@ -64,7 +64,7 @@ impl<'a> Writer<'a> {
                 category_icons: &config.category.icon,
                 content_width: config.style.content_width,
                 map_image_height: config.style.inline_map_height,
-                thumb_size: config.photo.size.thumb,
+                thumb_size: config.photo.size.display.thumb,
                 contact_link: config
                     .owner
                     .email

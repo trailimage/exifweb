@@ -1,10 +1,13 @@
 {{#> layout title=kind.to_string(), sub_title=sub_title }}
-   <div class="root-category content">
-      {{{ ctx.category_icon(kind) }}}
-      <ul>
-         {{~#each categories }}
-         <li><a href="/{{{ path }}}" rel="tag">{{ name }}</a>({{ super::ctx.say_number(post_paths.len()).to_lowercase() }} {{ super::ctx.plural("post", post_paths.len()) }})</li>
-         {{~/each~}}
-      </ul>
-   </div>
+<div class="root-category content">
+   {{{ ctx.category_icon(kind) }}}
+   <ul>
+      {{#each categories }}
+      <li>
+         <a href="/{{{ path }}}" rel="tag">{{ name }}</a>
+         ({{ super::ctx.say_number(post_paths.len()).to_lowercase() }} {{ super::ctx.plural("post", post_paths.len()) }})
+      </li>
+      {{/each }}
+   </ul>
+</div>
 {{/layout }}

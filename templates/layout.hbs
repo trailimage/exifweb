@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-   {{~#> html_head title=title, description=ctx.site_description }}
-   {{~> json_ld ~}}
-   {{~/html_head ~}}
+   {{#> html_head title=title, description=ctx.site_description }}
+   {{> json_ld }}
+   {{/html_head }}
 <body>
    {{#> header title=title, sub_title=sub_title }}
       <aside class="site-description">{{ ctx.site_description }}</aside>
-   {{~/header }}
-   {{~> @partial-block }}
+   {{/header }}
+   {{> @partial-block }}
    {{> footer }}
 </body>
 </html>

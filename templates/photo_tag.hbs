@@ -1,7 +1,9 @@
 {{#> layout title=title, sub_title=sub_title }}
-   <div id="thumbs" class="content">
-   {{~#each photos }}
-      <a href="/{{{ this.post_url() }}}"><img width="{{ super::ctx.thumb_size / 2 }}" height="{{ super::ctx.thumb_size / 2 }}" src="/{{{ this.thumb_url(super::image_ext) }}}"/></a>
-   {{~/each }}
-   </div>
+<div id="thumbs" class="content">
+{{#each photos }}
+   <a href="/{{{ this.post_url() }}}">
+      <img width="{{ super::ctx.thumb_size }}" height="{{ super::ctx.thumb_size }}" src="/{{{ this.thumb_url(super::image_ext) }}}"/>
+   </a>
+{{/each }}
+</div>
 {{/layout }}

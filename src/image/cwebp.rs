@@ -16,10 +16,11 @@ macro_rules! string_vec {
 
 /// https://developers.google.com/speed/webp/docs/cwebp
 pub fn create_sizes(path: &str, p: &Photo, c: &PhotoConfig) {
-    create_size(path, p, c, c.size.large, suffix::LARGE, false);
-    create_size(path, p, c, c.size.medium, suffix::MEDIUM, false);
-    create_size(path, p, c, c.size.small, suffix::SMALL, false);
-    create_size(path, p, c, c.size.thumb, suffix::THUMB, true);
+    let size = &c.size.render;
+    create_size(path, p, c, size.large, suffix::LARGE, false);
+    create_size(path, p, c, size.medium, suffix::MEDIUM, false);
+    create_size(path, p, c, size.small, suffix::SMALL, false);
+    create_size(path, p, c, size.thumb, suffix::THUMB, true);
 }
 
 fn create_size(
