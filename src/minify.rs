@@ -1,15 +1,21 @@
-//! HTML5 markup minifier derived from
+//! HTML5 markup minifier copied from
 //! https://github.com/martingallagher/html5minify
 
 use html5ever::{
     local_name, parse_document, tendril::TendrilSink, Attribute, LocalName,
     QualName,
 };
+use lazy_static::*;
 use markup5ever_rcdom::{Node, NodeData, RcDom};
+use regex::Regex;
 use std::{
     io::{self, Read, Write},
     ops::Deref,
 };
+
+lazy_static! {
+    static ref WHITE_SPACE: Regex = Regex::new(r"[\r\n\s\t]+").unwrap();
+}
 
 /// Defines the minify trait
 pub trait Minify {
@@ -51,7 +57,7 @@ impl Minify for str {
 
 impl Minify for Node {
     /// This trait implementation doesn't add the HTML5 doctype on the
-    /// assumption it could be used to minify interior nodes.
+    /// assumption it could be used to minify interior nodes
     fn minify(&self) -> Result<String, io::Error> {
         let mut minified = Vec::new();
 
@@ -83,6 +89,8 @@ impl<'a> Minifier<'a> {
                 } else {
                     contents.deref()
                 };
+
+                let contents = WHITE_SPACE.replace_all(contents, " ");
 
                 if contents.is_empty() {
                     return io::Result::Ok(());

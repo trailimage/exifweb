@@ -326,7 +326,6 @@ fn format_line_breaks(text: &str) -> String {
     format!("<p>{}</p>", text)
 }
 
-// FIX: leading and trailing hyphens aren't removed
 fn format_poem(text: &str) -> String {
     lazy_static! {
         // exactly three lines

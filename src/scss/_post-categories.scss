@@ -1,0 +1,77 @@
+@use 'color';
+@use 'font';
+@use 'size';
+
+// post category tags
+nav.category-wrapper {
+   display: flex;
+   border: none;
+   background-color: color.$trim;
+   font-family: font.$sanSerif;
+   border-top-left-radius: size.$borderRadius;
+   border-top-right-radius: size.$borderRadius;
+
+   ul.categories {
+      width: 100%;
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+
+      li {
+         display: block;
+         white-space: nowrap;
+         padding: 5px;
+         font-size: 16px;
+         color: #fff;
+         text-rendering: optimizeLegibility;
+
+         span {
+            color: color.$lightTrim;
+            padding-right: 2px;
+         }
+
+         a {
+            text-decoration: none;
+            color: #fff;
+
+            &:hover { text-decoration: underline; }
+         }
+      }
+   }
+
+   @include size.mobile {
+      border-radius: 0;
+      margin: 18px 0 20px 0;
+      // hide category tags shown above post but retain those shown below
+      display: none;
+
+      ul.tags {
+         padding: 5px 0;
+         li {
+            font-size: 20px;
+            padding: 6px 8px;
+         }
+      }
+   }
+}
+
+// post category tags shown above footer
+.footer-categories.content {
+   background: none;
+
+   nav.category-wrapper {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      border-bottom-left-radius: size.$borderRadius;
+      border-bottom-right-radius: size.$borderRadius;
+      margin-bottom: 20px;
+
+      @include size.mobile {
+         border-radius: 0;
+         // those above post were hidden so re-display these
+         display: block;
+         margin-bottom: 0;
+      }
+   }
+}

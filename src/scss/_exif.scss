@@ -1,0 +1,52 @@
+@use 'color';
+@use 'font';
+
+figure {
+   div.info, div.mobile-button, div.mobile-info {
+      position: absolute;
+      font-family: font.$sanSerif;
+   }
+
+   div.info {
+      top: 5px;
+      display: none;
+      right: 5px;
+      color: color.$lightTrim;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 5px;
+      font-size: 17px;
+      font-weight: normal;
+
+      ul {
+         list-style: none;
+         margin: 4px 4px 6px 8px;
+         padding: 0;
+
+         li {
+            padding-top: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+
+            &.camera {
+               font-size: 16pt;
+               margin-bottom: 3px;
+               font-weight: bold;
+            }
+            &.focal-length {
+               font-size: 12pt;
+               line-height: 1em;
+            }
+            &.iso, &.software { margin-top: 1em; }
+            &.software, &.lens { font-size: small; }
+
+            .material-icons {
+               color: color.$light;
+               font-size: 21px;
+               font-weight: normal;
+               margin-left: 8px;
+            }
+         }
+      }
+   }
+}

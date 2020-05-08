@@ -36,5 +36,8 @@
   "typescript.format.enable": true,
   "javascript.format.semicolons": "remove",
   "javascript.preferences.quoteStyle": "single",
-  "typescript.preferences.quoteStyle": "single"
+"typescript.preferences.quoteStyle": "single",
+"files.exclude": {
+   "**/public": true
+}
 }

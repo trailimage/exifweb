@@ -1,5 +1,9 @@
+@use 'caption';
 @use 'color';
+@use 'exif';
 @use 'font';
+@use 'navigation';
+@use 'post-categories';
 @use 'size';
 @use 'style';
 
@@ -86,109 +90,6 @@ header.page {
    }
 }
 
-/* Main navigation ---------------------------------------------------------- */
-
-#nav-top, #nav-bottom {
-   @include size.mobile {
-      div.next,
-      div.previous {
-         font-size: 14px;
-         line-height: 1em;
-         margin: 0;
-         padding: 0;
-
-         .material-icons {
-            font-size: 30px;
-            padding: 0;
-         }
-         h4 {
-            padding: 0;
-            margin: 0;
-            line-height: 1em;
-         }
-      }
-   }
-}
-
-div.next, div.previous {
-   width: (size.$imageWidth - size.$contentWidth) / 2;
-   // this moves the navigation links up so they appear just above their div
-   // so they don't overlap image shown immediately below
-   margin-top: -4.5em;
-   position: absolute;
-   font-family: font.$sanSerif;
-   font-size: 16px;
-   z-index: 250;
-
-   h4 {
-      color: #777;
-      margin: 0 0 2px;
-      font-size: 22px;
-      line-height: 1em;
-
-      .material-icons {
-         font-size: 28px;
-         line-height: 24px;
-         margin: 0 -6px;
-         vertical-align: text-bottom;
-      }
-   }
-
-   a {
-      color: #ddd;
-      text-decoration: none;
-
-      @include size.desktop {
-         &:hover { color: desaturate(lighten(color.$hover, 30%), 20%); }
-      }
-   }
-
-   @include size.mobile {
-      width: auto;
-      font-size: 20px;
-      h4 .material-icons { font-size: 20px; }
-
-      a {
-         line-height: 1.2em;
-         color: color.$mobileLink;
-         &:active { color: color.$mobileActive; }
-      }
-   }
-}
-
-div.next {
-   left: 50%;
-   margin-left: (size.$contentWidth / 2) + 15;
-
-   @include size.mobile {
-      right: 10px;
-      margin: 0;
-      text-align: right;
-   }
-}
-
-div.previous {
-   right: 50%;
-   margin-right: (size.$contentWidth / 2) + 15;
-   text-align: right;
-
-   @include size.mobile {
-      left: 10px;
-      margin: 0;
-      text-align: left;
-   }
-}
-
-#nav-bottom {
-   div.next, div.previous { margin-top: 0.5em; }
-
-   @include size.mobile {
-      width: 100%;
-      margin: 0 0 20px;
-   }
-}
-
-/* End navigation ------------------------------------------------------------*/
 
 #light-box {
    display: none;
@@ -209,88 +110,6 @@ div.previous {
       border: none;
       will-change: transform;
    }
-}
-
-// post category tags
-nav.tag-wrapper {
-   display: flex;
-   border: none;
-   background-color: color.$trim;
-   font-family: font.$sanSerif;
-   border-top-left-radius: size.$borderRadius;
-   border-top-right-radius: size.$borderRadius;
-
-   ul.tags {
-      width: 100%;
-      list-style: none;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-
-      li {
-         display: block;
-         white-space: nowrap;
-         padding: 5px;
-         font-size: 16px;
-         color: #fff;
-         text-rendering: optimizeLegibility;
-
-         span {
-            color: color.$lightTrim;
-            padding-right: 2px;
-         }
-
-         a {
-            text-decoration: none;
-            color: #fff;
-
-            &:hover { text-decoration: underline; }
-         }
-      }
-   }
-
-   @include size.mobile {
-      border-radius: 0;
-      margin: 18px 0 20px 0;
-      // hide category tags shown above post but retain those shown below
-      display: none;
-
-      ul.tags {
-         padding: 5px 0;
-         li {
-            font-size: 20px;
-            padding: 6px 8px;
-         }
-      }
-   }
-}
-
-// post category tags shown above footer
-.footer-tags.content {
-   background: none;
-
-   nav.tag-wrapper {
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-      border-bottom-left-radius: size.$borderRadius;
-      border-bottom-right-radius: size.$borderRadius;
-      margin-bottom: 20px;
-
-      @include size.mobile {
-         border-radius: 0;
-         // those above post were hidden so re-display these
-         display: block;
-         margin-bottom: 0;
-      }
-   }
-}
-
-div.gas {
-   position: absolute;
-   display: none;
-   padding: 20px 0;
-   margin: 0;
-   right: 1px;
 }
 
 div.video {
@@ -350,6 +169,7 @@ figure {
    }
 
    nav.tags {
+      // photo tags
       position: absolute;
       left: 5px;
       bottom: 100px;
@@ -393,54 +213,6 @@ figure {
          &:hover {
             color: #ff0;
             text-decoration: underline;
-         }
-      }
-   }
-
-   div.info, div.mobile-button, div.mobile-info {
-      position: absolute;
-      font-family: font.$sanSerif;
-   }
-
-   div.info {
-      top: 5px;
-      display: none;
-      right: 5px;
-      color: color.$light;
-      background-color: #000;
-      padding: 5px;
-      font-size: 17px;
-      font-weight: normal;
-      opacity: 0.6;
-
-      ul {
-         list-style: none;
-         margin: 4px 4px 6px 8px;
-         padding: 0;
-
-         li {
-            padding-top: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-
-            &.camera {
-               font-size: 16pt;
-               margin-bottom: 3px;
-               font-weight: bold;
-            }
-            &.focal-length {
-               font-size: 12pt;
-               line-height: 1em;
-            }
-            &.iso, &.software { margin-top: 10px; }
-
-            .material-icons {
-               color: white;
-               font-size: 21px;
-               font-weight: normal;
-               margin-left: 4px;
-            }
          }
       }
    }
@@ -489,25 +261,6 @@ figure {
       }
    }
 
-   a.source-link {
-      display: none;
-      text-align: left;
-      font-family: font.$sanSerif;
-      font-size: 12px;
-      letter-spacing: 0.5px;
-      color: #555;
-      text-decoration: none;
-      position: absolute;
-      bottom: -10px;
-      right: -18px;
-      transform: rotate(90deg);
-      transform-origin: 100% 0;
-
-      &:hover { color: #ff0; }
-
-      @include size.desktop { display: block; }
-   }
-
    figcaption {
       // image title
       position: relative;
@@ -553,220 +306,6 @@ div.shadow {
    position: relative;
    z-index: -1;
    height: 7px;
-}
-
-div.caption {
-   margin-top: 0;
-   line-height: 1.3em;
-   padding: 4px 0 0;
-   font-size: font.$size;
-   min-height: 1.5em;
-   position: relative;
-
-   sup {
-      color: color.$footnote;
-      vertical-align: top;
-      line-height: 1em;
-      font-family: font.$sanSerif;
-      font-size: 18px;
-      cursor: help;
-   }
-
-   .tab {
-      display: inline-block;
-      width: 2em;
-   }
-
-   blockquote {
-      //font-size: $fontSize - 1;
-      background-image: url(/img/left-quote.png);
-      background-repeat: no-repeat;
-      background-position: left top;
-      font-family: font.$serif;
-      margin: 1em 1em 0.5em;
-
-      p {
-         padding: 0 4em 1em;
-         //text-indent: 0;
-         line-height: 1.2em;
-         color: #444;
-      }
-
-      // poems inline with other caption text
-      &.poem {
-         background-image: url(/img/quote-ornament.png);
-         background-position: left bottom;
-         font-family: font.$serif;
-         text-align: left;
-         margin-top: 1.5em;
-
-         p {
-            text-align: left;
-            text-indent: 0;
-            //line-height: 1.5em;
-            padding: 0 0 1.4em 5em;
-         }
-
-         .tab { width: 1.5em; }
-      }
-   }
-
-   > p, > blockquote {
-      &:last-child { padding-bottom: 2em; }
-   }
-
-   > p:first-child { padding-top: 2.5em; }
-
-   > blockquote:first-child { margin-top: 2.5em; }
-
-   > p {
-      text-indent: 2em;
-      font-family: font.$serif;
-      margin: 0;
-      padding: 0 2.5em 0.5em;
-
-      &:first-of-type,
-      &.first { text-indent: 0; }
-      &.quip {
-         &:first-child,
-         &.first { text-indent: 2em; }
-      }
-
-      &.note {
-         text-indent: 0;
-         text-align: center;
-         background-color: #fff;
-         font-size: small;
-         border: 1px solid #bfc1bf;
-         margin: 0 4em;
-         padding: 1em;
-      }
-
-      // captions that are entirely a poem
-      &.poem {
-         padding-left: 3em;
-         line-height: 1.3em;
-         font-size: 18px;
-      }
-
-      &.haiku {
-         font-style: italic;
-         font-size: 22px;
-         text-indent: 0;
-         padding-top: 2em;
-         padding-left: 3.5em;
-         //padding: 10px 0 15px 65px;
-         line-height: 1.1em;
-
-         &:not(:last-child) { padding-bottom: 1.5em; }
-
-         .material-icons {
-            display: block;
-            position: absolute;
-            top: 40px;
-            right: 100px;
-            color: color.$trim;
-            font-size: 75px;
-            opacity: 0.1;
-         }
-      }
-   }
-
-   ol.footnotes {
-      list-style-type: decimal;
-      position: relative;
-      border-top: 1px solid color.$trim;
-      background-color: darken(color.$light, 5%);
-      padding: 10px 20px 10px 40px;
-      font-family: font.$sanSerif;
-      font-size: 13px;
-      margin-top: 20px;
-      cursor: help;
-      color: color.$footnote;
-
-      li {
-         line-height: 1em;
-         padding-bottom: 5px;
-         counter-increment: note-counter;
-
-         span { color: #444; }
-         a:hover { color: color.$hover; }
-
-         // from asterisk in photo title to credit creator
-         &.credit {
-            list-style: none;
-            text-indent: -10px;
-            padding-bottom: 10px;
-
-            .material-icons {
-               font-size: 14px;
-               color: color.$footnote;
-               margin: 0;
-               padding-right: 7px;
-               vertical-align: text-top;
-            }
-         }
-      }
-   }
-
-   // mobile caption
-   @include size.mobile {
-      padding: 0 0 15px;
-      font-size: font.$size + 2;
-      line-height: 1.3em;
-      color: color.$mobileText;
-
-      p {
-         padding: 0 0.7em 0.3em;
-         &:first-child,
-         &.first { padding-top: 0; }
-         &:last-child { padding-bottom: 1em; }
-      }
-
-      blockquote {
-         margin-bottom: 15px;
-         text-align: left;
-         p {
-            font-size: 17px;
-            color: color.$mobileText;
-            line-height: 1.2em;
-            padding: 0 3em 0.5em;
-         }
-      }
-
-      sup { color: color.$mobileFootnote; }
-
-      ol.footnotes {
-         $indent: 30px;
-         border: none;
-         background-color: #333;
-         margin: 6px 0 $indent;
-         padding: 6px 5px 0 $indent;
-         color: color.$mobileFootnote;
-
-         li {
-            padding-bottom: 8px;
-            line-height: 1.5em;
-            span { color: darken(color.$mobileText, 30%); }
-            &.credit {
-               text-indent: -8px;
-               .material-icons {
-                  margin: 0;
-                  padding: 2px 2px 0 0;
-               }
-            }
-         }
-
-         opacity: 1;
-
-         a { color: color.$mobileLink; }
-      }
-   }
-
-   @include size.tablet {
-      font-size: font.$size + 3;
-      p { padding: 0 1.5em 0.3em 2em; }
-   }
 }
 
 div.by-line {

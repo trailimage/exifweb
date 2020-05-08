@@ -1,0 +1,103 @@
+@use 'color';
+@use 'font';
+@use 'size';
+
+#nav-top, #nav-bottom {
+   @include size.mobile {
+      div.next,
+      div.previous {
+         font-size: 14px;
+         line-height: 1em;
+         margin: 0;
+         padding: 0;
+
+         .material-icons {
+            font-size: 30px;
+            padding: 0;
+         }
+         h4 {
+            padding: 0;
+            margin: 0;
+            line-height: 1em;
+         }
+      }
+   }
+}
+
+div.next, div.previous {
+   width: (size.$imageWidth - size.$contentWidth) / 2;
+   // this moves the navigation links up so they appear just above their div
+   // so they don't overlap image shown immediately below
+   margin-top: -4.5em;
+   position: absolute;
+   font-family: font.$sanSerif;
+   font-size: 16px;
+   z-index: 250;
+
+   h4 {
+      color: #777;
+      margin: 0 0 2px;
+      font-size: 22px;
+      line-height: 1em;
+
+      .material-icons {
+         font-size: 28px;
+         line-height: 24px;
+         margin: 0 -6px;
+         vertical-align: text-bottom;
+      }
+   }
+
+   a {
+      color: #ddd;
+      text-decoration: none;
+
+      @include size.desktop {
+         &:hover { color: desaturate(lighten(color.$hover, 30%), 20%); }
+      }
+   }
+
+   @include size.mobile {
+      width: auto;
+      font-size: 20px;
+      h4 .material-icons { font-size: 20px; }
+
+      a {
+         line-height: 1.2em;
+         color: color.$mobileLink;
+         &:active { color: color.$mobileActive; }
+      }
+   }
+}
+
+div.next {
+   left: 50%;
+   margin-left: (size.$contentWidth / 2) + 15;
+
+   @include size.mobile {
+      right: 10px;
+      margin: 0;
+      text-align: right;
+   }
+}
+
+div.previous {
+   right: 50%;
+   margin-right: (size.$contentWidth / 2) + 15;
+   text-align: right;
+
+   @include size.mobile {
+      left: 10px;
+      margin: 0;
+      text-align: left;
+   }
+}
+
+#nav-bottom {
+   div.next, div.previous { margin-top: 0.5em; }
+
+   @include size.mobile {
+      width: 100%;
+      margin: 0 0 20px;
+   }
+}

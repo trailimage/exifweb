@@ -1,6 +1,6 @@
 {{#if !categories.is_empty() }}
-<nav class="tag-wrapper">
-   <ul class="tags">
+<nav class="category-wrapper">
+   <ul class="categories">
       {{#each categories.as_slice() }}
       <li><span>#</span><a href="/{{{ path }}}" rel="tag">{{ name }}</a></li>
       {{/each }}
