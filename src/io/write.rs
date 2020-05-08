@@ -109,7 +109,10 @@ impl<'a> Writer<'a> {
     /// Download and save map images for each post
     pub fn post_maps(&self) {
         for (_, p) in &self.context.blog.posts {
-            if p.locations_changed() || self.config.force.maps {
+            if p.locations_changed()
+                || p.cover_photo_changed()
+                || self.config.force.maps
+            {
                 println!("Downloading {} map images", p.title);
                 MapBox::save_static(&p, self.root, self.config);
             }

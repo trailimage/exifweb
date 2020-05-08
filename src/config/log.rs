@@ -111,6 +111,16 @@ impl PostLog {
     pub fn locations_changed(&self, post: &Post) -> bool {
         self.photo_locations != post.photo_locations
     }
+
+    pub fn cover_photo_changed(&self, post: &Post) -> bool {
+        if self.cover_photo.is_none() != post.cover_photo().is_none() {
+            true
+        } else {
+            self.cover_photo
+                .as_ref()
+                .map_or(false, |p| p == post.cover_photo().unwrap())
+        }
+    }
 }
 
 impl Clone for PostLog {

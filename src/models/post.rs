@@ -305,6 +305,11 @@ impl Post {
         self.history.locations_changed(self)
     }
 
+    /// Whether cover photo has changed
+    pub fn cover_photo_changed(&self) -> bool {
+        self.history.cover_photo_changed(self)
+    }
+
     /// Whether photos or configuration have changed
     pub fn files_changed(&self) -> bool {
         self.history.files_changed
