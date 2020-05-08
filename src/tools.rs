@@ -215,6 +215,7 @@ pub fn write_result<E: error::Error, F: FnOnce() -> Result<String, E>>(
     }
 }
 
+
 /// ROT13 encode text
 /// from https://github.com/marekventur/rust-rot13
 pub fn rot13(text: &str) -> String {

@@ -1,6 +1,6 @@
 mod blog;
 mod log;
-mod post;
+pub mod post;
 mod series;
 mod vendors;
 
@@ -20,7 +20,7 @@ use std::{env, fs, path::Path};
 use toml;
 
 /// Configuration file for blog, for post series and for posts
-pub static CONFIG_FILE: &str = "config.toml";
+pub static CONFIG_FILE: &str = "exifweb.toml";
 
 /// Configuration that reads some values from environment variables
 trait ReadsEnv {

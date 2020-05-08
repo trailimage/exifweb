@@ -23,14 +23,105 @@ use std::{
     path::{Path, PathBuf},
     process,
 };
-use tools::folder_name;
+use tools::{folder_name, write_result};
 
 // TODO: read and process GPX files
 
+static RUN_HELP: &'static str = "
+    -h      Show help
+
+    -d      Set working directory (current directory assumed if not given)
+            Example: exifweb -d=./some/path
+
+    -auto   Detect changes and render differences
+    -init   Create post configuration
+    -force  Comma-delimited list of posts, maps, photos or tags
+
+          =posts    Re-render all post HTML and basic root pages
+          =maps     Re-download map images for post and category pages
+          =photos   Recreate all resized photos
+          =tags     Re-render all photo tag pages
+
+            Example: exifweb -force=posts,tags
+
+";
+
+/// Override normal rendering behavior which is to only reprocess when changes
+/// are detected
+#[derive(Default)]
+struct Override {
+    posts: bool,
+    maps: bool,
+    photos: bool,
+    tags: bool,
+}
+
 fn main() {
-    let root = Path::new("./public/");
+    // Default path is current directory
+    let mut path: String = String::from(".");
+    let mut overrides: Override = Override::default();
+    let mut rendering: bool = true;
+    let mut args = env::args();
+
+    while let Some(a) = args.next() {
+        match a.as_ref() {
+            "-h" => {
+                // show help regardless of other arguments
+                print!("{}", RUN_HELP);
+                process::exit(0);
+            }
+            "-init" => {
+                rendering = false;
+            }
+            _ => {
+                if a.starts_with("-d=") {
+                    path = args.next().expect("Invalid directory parameter");
+                } else if a.starts_with("-force=") {
+                    let list = args.next().expect("Invalid force parameter");
+
+                    for f in list.split(",") {
+                        match f {
+                            "posts" => overrides.posts = true,
+                            "maps" => overrides.maps = true,
+                            "photos" => overrides.photos = true,
+                            "tags" => overrides.tags = true,
+                            _ => (),
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if rendering {
+        render(&path, overrides);
+    } else {
+        initialize(&path);
+    }
+}
+
+fn initialize(path: &str) {
+    let name = format!("{}/{}", path, config::CONFIG_FILE);
+
+    match fs::write(
+        Path::new(path).join(config::CONFIG_FILE),
+        config::post::EMPTY_CONFIG,
+    ) {
+        Ok(_) => {
+            println!("Created {}", name);
+
+            process::Command::new("notepad")
+                .current_dir(path)
+                .arg(config::CONFIG_FILE);
+        }
+        Err(e) => println!("Error writing {} {:?}", name, e),
+    };
+}
+
+fn render(path: &str, overrides: Override) {
+    let root = Path::new(path);
     let entries = load_root_directory(&root);
-    let mut config = load_config(&root);
+    let mut config = load_config(&root, overrides);
     let mut blog = Blog::default();
 
     blog.history = BlogLog::load(&root).unwrap_or(BlogLog::empty());
@@ -148,7 +239,7 @@ fn load_root_directory(root: &Path) -> fs::ReadDir {
 
 /// Load configuration file and apply command line arguments and environment
 /// variables
-fn load_config(root: &Path) -> BlogConfig {
+fn load_config(root: &Path, overrides: Override) -> BlogConfig {
     let mut config: BlogConfig = match BlogConfig::load(root) {
         Some(config) => config,
         _ => {
@@ -156,16 +247,14 @@ fn load_config(root: &Path) -> BlogConfig {
             process::exit(1)
         }
     };
-    let args: Vec<String> = env::args().collect();
-    let has_arg = |arg: &str| args.contains(&arg.to_owned());
     let notify = |label: &str, force: bool| {
         println!("{}", format!("Force {}: {}", label, force).cyan().bold())
     };
 
-    config.force.html = has_arg("force_html");
-    config.force.maps = has_arg("force_maps");
-    config.force.photos = has_arg("force_photos");
-    config.force.tags = has_arg("force_tags");
+    config.force.html = overrides.posts;
+    config.force.maps = overrides.maps;
+    config.force.photos = overrides.photos;
+    config.force.tags = overrides.tags;
 
     println!("");
     notify("HTML re-render", config.force.html);

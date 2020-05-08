@@ -15,6 +15,20 @@
          "problemMatcher": []
       },
       {
+         "label": "Build Release",
+         "type": "shell",
+         "command": "cargo",
+         "args": [
+            "build",
+            "--release"
+         ],
+         "presentation": {
+            "echo": false,
+            "clear": true
+         },
+         "problemMatcher": []
+      },
+      {
          "label": "Build JavaScript",
          "command": "tsc",
          // "args": [

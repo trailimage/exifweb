@@ -3,6 +3,19 @@ use crate::models::{Category, CategoryKind};
 use serde::Deserialize;
 use std::path::Path;
 
+pub static EMPTY_CONFIG: &'static str = r#"
+title = "Title"
+summary = """Caption"""
+cover_photo_index = 1
+part = 0
+
+[categories]
+who = "Family"
+when = 2020
+where = ["Danskin"]
+what = "KTM 1290 SAR"
+"#;
+
 /// Categories to which the post has been assigned
 #[derive(Deserialize, Debug)]
 pub struct PostCategories {
