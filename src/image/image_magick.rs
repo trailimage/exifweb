@@ -29,7 +29,8 @@ macro_rules! string_vec {
 //  -resize 256x256^ -gravity center -extent 256x256 001-thumb.webp
 
 // magick convert 028.jpg -define webp:method=6 -define webp:thread-level=4 -resize 2048x 028_l.webp
-// magick convert 028.tif -quiet -quality 100 -unsharp 0x1+1+0.05 -define webp:method=6 -define webp:thread-level=1 -define webp:lossless=true 028_test.webp
+// magick convert 028.tif -quiet -dither FloydSteinberg -define dither:diffusion-amount=35% 028_test.jpg
+//-unsharp 0x1+1+0.05
 // cwebp
 
 /// https://imagemagick.org/script/webp.php
@@ -40,6 +41,8 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
     let file_name = |suffix: &'static str| {
         format!("{:03}_{}{}", photo.index, suffix, config.output_ext)
     };
+
+    let size = &config.size.render;
 
     let sub_command = |size: u16, suffix: &'static str| {
         string_vec![
@@ -63,11 +66,11 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
 
     let thumb_command = string_vec![
         "-resize",
-        format!("{px}x{px}^", px = config.size.thumb),
+        format!("{px}x{px}^", px = size.thumb),
         "-gravity",
         "center",
         "-extent",
-        format!("{px}x{px}", px = config.size.thumb),
+        format!("{px}x{px}", px = size.thumb),
         file_name(suffix::THUMB)
     ];
 
@@ -81,9 +84,9 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
         .args(webp_setting("thread-level", "1"))    // any non-zero value enables multi-threading
         .args(webp_setting("lossless", "true"))
         .args(webp_setting("method", "6"))          // most time, best quality
-        .args(sub_command(config.size.large, suffix::LARGE))
-        .args(sub_command(config.size.medium, suffix::MEDIUM))
-        .args(sub_command(config.size.small, suffix::SMALL))
+        .args(sub_command(size.large, suffix::LARGE))
+        .args(sub_command(size.medium, suffix::MEDIUM))
+        .args(sub_command(size.small, suffix::SMALL))
         .args(&thumb_command)
         .output()
     {
@@ -93,10 +96,9 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
                     println!(
                         "Running\nmagick convert {} -quiet {} {} {} {}\n",
                         &photo.file.name,
-                        sub_command(config.size.large, suffix::LARGE).join(" "),
-                        sub_command(config.size.medium, suffix::MEDIUM)
-                            .join(" "),
-                        sub_command(config.size.small, suffix::SMALL).join(" "),
+                        sub_command(size.large, suffix::LARGE).join(" "),
+                        sub_command(size.medium, suffix::MEDIUM).join(" "),
+                        sub_command(size.small, suffix::SMALL).join(" "),
                         thumb_command.join(" ")
                     );
                     println!("{}", err.red());
@@ -352,7 +354,7 @@ fn read_dir(path: &Path) -> Vec<ImageMagickInfo> {
 
     match serde_json::from_str::<Vec<ImageMagickInfo>>(&text) {
         Ok(info) => info,
-        Err() => {
+        Err(_e) => {
             println!(
                 "   {} {}",
                 "Unable to parse EXIF JSON for".red(),

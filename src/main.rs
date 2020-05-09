@@ -15,7 +15,7 @@ mod tools;
 
 use colored::*;
 use config::{BlogConfig, BlogLog, FeaturedPost};
-use image::cwebp;
+use image::image_magick;
 use io::{read, Writer};
 use models::{Blog, Photo};
 use std::{
@@ -23,7 +23,7 @@ use std::{
     path::{Path, PathBuf},
     process,
 };
-use tools::{folder_name, write_result};
+use tools::folder_name;
 
 // TODO: read and process GPX files
 
@@ -210,7 +210,7 @@ fn render(path: &str, overrides: Override) {
             for p in post.photos {
                 if p.file.created > last_render {
                     count = count + 1;
-                    cwebp::create_sizes(&full_path, &p, &config.photo);
+                    image_magick::create_sizes(&full_path, &p, &config.photo);
                 }
             }
             if count > 0 {

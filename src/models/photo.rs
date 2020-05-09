@@ -62,6 +62,7 @@ pub struct Photo {
     /// One-based position of photo within post
     pub index: u8,
 
+    // TODO: remove hash tags like #boisephotographer
     /// Tags applied to the photo
     #[serde(skip)]
     pub tags: Vec<String>,

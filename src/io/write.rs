@@ -14,6 +14,7 @@ use std::{collections::BTreeMap, fmt::Display, fs, path::Path};
 use yarte::Template;
 
 // TODO: render map page
+// TODO: render post redirects
 
 const ALPHABET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 

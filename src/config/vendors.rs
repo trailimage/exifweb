@@ -22,8 +22,6 @@ pub struct MapBoxStyles {
 pub struct MapBoxConfig {
     #[serde(skip)]
     pub access_token: String,
-    /// Maximum number of photo markers to show on static map
-    pub max_static_markers: u16,
     pub style: MapBoxStyles,
     /// Fully qualified path to image used to render pins on static map
     pub pin_image: String,
