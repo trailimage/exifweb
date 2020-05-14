@@ -30,6 +30,7 @@ macro_rules! string_vec {
 
 // magick convert 028.jpg -define webp:method=6 -define webp:thread-level=4 -resize 2048x 028_l.webp
 // magick convert 028.tif -quiet -dither FloydSteinberg -define dither:diffusion-amount=35% 028_test.jpg
+// magick convert 028.tif -quiet -quality 96 028_test.jpg
 //-unsharp 0x1+1+0.05
 // cwebp
 
@@ -45,28 +46,36 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
     let size = &config.size.render;
 
     let sub_command = |size: u16, suffix: &'static str| {
-        string_vec![
-            "(",
-            "+clone",
-            "-resize",
-            format!("{}x", size),
-            "-write",
-            file_name(suffix),
-            "+delete",
-            ")"
-        ]
-    };
-
-    let setting =
-        |key: &str, value: &str| string_vec![format!("-{}", key), value];
-
-    let webp_setting = |key: &str, value: &str| {
-        setting("define", &format!("webp:{}={}", key, value))
+        if size != config.source_size {
+            string_vec![
+                "(",
+                "+clone",
+                "-resize",
+                format!("{}x", size),
+                "-unsharp",
+                "0x1+1+0.05",
+                "-write",
+                file_name(suffix),
+                "+delete",
+                ")"
+            ]
+        } else {
+            string_vec![
+                "(",
+                "+clone",
+                "-write",
+                file_name(suffix),
+                "+delete",
+                ")"
+            ]
+        }
     };
 
     let thumb_command = string_vec![
         "-resize",
         format!("{px}x{px}^", px = size.thumb),
+        "-unsharp",
+        "0x1+1+0.05",
         "-gravity",
         "center",
         "-extent",
@@ -79,11 +88,7 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
         .arg("convert")
         .arg(&photo.file.name)
         .arg("-quiet")
-        .args(setting("quality", "100"))
-        .args(setting("unsharp", "0x1+1+0.05"))
-        .args(webp_setting("thread-level", "1"))    // any non-zero value enables multi-threading
-        .args(webp_setting("lossless", "true"))
-        .args(webp_setting("method", "6"))          // most time, best quality
+        //.args(setting("unsharp", "0x1+1+0.05"))
         .args(sub_command(size.large, suffix::LARGE))
         .args(sub_command(size.medium, suffix::MEDIUM))
         .args(sub_command(size.small, suffix::SMALL))
