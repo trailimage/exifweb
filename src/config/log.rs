@@ -108,6 +108,7 @@ impl PostLog {
         self.prev_path != post.prev_path || self.next_path != post.next_path
     }
 
+    /// Whether photo GPS coordinates have changed
     pub fn locations_changed(&self, post: &Post) -> bool {
         self.photo_locations != post.photo_locations
     }
@@ -119,6 +120,19 @@ impl PostLog {
             self.cover_photo
                 .as_ref()
                 .map_or(false, |p| p == post.cover_photo().unwrap())
+        }
+    }
+
+    /// Map images only need to be regenerated if the aspect ratio of the cover
+    /// photo changes since, on the category page, it is fitted beside the
+    /// cover image to fill the content width
+    pub fn cover_aspect_ratio_changed(&self, post: &Post) -> bool {
+        if self.cover_photo.is_none() != post.cover_photo().is_none() {
+            true
+        } else {
+            self.cover_photo.as_ref().map_or(false, |p| {
+                p.aspect_ratio() != post.cover_photo().unwrap().aspect_ratio()
+            })
         }
     }
 }

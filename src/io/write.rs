@@ -111,7 +111,7 @@ impl<'a> Writer<'a> {
     pub fn post_maps(&self) {
         for (_, p) in &self.context.blog.posts {
             if p.locations_changed()
-                || p.cover_photo_changed()
+                || p.cover_photo_aspect_ratio_changed()
                 || self.config.force.maps
             {
                 println!("Downloading {} map images", p.title);
@@ -214,6 +214,7 @@ impl<'a> Writer<'a> {
         }
     }
 
+    /// Write "About" page
     pub fn about_page(&self) {
         self.default_page(
             "about",
@@ -227,6 +228,8 @@ impl<'a> Writer<'a> {
         );
     }
 
+    /// Write HTML snippet of category selections that is dynamically loaded
+    /// on other pages
     pub fn category_menu(&self) {
         self.default_page(
             "category-menu",

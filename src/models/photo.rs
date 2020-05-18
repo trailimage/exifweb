@@ -123,6 +123,11 @@ impl Photo {
     pub fn is_portrait(&self) -> bool {
         self.size.is_portrait()
     }
+
+    /// Image width divided by height
+    pub fn aspect_ratio(&self) -> f32 {
+        self.size.aspect_ratio()
+    }
 }
 
 impl PartialOrd for Photo {

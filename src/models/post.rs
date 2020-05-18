@@ -310,6 +310,13 @@ impl Post {
         self.history.cover_photo_changed(self)
     }
 
+    /// Whether the aspect ratio of the cover photo has changed. Post map images
+    /// on category pages are sized to fit next to the cover photo so only need
+    /// to be regenerated if the photo aspect ratio changes.
+    pub fn cover_photo_aspect_ratio_changed(&self) -> bool {
+        self.history.cover_aspect_ratio_changed(self)
+    }
+
     /// Whether photos or configuration have changed
     pub fn files_changed(&self) -> bool {
         self.history.files_changed

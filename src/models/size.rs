@@ -63,6 +63,11 @@ impl SizeCollection {
     pub fn is_landscape(&self) -> bool {
         self.original.width > self.original.height
     }
+
+    /// Image width divided by height
+    pub fn aspect_ratio(&self) -> f32 {
+        self.original.width as f32 / self.original.height as f32
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq)]
