@@ -116,7 +116,7 @@ pub fn date_time_string<'de, D>(
 where
     D: Deserializer<'de>,
 {
-    deserializer.deserialize_any(DateTimeString(PhantomData))
+    deserializer.deserialize_str(DateTimeString(PhantomData))
 }
 
 struct RegExString(PhantomData<Regex>);
@@ -137,7 +137,7 @@ pub fn regex_string<'de, D>(deserializer: D) -> Result<Regex, D::Error>
 where
     D: Deserializer<'de>,
 {
-    deserializer.deserialize_any(RegExString(PhantomData))
+    deserializer.deserialize_str(RegExString(PhantomData))
 }
 
 #[cfg(test)]

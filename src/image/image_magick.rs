@@ -45,6 +45,9 @@ pub fn create_sizes(path: &str, photo: &Photo, config: &PhotoConfig) {
 
     let size = &config.size.render;
 
+    // TODO: remove EXIF but ensure copyright is still present
+    // TODO: test sharpening levels and maybe don't sharpen TIFF
+
     let sub_command = |size: u16, suffix: &'static str| {
         if size != config.source_size {
             string_vec![
