@@ -3,11 +3,11 @@ use serde::{Deserialize, Serialize};
 
 /// Suffixes added to resized photo files
 pub mod suffix {
-    pub static ORIGINAL: &'static str = "o";
-    pub static LARGE: &'static str = "l";
-    pub static MEDIUM: &'static str = "m";
-    pub static SMALL: &'static str = "s";
-    pub static THUMB: &'static str = "t";
+    pub static ORIGINAL: &str = "o";
+    pub static LARGE: &str = "l";
+    pub static MEDIUM: &str = "m";
+    pub static SMALL: &str = "s";
+    pub static THUMB: &str = "t";
 }
 
 /// Photo display sizes. These values may be less than the rendered sizes to

@@ -1,5 +1,4 @@
 use crate::{config::BlogConfig, json_ld, tools::slugify};
-use serde_json;
 use std::{
     cmp::Ordering,
     fmt::{self, Display, Formatter},
@@ -48,6 +47,7 @@ impl CategoryKind {
     }
 }
 
+#[allow(clippy::derive_hash_xor_eq)]
 impl Hash for CategoryKind {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.to_string().hash(state);

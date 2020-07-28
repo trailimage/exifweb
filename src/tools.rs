@@ -154,7 +154,7 @@ fn boundary(numbers: &mut [i64], distance: f64) -> Option<Limits> {
 pub fn identify_outliers(photos: &mut Vec<Photo>) {
     let mut times: Vec<i64> = photos
         .iter()
-        .filter_map(|p: &Photo| p.date_taken.and_then(|d| Some(d.timestamp())))
+        .filter_map(|p: &Photo| p.date_taken.map(|d| d.timestamp()))
         .collect();
 
     if let Some(fence) = boundary(&mut times[..], 0.05) {
@@ -173,9 +173,7 @@ pub fn identify_outliers(photos: &mut Vec<Photo>) {
 
 /// Earliest pertinent (not an outlier) date in a list of photos. This assumes
 /// `identify_outliers()` has already processed the `photos`.
-pub fn earliest_photo_date(
-    photos: &Vec<Photo>,
-) -> Option<DateTime<FixedOffset>> {
+pub fn earliest_photo_date(photos: &[Photo]) -> Option<DateTime<FixedOffset>> {
     let mut dates: Vec<DateTime<FixedOffset>> = photos
         .iter()
         .filter(|p: &'_ &Photo| !p.outlier_date && p.date_taken.is_some())
@@ -209,12 +207,10 @@ pub fn write_result<E: error::Error, F: FnOnce() -> Result<String, E>>(
                     eprintln!("Error writing {} {:?}", folder_name(path), e)
                 }
             };
-            return;
         }
         Err(e) => eprintln!("Error serializing {} {:?}", folder_name(path), e),
     }
 }
-
 
 /// ROT13 encode text
 /// from https://github.com/marekventur/rust-rot13
@@ -273,22 +269,26 @@ mod tests {
 
     #[test]
     fn median_test() {
-        assert_eq!(median(&mut [1, 2, 3]), 2.0);
-        assert_eq!(median(&mut [1, 2, 13]), 2.0);
-        assert_eq!(median(&mut [3]), 3.0);
-        assert_eq!(median(&mut [4, 5, 6, 7]), 5.5);
-        assert_eq!(median(&mut [4, 5, 6, 9]), 5.5);
+        fn assert_same(a: f64, b: f64) {
+            assert!((a - b).abs() < f64::EPSILON)
+        }
+
+        assert_same(median(&mut [1, 2, 3]), 2.0);
+        assert_same(median(&mut [1, 2, 13]), 2.0);
+        assert_same(median(&mut [3]), 3.0);
+        assert_same(median(&mut [4, 5, 6, 7]), 5.5);
+        assert_same(median(&mut [4, 5, 6, 9]), 5.5);
 
         let mut numbers = [1, 2, 36, 9, 27, 3, 22];
 
-        assert_eq!(median(&mut numbers), 9.0);
+        assert_same(median(&mut numbers), 9.0);
 
         let len = numbers.len();
         let mid = len / 2;
         // first quartile
-        assert_eq!(median(&mut numbers[0..mid]), 2.0);
+        assert_same(median(&mut numbers[0..mid]), 2.0);
         // third quartile
-        assert_eq!(median(&mut numbers[mid + 1..len]), 27.0);
+        assert_same(median(&mut numbers[mid + 1..len]), 27.0);
     }
 
     #[test]

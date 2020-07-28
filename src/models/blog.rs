@@ -79,7 +79,7 @@ impl Blog {
     /// Number of posts that need to be rendered
     pub fn needs_render_count(&self) -> usize {
         let mut total: usize = 0;
-        for (_, p) in &self.posts {
+        for p in self.posts.values() {
             if p.files_changed() || p.sequence_changed() {
                 total += 1;
             }
@@ -155,14 +155,12 @@ impl Blog {
             // sorted position of post
             if let Some(i) = ordered.iter().position(|kt| kt.path == *k) {
                 if i > 0 {
-                    p.prev_path = ordered
-                        .get(i - 1)
-                        .and_then(|kt: &KeyTime| Some(kt.path.clone()));
+                    p.prev_path =
+                        ordered.get(i - 1).map(|kt: &KeyTime| kt.path.clone());
                 }
                 if i < len - 1 {
-                    p.next_path = ordered
-                        .get(i + 1)
-                        .and_then(|kt: &KeyTime| Some(kt.path.clone()));
+                    p.next_path =
+                        ordered.get(i + 1).map(|kt: &KeyTime| kt.path.clone());
                 }
             } else {
                 eprintln!("   Post {} is not chronological", k);

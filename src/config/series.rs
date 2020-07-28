@@ -20,9 +20,9 @@ pub struct SeriesConfig {
 
 impl SeriesConfig {
     pub fn load(path: &Path) -> Option<Self> {
-        load_config::<Self>(path).and_then(|mut c: SeriesConfig| {
+        load_config::<Self>(path).map(|mut c: SeriesConfig| {
             c.path = folder_name(path).to_string();
-            Some(c)
+            c
         })
     }
 }

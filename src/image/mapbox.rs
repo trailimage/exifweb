@@ -2,7 +2,6 @@
 
 use crate::config::BlogConfig;
 use crate::models::Post;
-use reqwest;
 use std::{fs::File, io, path::Path};
 use url::form_urlencoded::byte_serialize;
 
@@ -59,7 +58,7 @@ impl<'a> MapBox<'a> {
         &self,
         post: &Post,
         name: &str,
-        pins: &Vec<String>,
+        pins: &[String],
         width: u16,
         height: u16,
     ) {
@@ -91,7 +90,7 @@ impl<'a> MapBox<'a> {
                     println!(
                         "Failed to download {} {}",
                         url,
-                        res.text().unwrap_or(String::new())
+                        res.text().unwrap_or_else(|_| String::new())
                     );
                 }
             }

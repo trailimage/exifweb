@@ -21,7 +21,7 @@ pub struct TagPhotos<T> {
 
 /// Collect unique photo tag slugs as keys to the list of photos that applied
 /// those tags. These data are used to render tag search and results pages.
-pub fn collate_tags(photos: &Vec<Photo>) -> BTreeMap<String, TagPhotos<u8>> {
+pub fn collate_tags(photos: &[Photo]) -> BTreeMap<String, TagPhotos<u8>> {
     let mut tags: BTreeMap<String, TagPhotos<u8>> = BTreeMap::new();
 
     for photo in photos.iter() {

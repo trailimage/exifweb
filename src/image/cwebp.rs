@@ -47,12 +47,10 @@ fn create_size(
             let (x, y, size) = photo.size.original.center_square();
 
             string_vec!["-crop", x, y, size, size, "-resize", max, 0]
+        } else if photo.size.is_landscape() {
+            string_vec!["-resize", max, 0]
         } else {
-            if photo.size.is_landscape() {
-                string_vec!["-resize", max, 0]
-            } else {
-                string_vec!["-resize", 0, max]
-            }
+            string_vec!["-resize", 0, max]
         }
     };
 

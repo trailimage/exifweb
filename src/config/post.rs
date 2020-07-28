@@ -3,7 +3,7 @@ use crate::models::{Category, CategoryKind};
 use serde::Deserialize;
 use std::path::Path;
 
-pub static EMPTY_CONFIG: &'static str = r#"
+pub static EMPTY_CONFIG: &str = r#"
 title = "Title"
 summary = """Caption"""
 cover_photo_index = 1

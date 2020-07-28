@@ -16,7 +16,7 @@ use yarte::Template;
 // TODO: render map page
 // TODO: render post redirects
 
-const ALPHABET: &'static str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const ALPHABET: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /// Render template and write content to `path` file
 fn write_page(path: &Path, template: impl Template) {
@@ -95,7 +95,7 @@ impl<'a> Writer<'a> {
     }
 
     pub fn posts(&self) {
-        for (_, p) in &self.context.blog.posts {
+        for p in self.context.blog.posts.values() {
             if p.sequence_changed()
                 || p.files_changed()
                 || self.config.force.html
@@ -109,7 +109,7 @@ impl<'a> Writer<'a> {
 
     /// Download and save map images for each post
     pub fn post_maps(&self) {
-        for (_, p) in &self.context.blog.posts {
+        for p in self.context.blog.posts.values() {
             if p.locations_changed()
                 || p.cover_photo_aspect_ratio_changed()
                 || self.config.force.maps
@@ -186,7 +186,7 @@ impl<'a> Writer<'a> {
     fn category_kind(
         &self,
         category_kind: &CategoryKind,
-        categories: &Vec<Category>,
+        categories: &[Category],
     ) {
         self.default_page(
             category_kind.to_string().to_lowercase().as_str(),
@@ -258,17 +258,10 @@ impl<'a> Writer<'a> {
                 continue;
             }
 
-            if !letter_map.contains_key(&letter) {
-                letter_map.insert(letter, BTreeMap::new());
-            }
-
-            if let Some(tag) = letter_map.get_mut(&letter) {
-                let photos = &tag_photos.photos;
-                tag.insert(
-                    slug.clone(),
-                    (tag_photos.name.clone(), photos.len()),
-                );
-            }
+            letter_map.entry(letter).or_default().insert(
+                slug.clone(),
+                (tag_photos.name.clone(), tag_photos.photos.len()),
+            );
 
             if tag_photos.changed || self.config.force.tags {
                 // only render tags that have changes
@@ -361,13 +354,13 @@ impl<'a> CommonContext<'a> {
     pub fn icon(&self, name: &str) -> String {
         html::icon_tag(name)
     }
-    pub fn tag_list(&self, list: &Vec<String>) -> String {
+    pub fn tag_list(&self, list: &[String]) -> String {
         html::photo_tag_list(list)
     }
     pub fn date(&self, d: DateTime<FixedOffset>) -> String {
         html::date_string(d)
     }
-    pub fn travel_icon(&self, categories: &Vec<Category>) -> String {
+    pub fn travel_icon(&self, categories: &[Category]) -> String {
         match html::travel_mode_icon(categories, &self.mode_icons) {
             Some(icon) => icon,
             None => String::new(),
@@ -487,7 +480,7 @@ struct CategoryContext<'c> {
 #[template(path = "category_kind.hbs")]
 struct CategoryKindContext<'c> {
     pub ctx: &'c CommonContext<'c>,
-    pub categories: &'c Vec<Category>,
+    pub categories: &'c [Category],
     pub enable: Enable,
     pub kind: &'c CategoryKind,
     pub sub_title: String,

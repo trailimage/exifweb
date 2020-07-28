@@ -73,13 +73,10 @@ impl PostLog {
             as_of: Local::now().timestamp(),
             tags: post.tags.clone(),
             files_changed: false,
-            cover_photo: post.cover_photo().map(|p| p.clone()),
+            cover_photo: post.cover_photo().cloned(),
         };
         let path = root.join(&post.path).join(LOG_FILE);
-        let pretty = PrettyConfig {
-            depth_limit: 4,
-            ..PrettyConfig::default()
-        };
+        let pretty = PrettyConfig::new().with_depth_limit(4);
 
         write_result(&path, || to_string_pretty(&log, pretty), false);
     }
@@ -131,7 +128,9 @@ impl PostLog {
             true
         } else {
             self.cover_photo.as_ref().map_or(false, |p| {
-                p.aspect_ratio() != post.cover_photo().unwrap().aspect_ratio()
+                (p.aspect_ratio() - post.cover_photo().unwrap().aspect_ratio())
+                    .abs()
+                    < f32::EPSILON
             })
         }
     }
@@ -176,10 +175,7 @@ impl BlogLog {
             tags: blog.tags.clone(),
         };
         let path = root.join(LOG_FILE);
-        let pretty = PrettyConfig {
-            depth_limit: 4,
-            ..PrettyConfig::default()
-        };
+        let pretty = PrettyConfig::new().with_depth_limit(4);
 
         write_result(&path, || to_string_pretty(&log, pretty), false);
     }

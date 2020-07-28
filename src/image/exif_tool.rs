@@ -12,7 +12,6 @@ use crate::{
 use chrono::{DateTime, FixedOffset};
 use colored::*;
 use serde::Deserialize;
-use serde_json;
 use std::{path::Path, process::Command};
 
 #[derive(Deserialize, Debug)]
@@ -321,7 +320,6 @@ mod tests {
     use super::ExifToolOutput;
     use crate::models::ExposureMode;
     use chrono::DateTime;
-    use serde_json;
 
     #[test]
     fn deserialize_test() {

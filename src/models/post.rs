@@ -115,11 +115,7 @@ impl Post {
     /// Photo at `copy_photo_index` position
     pub fn cover_photo(&self) -> Option<&Photo> {
         let photo = if self.photos.is_empty() {
-            //self.history.cover_photo.map(|ref p| p)
-            match self.history.cover_photo {
-                Some(ref p) => Some(p),
-                None => None,
-            }
+            self.history.cover_photo.as_ref()
         } else {
             self.photos.get(self.cover_photo_index)
         };
@@ -150,14 +146,12 @@ impl Post {
                 Ordering::Greater
             } else if a.0 < b.0 {
                 Ordering::Less
+            } else if a.1 > b.1 {
+                Ordering::Greater
+            } else if a.1 < b.1 {
+                Ordering::Less
             } else {
-                if a.1 > b.1 {
-                    Ordering::Greater
-                } else if a.1 < b.1 {
-                    Ordering::Less
-                } else {
-                    Ordering::Equal
-                }
+                Ordering::Equal
             }
         });
 

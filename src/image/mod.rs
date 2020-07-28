@@ -1,6 +1,6 @@
-//pub mod cwebp;
+pub mod cwebp;
 pub mod exif_tool;
-pub mod image_magick;
+//pub mod image_magick;
 mod mapbox;
 
 pub use mapbox::MapBox;

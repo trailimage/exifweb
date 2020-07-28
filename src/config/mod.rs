@@ -17,7 +17,6 @@ use colored::*;
 
 use serde::de::DeserializeOwned;
 use std::{env, fs, path::Path};
-use toml;
 
 /// Configuration file for blog, for post series and for posts
 pub static CONFIG_FILE: &str = "exifweb.toml";

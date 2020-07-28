@@ -81,7 +81,7 @@ fn series_post(
             process::exit(1);
         }
 
-        create_post(path, true, config, post_config).and_then(|mut p| {
+        create_post(path, true, config, post_config).map(|mut p| {
             p.series = Some(PostSeries {
                 part,
                 title: series_config.title.clone(),
@@ -92,7 +92,7 @@ fn series_post(
                 next_is_part: part < series_config.parts,
             });
 
-            Some(p)
+            p
         })
     })
 }
@@ -188,7 +188,7 @@ fn load_post_log(path: &Path, config: &BlogConfig) -> PostLog {
         ) {
             Ok(modified) => {
                 log.files_changed = modified;
-                return log;
+                log
             }
             Err(e) => {
                 println!(

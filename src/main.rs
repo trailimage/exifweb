@@ -15,7 +15,7 @@ mod tools;
 
 use colored::*;
 use config::{BlogConfig, BlogLog, FeaturedPost};
-use image::image_magick;
+use image::cwebp;
 use io::{read, Writer};
 use models::{Blog, Photo};
 use std::{
@@ -27,7 +27,7 @@ use tools::folder_name;
 
 // TODO: read and process GPX files
 
-static RUN_HELP: &'static str = "
+static RUN_HELP: &str = "
     -h      Show help
 
     -d      Set working directory (current directory assumed if not given)
@@ -79,7 +79,7 @@ fn main() {
                 } else if a.starts_with("-force=") {
                     let list = args.next().expect("Invalid force parameter");
 
-                    for f in list.split(",") {
+                    for f in list.split(',') {
                         match f {
                             "posts" => overrides.posts = true,
                             "maps" => overrides.maps = true,
@@ -124,7 +124,7 @@ fn render(path: &str, overrides: Override) {
     let mut config = load_config(&root, overrides);
     let mut blog = Blog::default();
 
-    blog.history = BlogLog::load(&root).unwrap_or(BlogLog::empty());
+    blog.history = BlogLog::load(&root).unwrap_or_else(BlogLog::empty);
 
     // iterate over every file or directory within root
     for entry in entries {
@@ -209,8 +209,8 @@ fn render(path: &str, overrides: Override) {
 
             for p in post.photos {
                 if p.file.created > last_render {
-                    count = count + 1;
-                    image_magick::create_sizes(&full_path, &p, &config.photo);
+                    count += 1;
+                    cwebp::create_sizes(&full_path, &p, &config.photo);
                 }
             }
             if count > 0 {

@@ -40,7 +40,7 @@ pub fn category_icon(kind: &CategoryKind, config: &CategoryIcon) -> String {
 
 /// HTML tag for mode of travel category icon
 pub fn travel_mode_icon(
-    categories: &Vec<Category>,
+    categories: &[Category],
     mode_icons: &HashMap<String, Regex>,
 ) -> Option<String> {
     categories
@@ -96,7 +96,7 @@ pub fn list_label(word: &str, list: impl ExactSizeIterator) -> String {
 pub fn plural(word: &str, count: usize) -> String {
     if count == 1 {
         word.to_owned()
-    } else if word.ends_with("y") {
+    } else if word.ends_with('y') {
         format!("{}ies", word.trim_end_matches('y'))
     } else {
         format!("{}s", word)
@@ -140,7 +140,7 @@ fn link_urls(text: &str) -> String {
         let path = url.replace(domain, "");
         let domain = domain.replace("//www.", "//");
 
-        if path.contains("/") {
+        if path.contains('/') {
             let page: &str = &LAST_PATH.captures(&path).unwrap()[1];
             format!("<a href=\"{}\">{}&hellip;/{}</a>", url, domain, page)
         } else {
@@ -191,7 +191,7 @@ fn format_footnotes(notes: &str) -> String {
 }
 
 /// Linked list of photo tags
-pub fn photo_tag_list(list: &Vec<String>) -> String {
+pub fn photo_tag_list(list: &[String]) -> String {
     lazy_static! {
         static ref NON_WORD: Regex = Regex::new(r"\W").unwrap();
     }
