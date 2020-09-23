@@ -210,7 +210,7 @@ pub fn parse_dir(path: &Path, config: &PhotoConfig) -> Vec<Photo> {
 
         if let Some(make) = &i.camera_make {
             photo.camera = Some(Camera {
-                name: i.camera_model.unwrap_or(make.clone()),
+                name: i.camera_model.unwrap_or_else(|| make.clone()),
                 compensation: i.exposure_compensation,
                 shutter_speed: i.shutter_speed,
                 mode: i.exposure_mode,
@@ -389,7 +389,7 @@ mod tests {
             Ok(exif) => assert_eq!(exif, target),
             Err(e) => {
                 eprintln!("{:?}", e);
-                assert!(false);
+                panic!()
             }
         }
     }
